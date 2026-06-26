@@ -8,6 +8,10 @@
       "types": "./dist/schemas/*.d.ts",
       "default": "./dist/schemas/*.js"
     },
+    "./errors": {
+      "types": "./dist/errors/biz-error.d.ts",
+      "default": "./dist/errors/biz-error.js"
+    },
     "./utils": {
       "types": "./dist/utils.d.ts",
       "default": "./dist/utils.js"
