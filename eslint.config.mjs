@@ -22,7 +22,15 @@ export default tseslint.config(
       },
     },
     rules: {
+      // require-await 噪声大（多为满足接口契约而声明的 async），关闭。
       "@typescript-eslint/require-await": "off",
+      // no-unsafe-* 多来自 LLM / 外部无类型边界，以 warn 做棘轮：可见但不阻塞，
+      // 后续逐步收紧为 error。
+      "@typescript-eslint/no-unsafe-assignment": "warn",
+      "@typescript-eslint/no-unsafe-argument": "warn",
+      "@typescript-eslint/no-unsafe-member-access": "warn",
+      "@typescript-eslint/no-unsafe-call": "warn",
+      "@typescript-eslint/no-unsafe-return": "warn",
     },
   },
   // JSX 事件处理器用 async 是常态，关闭 attributes 维度的 void-return 检查。
