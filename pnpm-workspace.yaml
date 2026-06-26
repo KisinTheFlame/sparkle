@@ -1,0 +1,7 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# 允许这些依赖在安装时运行构建脚本。
+onlyBuiltDependencies:
+  - esbuild
