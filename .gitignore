@@ -10,3 +10,6 @@ build
 coverage
 .DS_Store
 .vscode
+packages/db/src/generated/prisma
+*.db
+*.db-journal

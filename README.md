@@ -14,6 +14,30 @@ packages/
   llm/           LLM 协议层类型（@sparkle/llm，零依赖）
   agent-runtime/ ReAct kernel / 工具 / effect（@sparkle/agent-runtime）
   claude-code/   Claude Code LLM provider + OAuth 登录（@sparkle/claude-code）
+  db/            Prisma + SQLite 持久化（@sparkle/db）
+```
+
+## @sparkle/db
+
+Prisma 7（`prisma-client` generator，ESM）+ `better-sqlite3` driver adapter。库地址走
+标准 `DATABASE_URL` 环境变量（默认 `file:./dev.db`）。内含 `PrismaOAuthDao`，实现
+`@sparkle/claude-code` 的 `OAuthDao` 接口，替换默认的 `InMemoryOAuthDao`：
+
+```ts
+import { createDbClient, PrismaOAuthDao } from "@sparkle/db";
+import { createClaudeCodeAuthService } from "@sparkle/claude-code";
+
+const database = createDbClient({ databaseUrl: "file:./dev.db" });
+const dao = new PrismaOAuthDao({ database, provider: "claude-code" });
+const { authService } = createClaudeCodeAuthService({ config, dao });
+```
+
+```bash
+# 生成 client（纯代码生成，不连库）
+pnpm --filter @sparkle/db db:generate
+# 迁移（默认 file:./dev.db，可用 DATABASE_URL 覆盖）
+pnpm --filter @sparkle/db db:migrate:dev
+DATABASE_URL="file:/abs/path/app.db" pnpm --filter @sparkle/db db:migrate:deploy
 ```
 
 ## @sparkle/claude-code

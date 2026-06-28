@@ -2,6 +2,10 @@ packages:
   - "apps/*"
   - "packages/*"
 
-# 允许这些依赖在安装时运行构建脚本。
+# 允许这些依赖在安装时运行构建脚本（原生模块编译 / 引擎拉取）。
 onlyBuiltDependencies:
+  - "@prisma/client"
+  - "@prisma/engines"
+  - better-sqlite3
   - esbuild
+  - prisma

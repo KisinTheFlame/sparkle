@@ -1,0 +1,43 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model OauthSession {
+  id            Int       @id @default(autoincrement())
+  provider      String
+  accountId     String?   @map("account_id")
+  email         String?
+  accessToken   String?   @map("access_token")
+  refreshToken  String?   @map("refresh_token")
+  idToken       String?   @map("id_token")
+  expiresAt     DateTime? @map("expires_at")
+  lastRefreshAt DateTime? @map("last_refresh_at")
+  status        String
+  lastError     String?   @map("last_error")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @map("updated_at")
+
+  @@unique([provider], map: "oauth_session_provider_uq")
+  @@index([status, updatedAt], map: "oauth_session_status_updated_at_idx")
+  @@map("oauth_session")
+}
+
+model OauthState {
+  id           Int       @id @default(autoincrement())
+  state        String    @unique(map: "oauth_state_state_uq")
+  codeVerifier String    @map("code_verifier")
+  redirectUri  String    @map("redirect_uri")
+  expiresAt    DateTime  @map("expires_at")
+  usedAt       DateTime? @map("used_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@index([expiresAt], map: "oauth_state_expires_at_idx")
+  @@map("oauth_state")
+}
