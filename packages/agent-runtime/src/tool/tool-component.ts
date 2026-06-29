@@ -9,7 +9,6 @@ export type { JsonSchema, Tool };
 export type ToolKind = "business" | "control";
 
 export type ToolContext = {
-  groupId?: string;
   systemPrompt?: string;
   messages?: LlmMessage[];
 };
@@ -87,7 +86,7 @@ export abstract class ZodToolComponent<TInput extends z.ZodTypeAny> implements T
     }
 
     try {
-      const result = await this.executeTyped(parsed.data, context);
+      const result = await this.executeTyped(parsed.data as z.infer<TInput>, context);
       if (typeof result === "string") {
         return { content: result };
       }

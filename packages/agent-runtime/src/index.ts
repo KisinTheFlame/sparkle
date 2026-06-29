@@ -1,4 +1,16 @@
-import type { AgentRuntime, TaskAgent } from "./agent-runtime.js";
+import type { TaskAgent } from "./agent-runtime.js";
+import {
+  AsyncTaskManager,
+  type AsyncTaskCompletion,
+  type AsyncTaskManagerDeps,
+  type AsyncTaskOutcome,
+} from "./async-task-manager.js";
+import {
+  AsyncTool,
+  formatAsyncTaskSubmitted,
+  type AsyncToolConfig,
+  type AsyncToolPreparation,
+} from "./tool/async-tool.js";
 import type {
   Effect,
   EffectHandler,
@@ -22,7 +34,9 @@ import {
   type App,
   type AppId,
   type AppStartupContext,
+  type AppStateStore,
   type CanInvokeResult,
+  type JsonValue,
 } from "./app/app.js";
 import { createAppSubtoolOwner } from "./app/app-subtool-owner.js";
 import { HELP_TOOL_NAME, HelpTool, type HelpToolDeps } from "./app/help-tool.js";
@@ -42,7 +56,6 @@ import {
 } from "./react-kernel.js";
 import {
   BaseTaskAgent,
-  TaskAgentRuntime,
   TaskEffectInterpreter,
   TerminateHandler,
   TERMINATE_EFFECT_TYPE,
@@ -75,9 +88,12 @@ import type { InvokeSubtoolOwner, SubtoolGuardResult } from "./tool/subtool-owne
 
 export {
   AppManager,
+  AsyncTaskManager,
+  AsyncTool,
   BaseLoopAgent,
   BaseTaskAgent,
   createAppSubtoolOwner,
+  formatAsyncTaskSubmitted,
   HandlerEffectInterpreter,
   HELP_TOOL_NAME,
   HelpTool,
@@ -88,18 +104,23 @@ export {
   REPLACE_LEADING_MESSAGES_EFFECT_TYPE,
   ReplaceLeadingMessagesHandler,
   SerialExecutor,
-  TaskAgentRuntime,
   TaskEffectInterpreter,
   TerminateHandler,
   TERMINATE_EFFECT_TYPE,
   ToolCatalog,
   ToolSet,
   ZodToolComponent,
-  type AgentRuntime,
   type App,
   type AppId,
   type AppStartupContext,
+  type AppStateStore,
+  type AsyncTaskCompletion,
+  type AsyncTaskManagerDeps,
+  type AsyncTaskOutcome,
+  type AsyncToolConfig,
+  type AsyncToolPreparation,
   type CanInvokeResult,
+  type JsonValue,
   type Effect,
   type EffectHandler,
   type EffectHandlerResult,
