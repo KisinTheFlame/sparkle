@@ -9,6 +9,44 @@ datasource db {
   provider = "sqlite"
 }
 
+model AppLog {
+  id        Int      @id @default(autoincrement())
+  traceId   String   @map("trace_id")
+  level     String
+  message   String
+  metadata  Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@index([traceId, createdAt], map: "app_log_trace_id_created_at_idx")
+  @@index([level, createdAt], map: "app_log_level_created_at_idx")
+  @@index([createdAt], map: "app_log_created_at_idx")
+  @@map("app_log")
+}
+
+model LlmChatCall {
+  id                    Int      @id @default(autoincrement())
+  requestId             String   @map("request_id")
+  seq                   Int      @default(1)
+  provider              String
+  model                 String
+  extension             Json?
+  status                String
+  requestPayload        Json     @map("request_payload")
+  responsePayload       Json?    @map("response_payload")
+  nativeRequestPayload  Json?    @map("native_request_payload")
+  nativeResponsePayload Json?    @map("native_response_payload")
+  error                 Json?
+  nativeError           Json?    @map("native_error")
+  latencyMs             Int?     @map("latency_ms")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@unique([requestId, seq], map: "llm_chat_call_request_id_seq_uq")
+  @@index([provider, model], map: "llm_chat_call_provider_model_idx")
+  @@index([createdAt], map: "llm_chat_call_created_at_idx")
+  @@map("llm_chat_call")
+}
+
 model OauthSession {
   id            Int       @id @default(autoincrement())
   provider      String

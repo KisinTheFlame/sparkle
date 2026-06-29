@@ -1,31 +1,5 @@
-import type { LlmProviderId } from "./contracts/llm.js";
 import { noopLogger } from "./logger.js";
 import type { Logger } from "./logger.js";
-import {
-  attachLlmProviderFailureContext,
-  getLlmProviderFailureContext,
-  toSerializableLlmNativeRecord,
-  toSerializableLlmNativeRecordOrNull,
-} from "./llm/provider.js";
-import type {
-  LlmProvider,
-  LlmProviderChatResult,
-  LlmProviderFailureContext,
-} from "./llm/provider.js";
-import type {
-  JsonSchema,
-  LlmChatRequest,
-  LlmChatResponsePayload,
-  LlmContentPart,
-  LlmImageContentPart,
-  LlmImageInput,
-  LlmMessage,
-  LlmTextContentPart,
-  LlmToolCall,
-  LlmToolChoice,
-  LlmUsage,
-  Tool,
-} from "./llm/types.js";
 import { createClaudeCodeProvider } from "./llm/providers/claude-code-provider.js";
 import type { LlmProviderConfig } from "./llm/providers/claude-code-provider.js";
 import { ClaudeCodeAuthStore } from "./llm/providers/claude-code-auth.js";
@@ -91,7 +65,6 @@ import type { ClaudeCodeAuthSecretStore } from "./auth/claude-code/secret-store.
 export {
   AUTH_PROVIDER_PAIRS,
   assertInternalAuthProvider,
-  attachLlmProviderFailureContext,
   buildClaudeCodeAuthorizeUrl,
   buildOAuthCallbackUrl,
   ClaudeCodeAuthStore,
@@ -101,7 +74,6 @@ export {
   createPkcePair,
   DefaultOAuthAuthService,
   exchangeCodeForTokens,
-  getLlmProviderFailureContext,
   InMemoryOAuthDao,
   noopLogger,
   PlainTextClaudeCodeAuthSecretStore,
@@ -110,8 +82,6 @@ export {
   SharedOAuthServiceCore,
   toInternalAuthProvider,
   toPublicAuthProvider,
-  toSerializableLlmNativeRecord,
-  toSerializableLlmNativeRecordOrNull,
   type ClaudeCodeAuth,
   type ClaudeCodeAuthModule,
   type ClaudeCodeAuthSecretStore,
@@ -127,22 +97,7 @@ export {
   type HandleClaudeCodeAuthCallbackInput,
   type HandleClaudeCodeAuthCallbackResult,
   type InternalAuthProvider,
-  type JsonSchema,
-  type LlmChatRequest,
-  type LlmChatResponsePayload,
-  type LlmContentPart,
-  type LlmImageContentPart,
-  type LlmImageInput,
-  type LlmMessage,
-  type LlmProvider,
-  type LlmProviderChatResult,
   type LlmProviderConfig,
-  type LlmProviderFailureContext,
-  type LlmProviderId,
-  type LlmTextContentPart,
-  type LlmToolCall,
-  type LlmToolChoice,
-  type LlmUsage,
   type Logger,
   type OAuthAuthService,
   type OAuthCallbackHandler,
@@ -160,6 +115,5 @@ export {
   type OAuthStatus,
   type OAuthTokenResponse,
   type PkcePair,
-  type Tool,
   type UpsertOAuthSessionInput,
 };

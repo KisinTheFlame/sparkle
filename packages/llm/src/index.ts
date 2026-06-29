@@ -83,3 +83,161 @@ export type Tool = {
   description?: string;
   parameters: JsonSchema;
 };
+
+// ───────────────────────────── Provider 契约 ─────────────────────────────
+// LLM provider 的执行契约：协议层之上、具体 provider 实现（如 @sparkle/claude-code）
+// 与编排层（@sparkle/llm-client）共同依赖的中立接口。放在 @sparkle/llm 避免重复定义、
+// 也避免 claude-code ↔ llm-client 互相依赖。
+
+/** LLM provider 标识。保留完整 union 以便 OAuth 层通用；目前仅实现 claude-code。 */
+export type LlmProviderId = "deepseek" | "openai" | "openai-codex" | "claude-code";
+
+/** LLM 用途标识：驱动 client 的多 attempt 路由与配置。AI 员工目前只有主 agent 一个用途。 */
+export type LlmUsageId = "agent";
+
+export type LlmToolChoice = "required" | "auto" | "none" | { tool_name: string };
+
+export type LlmUsage = {
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+  cacheHitTokens?: number;
+  cacheMissTokens?: number;
+};
+
+/** 进入 provider 边缘的图片输入（内存中的原始字节，发送前转 base64）。 */
+export type LlmImageInput = {
+  content: Buffer;
+  mimeType: string;
+  filename?: string;
+};
+
+export type LlmChatRequest = {
+  system?: string;
+  messages: LlmMessage[];
+  tools: Tool[];
+  toolChoice: LlmToolChoice;
+  model?: string;
+};
+
+export type LlmChatResponsePayload = {
+  provider: LlmProviderId;
+  model: string;
+  message: Extract<LlmMessage, { role: "assistant" }>;
+  usage?: LlmUsage;
+};
+
+export type LlmProviderChatResult = {
+  response: LlmChatResponsePayload;
+  nativeRequestPayload: Record<string, unknown>;
+  nativeResponsePayload: Record<string, unknown> | null;
+};
+
+export type LlmProviderFailureContext = {
+  nativeRequestPayload?: Record<string, unknown> | null;
+  nativeResponsePayload?: Record<string, unknown> | null;
+  nativeError?: Record<string, unknown> | null;
+};
+
+const LLM_PROVIDER_FAILURE_CONTEXT = Symbol("llmProviderFailureContext");
+
+type ErrorWithLlmProviderFailureContext = Error & {
+  [LLM_PROVIDER_FAILURE_CONTEXT]?: LlmProviderFailureContext;
+};
+
+export interface LlmProvider {
+  id: LlmProviderId;
+  isAvailable?(): Promise<boolean>;
+  chat(request: LlmChatRequest): Promise<LlmProviderChatResult>;
+  close?(): void | Promise<void>;
+}
+
+export function attachLlmProviderFailureContext<TError extends Error>(
+  error: TError,
+  context: LlmProviderFailureContext,
+): TError {
+  const target = error as ErrorWithLlmProviderFailureContext;
+  target[LLM_PROVIDER_FAILURE_CONTEXT] = {
+    nativeRequestPayload: context.nativeRequestPayload ?? null,
+    nativeResponsePayload: context.nativeResponsePayload ?? null,
+    nativeError: context.nativeError ?? null,
+  };
+  return error;
+}
+
+export function getLlmProviderFailureContext(error: unknown): LlmProviderFailureContext | null {
+  if (!(error instanceof Error)) {
+    return null;
+  }
+
+  const context = (error as ErrorWithLlmProviderFailureContext)[LLM_PROVIDER_FAILURE_CONTEXT];
+  return context ?? null;
+}
+
+export function toSerializableLlmNativeRecord(value: unknown): Record<string, unknown> {
+  const serialized = toSerializableLlmNativeValue(value);
+  if (isRecordValue(serialized)) {
+    return serialized;
+  }
+
+  return {
+    value: serialized,
+  };
+}
+
+export function toSerializableLlmNativeRecordOrNull(
+  value: unknown,
+): Record<string, unknown> | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  return toSerializableLlmNativeRecord(value);
+}
+
+function toSerializableLlmNativeValue(value: unknown): unknown {
+  try {
+    const serialized = JSON.stringify(value, (_key, currentValue) => {
+      if (currentValue instanceof Error) {
+        const withStatus = currentValue as Error & { status?: unknown; code?: unknown };
+        return {
+          name: currentValue.name,
+          message: currentValue.message,
+          stack: currentValue.stack,
+          status: typeof withStatus.status === "number" ? withStatus.status : undefined,
+          code: typeof withStatus.code === "string" ? withStatus.code : undefined,
+        };
+      }
+
+      if (currentValue instanceof Date) {
+        return currentValue.toISOString();
+      }
+
+      if (typeof currentValue === "bigint") {
+        return currentValue.toString();
+      }
+
+      if (typeof currentValue === "function") {
+        return `[Function ${currentValue.name || "anonymous"}]`;
+      }
+
+      if (typeof currentValue === "symbol") {
+        return currentValue.toString();
+      }
+
+      return currentValue;
+    });
+
+    if (serialized === undefined) {
+      return "undefined";
+    }
+
+    return JSON.parse(serialized) as unknown;
+  } catch {
+    return String(value);
+  }
+}
+
+function isRecordValue(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}

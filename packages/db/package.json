@@ -24,6 +24,9 @@
     "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@prisma/client": "^7.6.0",
     "@sparkle/claude-code": "workspace:*",
+    "@sparkle/llm-client": "workspace:*",
+    "@sparkle/logger": "workspace:*",
+    "@sparkle/shared": "workspace:*",
     "better-sqlite3": "^12.11.1"
   },
   "devDependencies": {

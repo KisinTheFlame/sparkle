@@ -8,10 +8,9 @@
     "strict": true,
     "noEmit": true,
     "paths": {
-      "@sparkle/claude-code": ["./../claude-code/src/index.ts"],
-      "@sparkle/llm-client": ["./../llm-client/src/index.ts"],
-      "@sparkle/logger": ["./../logger/src/index.ts"],
-      "@sparkle/shared/*": ["./../shared/src/*"]
+      "@sparkle/shared/*": ["./../shared/src/*"],
+      "@sparkle/llm": ["./../llm/src/index.ts"],
+      "@sparkle/logger": ["./../logger/src/index.ts"]
     }
   },
   "include": ["src"]

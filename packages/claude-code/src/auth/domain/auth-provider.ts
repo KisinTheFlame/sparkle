@@ -1,5 +1,5 @@
 import { type AuthProvider } from "@sparkle/shared/schemas/auth";
-import type { LlmProviderId } from "../../contracts/llm.js";
+import type { LlmProviderId } from "@sparkle/llm";
 import { BizError } from "@sparkle/shared/errors";
 
 export type InternalAuthProvider = Extract<LlmProviderId, "openai-codex" | "claude-code">;

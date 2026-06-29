@@ -1,17 +1,15 @@
 import {
   attachLlmProviderFailureContext,
+  imageContentToBase64,
   toSerializableLlmNativeRecord,
   toSerializableLlmNativeRecordOrNull,
+  type JsonSchema,
+  type LlmChatRequest,
+  type LlmChatResponsePayload,
+  type LlmContentPart,
   type LlmProvider,
   type LlmProviderChatResult,
-} from "../provider.js";
-import type {
-  JsonSchema,
-  LlmChatRequest,
-  LlmChatResponsePayload,
-  LlmContentPart,
-} from "../types.js";
-import { imageContentToBase64 } from "@sparkle/llm";
+} from "@sparkle/llm";
 import { BizError } from "@sparkle/shared/errors";
 import { noopLogger, type Logger } from "../../logger.js";
 import { ClaudeCodeAuthStore } from "./claude-code-auth.js";

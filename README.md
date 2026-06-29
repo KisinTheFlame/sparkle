@@ -11,11 +11,26 @@ apps/
   web/        前端（Vite + React + Tailwind）
 packages/
   shared/        跨端共享的 schema、错误与工具（@sparkle/shared）
-  llm/           LLM 协议层类型（@sparkle/llm，零依赖）
+  llm/           LLM 协议层类型 + provider 契约（@sparkle/llm，零依赖）
   agent-runtime/ ReAct kernel / 工具 / effect（@sparkle/agent-runtime）
   claude-code/   Claude Code LLM provider + OAuth 登录（@sparkle/claude-code）
+  llm-client/    LLM 编排客户端：多 attempt 路由 / 重试 / 调用落库 / metric（@sparkle/llm-client）
+  logger/        结构化日志：trace 上下文 + stdout/db sink（@sparkle/logger）
+  config/        YAML + zod 配置加载（@sparkle/config）
+  server-http/   HTTP 错误归一 + Fastify 路由助手（@sparkle/server-http）
   db/            Prisma + SQLite 持久化（@sparkle/db）
 ```
+
+## 后端基础设施分包
+
+复用自 kagami 的 `server-core`，但拆成小包按需组合：
+
+- **@sparkle/logger** — `AppLogger` + AsyncLocalStorage trace 上下文 + `StdoutLogSink` / `DbLogSink`。`LogDao` 端口在此，Prisma 实现 `PrismaLogDao` 在 `@sparkle/db`。
+- **@sparkle/llm-client** — 编排 `LlmProvider`（来自 `@sparkle/llm` 的契约）：按 usage 多 attempt 路由、重试、`onSettled` 观测、调用落库（`LlmChatCallDao` 端口 + `PrismaLlmChatCallDao` 实现）。`MetricService` 走端口 + `NoopMetricService`，完整 metric 模块留二期。
+- **@sparkle/config** — sparkle 专属精简 schema（`server.{port,databaseUrl}` + `llm.{timeoutMs, claudeCodeAuth, providers.claudeCode, usages}`），保留 yaml + zod loader 机制。
+- **@sparkle/server-http** — `toHttpErrorResponse` + `registerQueryRoute/ParamRoute/CommandRoute`。
+
+依赖方向：`shared` ← `llm` ← {`claude-code`, `llm-client`, `config`}；`logger` ← `llm-client`；`db` 实现各领域包的 DAO 端口。
 
 ## @sparkle/db
 
