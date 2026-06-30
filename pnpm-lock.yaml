@@ -38,6 +38,27 @@ importers:
 
   apps/agent:
     dependencies:
+      '@sparkle/claude-code':
+        specifier: workspace:*
+        version: link:../../packages/claude-code
+      '@sparkle/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@sparkle/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@sparkle/llm':
+        specifier: workspace:*
+        version: link:../../packages/llm
+      '@sparkle/llm-client':
+        specifier: workspace:*
+        version: link:../../packages/llm-client
+      '@sparkle/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
+      '@sparkle/server-http':
+        specifier: workspace:*
+        version: link:../../packages/server-http
       '@sparkle/shared':
         specifier: workspace:*
         version: link:../../packages/shared

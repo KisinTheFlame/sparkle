@@ -1,0 +1,40 @@
+# 复制为 config.yaml 后按需修改。config.yaml 已被 .gitignore 忽略。
+server:
+  # 后端 HTTP 端口
+  port: 20003
+
+  # SQLite 库地址；相对路径按 config.yaml 所在目录解析为绝对 file: URL。
+  # 与 @sparkle/db 的迁移共用同一库文件（迁移时 DATABASE_URL 指向同一路径）。
+  databaseUrl: "file:./data/sparkle.db"
+
+  llm:
+    # 单次 LLM 请求超时
+    timeoutMs: 45000
+
+    # Claude Code OAuth 登录配置
+    claudeCodeAuth:
+      enabled: true
+      # 对外可访问的基址（用于拼回调地址展示）
+      publicBaseUrl: "http://localhost:20004"
+      oauthRedirectPath: "/callback"
+      oauthStateTtlMs: 600000
+      refreshLeewayMs: 7200000
+      refreshCheckIntervalMs: 300000
+
+    providers:
+      claudeCode:
+        baseUrl: "https://api.anthropic.com"
+        models:
+          - "claude-sonnet-4-20250514"
+        keepAliveReplayIntervalMinutes: 30
+
+    # 各用途的多 attempt 路由：按顺序尝试，每个 attempt 可重试 times 次。
+    usages:
+      agent:
+        attempts:
+          - provider: "claude-code"
+            model: "claude-sonnet-4-20250514"
+            times: 1
+
+  # 各 App 的配置切片（key 为 App.id），由各 App 自己的 schema 校验。
+  apps: {}

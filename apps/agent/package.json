@@ -10,6 +10,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@sparkle/claude-code": "workspace:*",
+    "@sparkle/config": "workspace:*",
+    "@sparkle/db": "workspace:*",
+    "@sparkle/llm": "workspace:*",
+    "@sparkle/llm-client": "workspace:*",
+    "@sparkle/logger": "workspace:*",
+    "@sparkle/server-http": "workspace:*",
     "@sparkle/shared": "workspace:*",
     "fastify": "^5.6.2",
     "zod": "^3.24.4"

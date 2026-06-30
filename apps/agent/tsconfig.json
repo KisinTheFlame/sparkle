@@ -8,7 +8,14 @@
     "strict": true,
     "noEmit": true,
     "paths": {
-      "@sparkle/shared/*": ["./../../packages/shared/src/*"]
+      "@sparkle/shared/*": ["./../../packages/shared/src/*"],
+      "@sparkle/llm": ["./../../packages/llm/src/index.ts"],
+      "@sparkle/logger": ["./../../packages/logger/src/index.ts"],
+      "@sparkle/config": ["./../../packages/config/src/index.ts"],
+      "@sparkle/server-http": ["./../../packages/server-http/src/index.ts"],
+      "@sparkle/llm-client": ["./../../packages/llm-client/src/index.ts"],
+      "@sparkle/claude-code": ["./../../packages/claude-code/src/index.ts"],
+      "@sparkle/db": ["./../../packages/db/src/index.ts"]
     }
   },
   "include": ["src"]

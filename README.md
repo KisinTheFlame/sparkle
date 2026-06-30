@@ -21,6 +21,23 @@ packages/
   db/            Prisma + SQLite 持久化（@sparkle/db）
 ```
 
+## 运行 agent 后端
+
+`apps/agent` 是首个组装根：`loadStaticConfig` → 初始化 logger（stdout + db sink）→
+`createDbClient` → 装配 claude-code OAuth（`PrismaOAuthDao` 持久化）+ provider +
+`llm-client` → Fastify 路由 + 优雅退出。
+
+```bash
+cp config.yaml.example config.yaml          # 按需修改
+pnpm --filter @sparkle/db db:migrate:deploy # 建表（DATABASE_URL 默认 file:./dev.db，
+                                            #   生产用 config 里的 databaseUrl 覆盖）
+pnpm --filter @sparkle/agent dev            # 或 build 后 pnpm --filter @sparkle/agent start
+```
+
+端点：`GET /health`、`GET /auth/claude-code/status`、`POST /auth/claude-code/{login,logout,refresh}`、
+`POST /llm/chat`（`{ system?, message }`，需先完成 claude-code 登录）。OAuth 回调在本地
+`127.0.0.1:54545/callback` 接收。
+
 ## 后端基础设施分包
 
 复用自 kagami 的 `server-core`，但拆成小包按需组合：
