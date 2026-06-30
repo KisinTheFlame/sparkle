@@ -23,7 +23,8 @@ async function main(): Promise<void> {
 
   const server = buildAgentServer({ config });
 
-  await server.callbackServer.start();
+  // 不在 boot 时常开回调服务器：createLoginUrl 会按需 beginAuthorizationWindow，
+  // 只在登录窗口期占用 127.0.0.1:54545，用完（回调或 TTL 到期）自动释放。
   await server.app.listen({ port: config.server.port, host: "0.0.0.0" });
   logger.info("agent server started", {
     event: "server.started",

@@ -35,8 +35,20 @@ pnpm --filter @sparkle/agent dev            # 或 build 后 pnpm --filter @spark
 ```
 
 端点：`GET /health`、`GET /auth/claude-code/status`、`POST /auth/claude-code/{login,logout,refresh}`、
-`POST /llm/chat`（`{ system?, message }`，需先完成 claude-code 登录）。OAuth 回调在本地
-`127.0.0.1:54545/callback` 接收。
+`POST /llm/chat`（`{ system?, message }`，需先完成 claude-code 登录）。OAuth 回调由
+`createLoginUrl` 按需在 `127.0.0.1:54545/callback` 起临时服务接收，授权完成或 TTL 到期后自动释放。
+
+### 前端登录（apps/web）
+
+`apps/web` 有一个 Claude Code 登录面板（状态 / 登录 / 登出 + 授权轮询）。dev 期 Vite 把
+`/auth`、`/llm`、`/health` 代理到 agent 后端（`localhost:20003`），免跨域：
+
+```bash
+pnpm --filter @sparkle/agent dev   # 后端 :20003
+pnpm --filter @sparkle/web dev     # 前端 :5173，点「登录」→ 新标签页授权 → 面板自动刷新
+```
+
+授权重定向落在 `localhost:54545`，需在跑后端的同一台机器上完成。
 
 ## 后端基础设施分包
 
