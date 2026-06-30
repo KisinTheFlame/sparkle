@@ -10,7 +10,7 @@ import type { LlmUsageId } from "@sparkle/llm";
 
 const DEFAULT_LLM_TIMEOUT_MS = 45_000;
 const DEFAULT_CLAUDE_CODE_BASE_URL = "https://api.anthropic.com";
-const DEFAULT_CLAUDE_CODE_MODEL = "claude-sonnet-4-20250514";
+const DEFAULT_CLAUDE_CODE_MODEL = "claude-opus-4-8";
 const DEFAULT_CLAUDE_CODE_KEEP_ALIVE_REPLAY_INTERVAL_MINUTES = 30;
 const DEFAULT_CLAUDE_CODE_AUTH_ENABLED = true;
 const DEFAULT_CLAUDE_CODE_AUTH_REDIRECT_PATH = "/callback";

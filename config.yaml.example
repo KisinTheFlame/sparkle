@@ -31,7 +31,7 @@ server:
       claudeCode:
         baseUrl: "https://api.anthropic.com"
         models:
-          - "claude-sonnet-4-20250514"
+          - "claude-opus-4-8"
         keepAliveReplayIntervalMinutes: 30
 
     # 各用途的多 attempt 路由：按顺序尝试，每个 attempt 可重试 times 次。
@@ -39,7 +39,7 @@ server:
       agent:
         attempts:
           - provider: "claude-code"
-            model: "claude-sonnet-4-20250514"
+            model: "claude-opus-4-8"
             times: 1
 
   # 各 App 的配置切片（key 为 App.id），由各 App 自己的 schema 校验。
