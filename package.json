@@ -5,6 +5,14 @@
   "packageManager": "pnpm@10.18.3",
   "scripts": {
     "build": "pnpm -r build",
+    "app:deploy": "bash ./scripts/deploy.sh",
+    "app:stop": "pnpm exec pm2 stop ecosystem.config.cjs",
+    "app:restart": "pnpm exec pm2 restart ecosystem.config.cjs",
+    "app:status": "pnpm exec pm2 status",
+    "app:logs": "pnpm exec pm2 logs",
+    "db:migrate:dev": "DATABASE_URL=\"$(node scripts/read-config.mjs server.databaseUrl)\" pnpm --filter @sparkle/db exec prisma migrate dev",
+    "db:migrate:deploy": "DATABASE_URL=\"$(node scripts/read-config.mjs server.databaseUrl)\" pnpm --filter @sparkle/db exec prisma migrate deploy",
+    "db:migrate:status": "DATABASE_URL=\"$(node scripts/read-config.mjs server.databaseUrl)\" pnpm --filter @sparkle/db exec prisma migrate status",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r --if-present test",
     "lint": "eslint .",
@@ -19,8 +27,10 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "pm2": "^7.0.3",
     "prettier": "^3.6.2",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.48.0"
+    "typescript-eslint": "^8.48.0",
+    "yaml": "^2.9.0"
   }
 }

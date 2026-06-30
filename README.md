@@ -50,6 +50,29 @@ pnpm --filter @sparkle/web dev     # 前端 :5173，点「登录」→ 新标签
 
 授权重定向落在 `localhost:54545`，需在跑后端的同一台机器上完成。
 
+## 服务管理（PM2）
+
+参考 kagami:用 PM2 守护三个进程,`ecosystem.config.cjs` 每服务一项。
+
+| 进程 | 端口 | 说明 |
+|---|---|---|
+| `sparkle-agent` | 20003 | LLM/OAuth 后端 |
+| `sparkle-console` | 3002 | 后端(当前为 health 桩)|
+| `sparkle-web` | 4173 | `vite preview` 托管 `apps/web/dist`,反代 `/auth`·`/llm`·`/health` 到 agent |
+
+```bash
+pnpm app:deploy            # 全量:构建 → 按需迁移 → pm2 startOrReload → save
+pnpm app:deploy agent      # 单服务:只重建并重载该服务,不迁移、不动其它进程
+pnpm app:stop              # 停所有
+pnpm app:restart           # 重启所有
+pnpm app:status            # pm2 状态
+pnpm app:logs              # pm2 日志
+```
+
+迁移走 `scripts/read-config.mjs` 从 `config.yaml` 取 `server.databaseUrl`,与运行时同库;
+无待应用迁移时跳过(避免 SQLite WAL 下与运行进程争锁),确有迁移时先停 `sparkle-agent`
+腾出独占访问再迁。前端访问 **http://localhost:4173**。
+
 ## 后端基础设施分包
 
 复用自 kagami 的 `server-core`，但拆成小包按需组合：
