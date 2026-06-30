@@ -1,8 +1,14 @@
 # 复制为 config.yaml 后按需修改。config.yaml 已被 .gitignore 忽略。
-server:
-  # 后端 HTTP 端口
-  port: 20003
 
+# 服务寻址单源：各进程的监听端口取自自己的条目（一律绑 0.0.0.0），
+# 别的服务/前端按 host:port 反查上游。ecosystem.config.cjs 不再持任何端口。
+# host 是「如何 reach 它」（reachable host），不是绑定地址。
+services:
+  agent: { host: localhost, port: 20003 } # sparkle-agent（LLM / OAuth 后端）
+  console: { host: localhost, port: 20006 } # sparkle-console（管理台后端）
+  web: { host: localhost, port: 4173 } # sparkle-web（前门：vite preview 静态托管 + 反代）
+
+server:
   # SQLite 库地址；相对路径按 config.yaml 所在目录解析为绝对 file: URL。
   # 与 @sparkle/db 的迁移共用同一库文件（迁移时 DATABASE_URL 指向同一路径）。
   databaseUrl: "file:./data/sparkle.db"
@@ -14,8 +20,8 @@ server:
     # Claude Code OAuth 登录配置
     claudeCodeAuth:
       enabled: true
-      # 对外可访问的基址（用于拼回调地址展示）
-      publicBaseUrl: "http://localhost:20004"
+      # 对外可访问的基址；缺省派生为 http://localhost:${services.web.port}，可显式覆盖。
+      # publicBaseUrl: "http://localhost:4173"
       oauthRedirectPath: "/callback"
       oauthStateTtlMs: 600000
       refreshLeewayMs: 7200000

@@ -52,13 +52,27 @@ pnpm --filter @sparkle/web dev     # 前端 :5173，点「登录」→ 新标签
 
 ## 服务管理（PM2）
 
-参考 kagami:用 PM2 守护三个进程,`ecosystem.config.cjs` 每服务一项。
+参考 kagami:用 PM2 守护三个进程,`ecosystem.config.cjs` 每服务一项。**端口/上游地址不在
+ecosystem 里**——服务寻址单源,全部取自 `config.yaml` 的 `services` 块(见下文)。
 
-| 进程 | 端口 | 说明 |
+| 进程 | 默认端口 | 说明 |
 |---|---|---|
-| `sparkle-agent` | 20003 | LLM/OAuth 后端 |
-| `sparkle-console` | 3002 | 后端(当前为 health 桩)|
-| `sparkle-web` | 4173 | `vite preview` 托管 `apps/web/dist`,反代 `/auth`·`/llm`·`/health` 到 agent |
+| `sparkle-agent` | `services.agent.port`（20003） | LLM/OAuth 后端 |
+| `sparkle-console` | `services.console.port`（20006） | 后端(当前为 health 桩)|
+| `sparkle-web` | `services.web.port`（4173） | `vite preview` 托管 `apps/web/dist`,反代 `/auth`·`/llm`·`/health` 到 `services.agent` |
+
+### 服务寻址单源（config.yaml `services`）
+
+```yaml
+services:
+  agent: { host: localhost, port: 20003 }
+  console: { host: localhost, port: 20006 }
+  web: { host: localhost, port: 4173 }
+```
+
+各进程从**自己的条目**取监听端口(一律绑 `0.0.0.0`),从**别人的条目**按 `host:port` 反查上游
+(web 的 Vite proxy 上游 = `services.agent`)。`host` 是「如何 reach 它」,不是绑定地址。改端口只动
+config.yaml 一处;`claudeCodeAuth.publicBaseUrl` 缺省也派生自 `services.web.port`。
 
 ```bash
 pnpm app:deploy            # 全量:构建 → 按需迁移 → pm2 startOrReload → save

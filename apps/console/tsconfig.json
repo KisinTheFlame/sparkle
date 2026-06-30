@@ -8,7 +8,9 @@
     "strict": true,
     "noEmit": true,
     "paths": {
-      "@sparkle/shared/*": ["./../../packages/shared/src/*"]
+      "@sparkle/shared/*": ["./../../packages/shared/src/*"],
+      "@sparkle/config": ["./../../packages/config/src/index.ts"],
+      "@sparkle/llm": ["./../../packages/llm/src/index.ts"]
     }
   },
   "include": ["src"]

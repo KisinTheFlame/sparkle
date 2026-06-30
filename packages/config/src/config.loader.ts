@@ -8,13 +8,11 @@ import { BizError } from "@sparkle/shared/errors";
 import { LlmProviderIdSchema } from "@sparkle/shared/schemas/llm-chat";
 import type { LlmUsageId } from "@sparkle/llm";
 
-const DEFAULT_PORT = 20003;
 const DEFAULT_LLM_TIMEOUT_MS = 45_000;
 const DEFAULT_CLAUDE_CODE_BASE_URL = "https://api.anthropic.com";
 const DEFAULT_CLAUDE_CODE_MODEL = "claude-sonnet-4-20250514";
 const DEFAULT_CLAUDE_CODE_KEEP_ALIVE_REPLAY_INTERVAL_MINUTES = 30;
 const DEFAULT_CLAUDE_CODE_AUTH_ENABLED = true;
-const DEFAULT_CLAUDE_CODE_AUTH_PUBLIC_BASE_URL = "http://localhost:20004";
 const DEFAULT_CLAUDE_CODE_AUTH_REDIRECT_PATH = "/callback";
 const DEFAULT_CLAUDE_CODE_AUTH_STATE_TTL_MS = 10 * 60 * 1000;
 const DEFAULT_CLAUDE_CODE_REFRESH_LEEWAY_MS = 7_200_000;
@@ -32,6 +30,23 @@ const PositiveIntSchema = z.preprocess(value => {
 }, z.number().int().positive());
 const NonEmptyStringArraySchema = z.array(NonEmptyStringSchema).min(1);
 
+// 服务寻址单源（参考 kagami issue #162）：host 是「别的服务/前端如何 reach 它」，
+// 不是绑定地址——各进程一律绑 0.0.0.0，监听端口取自自己的条目。
+const ServiceEndpointSchema = z
+  .object({
+    host: NonEmptyStringSchema,
+    port: PositiveIntSchema,
+  })
+  .strict();
+
+const ServicesSchema = z
+  .object({
+    agent: ServiceEndpointSchema,
+    console: ServiceEndpointSchema,
+    web: ServiceEndpointSchema,
+  })
+  .strict();
+
 const LlmUsageAttemptConfigSchema = z.object({
   provider: LlmProviderIdSchema,
   model: NonEmptyStringSchema,
@@ -43,15 +58,16 @@ const LlmUsageConfigSchema = z.object({
 });
 
 const ConfigSchema = z.object({
+  services: ServicesSchema,
   server: z.object({
-    port: PositiveIntSchema.default(DEFAULT_PORT),
     databaseUrl: DatabaseUrlSchema,
     llm: z.object({
       timeoutMs: PositiveIntSchema.default(DEFAULT_LLM_TIMEOUT_MS),
       claudeCodeAuth: z
         .object({
           enabled: z.boolean().default(DEFAULT_CLAUDE_CODE_AUTH_ENABLED),
-          publicBaseUrl: UrlSchema.default(DEFAULT_CLAUDE_CODE_AUTH_PUBLIC_BASE_URL),
+          // 缺省时在 loadStaticConfig 派生为 http://localhost:${services.web.port}（前门）。
+          publicBaseUrl: UrlSchema.optional(),
           oauthRedirectPath: NonEmptyStringSchema.default(DEFAULT_CLAUDE_CODE_AUTH_REDIRECT_PATH),
           oauthStateTtlMs: PositiveIntSchema.default(DEFAULT_CLAUDE_CODE_AUTH_STATE_TTL_MS),
           refreshLeewayMs: PositiveIntSchema.default(DEFAULT_CLAUDE_CODE_REFRESH_LEEWAY_MS),
@@ -89,6 +105,9 @@ const ConfigSchema = z.object({
 });
 
 type RawConfig = z.infer<typeof ConfigSchema>;
+type RawClaudeCodeAuth = RawConfig["server"]["llm"]["claudeCodeAuth"];
+
+export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>;
 
 export type LlmUsageAttemptConfig = {
   provider: z.infer<typeof LlmProviderIdSchema>;
@@ -102,7 +121,8 @@ export type LlmUsageConfig = {
 
 export type Config = Omit<RawConfig, "server"> & {
   server: Omit<RawConfig["server"], "llm"> & {
-    llm: Omit<RawConfig["server"]["llm"], "usages"> & {
+    llm: Omit<RawConfig["server"]["llm"], "usages" | "claudeCodeAuth"> & {
+      claudeCodeAuth: Omit<RawClaudeCodeAuth, "publicBaseUrl"> & { publicBaseUrl: string };
       usages: Record<LlmUsageId, LlmUsageConfig>;
     };
   };
@@ -158,6 +178,14 @@ export async function loadStaticConfig(options: LoadStaticConfigOptions = {}): P
       databaseUrl: resolveSqliteFileUrl(configDir, data.server.databaseUrl),
       llm: {
         ...data.server.llm,
+        claudeCodeAuth: {
+          ...data.server.llm.claudeCodeAuth,
+          // 前门 origin 默认派生自 services.web 端口（host 固定 localhost：
+          // reachable host ≠ 浏览器可访问的 public origin）；可被显式覆盖。
+          publicBaseUrl:
+            data.server.llm.claudeCodeAuth.publicBaseUrl ??
+            `http://localhost:${data.services.web.port}`,
+        },
         usages: {
           agent: data.server.llm.usages.agent,
         },
