@@ -18,14 +18,27 @@ import {
   type ClaudeCodeAuthModule,
 } from "@sparkle/claude-code";
 import { createLlmClient, NoopMetricService, type LlmClient } from "@sparkle/llm-client";
+import { InMemoryQueue, ToolCatalog } from "@sparkle/agent-runtime";
+import type { AgentEvent } from "./agent/events/event.js";
+import { InMemoryAgentContext } from "./agent/context/in-memory-agent-context.js";
+import { EndTool, END_TOOL_NAME } from "./agent/tools/end.tool.js";
+import { createRootEffectInterpreter } from "./agent/runtime/root-effect-interpreter.js";
+import { createAgentReActModel } from "./agent/model/llm-client-react-model.js";
+import { renderMainSystemPrompt } from "./agent/system-prompt/render.js";
+import { RootLoopAgent } from "./agent/runtime/root-loop-agent.js";
+import { registerAgentRoutes } from "./agent/http/agent-routes.js";
 
 const SERVICE_NAME = "agent";
+
+/** End 工具单轮最长挂起时长：到点自唤醒一次让 loop 再跑一轮（每轮一次性超时，非固定间隔）。 */
+const AGENT_WAIT_MAX_MS = 10 * 60 * 1000;
 
 export type AgentServer = {
   app: FastifyInstance;
   callbackServer: ClaudeCodeAuthModule["callbackServer"];
   llmClient: LlmClient;
   database: Database;
+  rootAgent: RootLoopAgent;
   close(): Promise<void>;
 };
 
@@ -75,6 +88,23 @@ export function buildAgentServer({ config }: { config: Config }): AgentServer {
     usages: config.server.llm.usages,
   });
 
+  // ── agent 主循环组装 ──────────────────────────────────────────────
+  // 单一全局常驻 agent：事件 Queue 是输入 seam（本轮由 debug 端点喂，未来接飞书），
+  // 内存 context 存对话，End 工具是唯一工具（= wait，挂起等事件）。
+  const agentEventQueue = new InMemoryQueue<AgentEvent>();
+  const agentContext = new InMemoryAgentContext({ systemPrompt: renderMainSystemPrompt() });
+  const agentTools = new ToolCatalog([new EndTool({ maxWaitMs: AGENT_WAIT_MAX_MS })]).pick([
+    END_TOOL_NAME,
+  ]);
+  const rootAgent = new RootLoopAgent({
+    model: createAgentReActModel({ llmClient }),
+    interpreter: createRootEffectInterpreter({ queue: agentEventQueue }),
+    context: agentContext,
+    queue: agentEventQueue,
+    tools: agentTools,
+    logger,
+  });
+
   const app = Fastify();
 
   app.setErrorHandler((error, request, reply) => {
@@ -111,12 +141,17 @@ export function buildAgentServer({ config }: { config: Config }): AgentServer {
     return { reply: response.message.content, model: response.model };
   });
 
+  // 主循环 HTTP：POST /agent/event（投递事件唤醒 loop，debug 注入口，未来接飞书）、
+  // GET /agent/transcript（读内存对话验证 loop 真的转了）。
+  registerAgentRoutes(app, { queue: agentEventQueue, context: agentContext });
+
   const close = async (): Promise<void> => {
+    await rootAgent.stop();
     await app.close();
     await callbackServer.stop();
     await provider.close?.();
     await closeDb(database);
   };
 
-  return { app, callbackServer, llmClient, database, close };
+  return { app, callbackServer, llmClient, database, rootAgent, close };
 }

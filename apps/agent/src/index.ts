@@ -17,7 +17,10 @@ async function main(): Promise<void> {
   // 日志 runtime 需在任何业务日志前初始化。db sink 把日志落进 app_log 表。
   const logDatabase = createDbClient({ databaseUrl: config.server.databaseUrl });
   initLoggerRuntime({
-    sinks: [new StdoutLogSink(), new DbLogSink({ logDao: new PrismaLogDao({ database: logDatabase }) })],
+    sinks: [
+      new StdoutLogSink(),
+      new DbLogSink({ logDao: new PrismaLogDao({ database: logDatabase }) }),
+    ],
   });
   const logger = new AppLogger({ source: "bootstrap" });
 
@@ -29,6 +32,13 @@ async function main(): Promise<void> {
   logger.info("agent server started", {
     event: "server.started",
     port: config.services.agent.port,
+  });
+
+  // agent 主循环：fire-and-forget 常驻运行。start() 会一直 await 内部 runLoop，
+  // 所以这里不能 await——崩了只记日志，不影响 HTTP 服务（优雅降级）。
+  // 优雅停机由 server.close() → rootAgent.stop() 负责。
+  void server.rootAgent.start().catch((error: unknown) => {
+    logger.errorWithCause("agent loop crashed", error, { event: "agent.loop.crashed" });
   });
 
   let isShuttingDown = false;
