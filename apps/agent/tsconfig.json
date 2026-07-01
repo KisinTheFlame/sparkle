@@ -9,6 +9,7 @@
     "noEmit": true,
     "paths": {
       "@sparkle/shared/*": ["./../../packages/shared/src/*"],
+      "@sparkle/agent-runtime": ["./../../packages/agent-runtime/src/index.ts"],
       "@sparkle/llm": ["./../../packages/llm/src/index.ts"],
       "@sparkle/logger": ["./../../packages/logger/src/index.ts"],
       "@sparkle/config": ["./../../packages/config/src/index.ts"],

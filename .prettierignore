@@ -4,3 +4,5 @@ dist
 build
 coverage
 packages/db/src/generated/prisma
+# Handlebars prompt templates are prose content, not code — keep prettier off them.
+*.hbs
