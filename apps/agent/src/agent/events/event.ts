@@ -3,9 +3,9 @@
  * enqueue 进事件 Queue，loop 在每轮开头 drain 它们。
  *
  * - `user_message`：外部用户消息，drain 时转成一条 user message 进 context。
- * - `wake`：纯唤醒信号（来自 End 工具的 maxWaitMs 超时定时器、或优雅停机）。
- *   drain 时不产生任何 context 变更——它的唯一作用是让阻塞在 Queue 上的
- *   `wait_for_event` 解除阻塞，使本轮收尾、loop 进入下一轮。
+ * - `wake`：纯唤醒信号（当前仅来自优雅停机 stop()）。drain 时不产生任何 context
+ *   变更——它的唯一作用是让阻塞在事件 Queue 上的 runOnce 解除阻塞，使 loop 能在
+ *   stopRequested=true 后及时退出。
  */
 export type AgentEvent =
   | { readonly type: "user_message"; readonly content: string }

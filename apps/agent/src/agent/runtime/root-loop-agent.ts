@@ -82,10 +82,10 @@ export class RootLoopAgent extends BaseLoopAgent<RootAgentUsage, RootAgentComple
 
   protected async runOnce(): Promise<void> {
     this.drainEvents();
-    // 核心不变量：只有存在"未处理的用户输入"时才跑 LLM 轮。否则阻塞等下一个事件。
-    // 这一条同时挡掉三类空转烧钱：boot 无输入、心跳/定时 wake（无新输入）、以及某轮
-    // 没产出 wait 效果就 commit（如模型给 End 传了多余参数被拒）导致的热循环——它们
-    // 都不会满足 pendingUserInput，于是不会立刻再调 LLM。
+    // 核心不变量：只有存在"未处理的用户输入"时才跑 LLM 轮，否则阻塞等下一个事件。
+    // 这里（commit 之后）是 loop 唯一的挂起点——工具内不阻塞，所以每轮的回复都能在
+    // 挂起前就 commit、被 transcript 看到。该不变量同时挡掉空转烧钱：boot 无输入、
+    // 上一轮已响应完（pendingUserInput 已清）、stop 塞的 wake（无新输入）都会在此 block。
     if (!this.pendingUserInput) {
       await this.queue.waitNonEmpty();
       return;
