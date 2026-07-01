@@ -53,6 +53,11 @@ curl -XPOST localhost:20003/agent/event -H 'content-type: application/json' -d '
 curl localhost:20003/agent/transcript
 ```
 
+深入文档:
+- [参考:Agent 主循环](docs/reference-agent-main-loop.md) —— 端点与模块公开面
+- [解释:主循环的设计](docs/explanation-agent-main-loop.md) —— 为什么这么设计、与 kagami 的关系、收敛路线
+- [How-to:运行并驱动 agent](docs/howto-run-and-drive-agent.md) —— 跑起来、投递事件、验证
+
 ### 前端登录（apps/web）
 
 `apps/web` 有一个 Claude Code 登录面板（状态 / 登录 / 登出 + 授权轮询）。dev 期 Vite 把
