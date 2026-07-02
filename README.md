@@ -38,6 +38,26 @@ pnpm --filter @sparkle/agent dev            # 或 build 后 pnpm --filter @spark
 `POST /llm/chat`（`{ system?, message }`，需先完成 claude-code 登录）。OAuth 回调由
 `createLoginUrl` 按需在 `127.0.0.1:54545/callback` 起临时服务接收，授权完成或 TTL 到期后自动释放。
 
+### agent 主循环
+
+进程启动后 fire-and-forget 拉起一个常驻的 `RootLoopAgent`（"AI 员工"）：每轮 drain
+事件 → 有未处理用户输入才跑一轮 ReAct → 模型调 `End` 工具挂起等下一个事件（无轮询）。
+本轮是 walking skeleton：内存对话、单一 `End` 工具、事件从 debug 端点进（未来接飞书）。
+
+- `POST /agent/event`（`{ type: "user_message", content }`）：投递消息唤醒 loop。
+- `GET /agent/transcript`：读内存对话，验证 loop 在转。
+
+```bash
+pnpm --filter @sparkle/agent dev   # 登录 claude-code 后
+curl -XPOST localhost:20003/agent/event -H 'content-type: application/json' -d '{"type":"user_message","content":"hi"}'
+curl localhost:20003/agent/transcript
+```
+
+深入文档:
+- [参考:Agent 主循环](docs/reference-agent-main-loop.md) —— 端点与模块公开面
+- [解释:主循环的设计](docs/explanation-agent-main-loop.md) —— 为什么这么设计、与 kagami 的关系、收敛路线
+- [How-to:运行并驱动 agent](docs/howto-run-and-drive-agent.md) —— 跑起来、投递事件、验证
+
 ### 前端登录（apps/web）
 
 `apps/web` 有一个 Claude Code 登录面板（状态 / 登录 / 登出 + 授权轮询）。dev 期 Vite 把
