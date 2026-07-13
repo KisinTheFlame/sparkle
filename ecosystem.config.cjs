@@ -1,43 +1,9 @@
-const path = require("node:path");
-
+// PM2 进程编排（服务寻址单源：端口/上游地址由各 app 自读 config.yaml 的 services 块，
+// 此文件不持有任何端口/地址）。当前 apps 目录为空——这是从 Kagami 复制过来的基建骨架，
+// 新增 app 后在此登记一个条目（参考 Kagami 的 ecosystem.config.cjs 结构）：
+//   { name: "sparkle-xxx", cwd: path.join(__dirname, "apps/xxx"),
+//     script: "dist/index.js", interpreter: "node", exec_mode: "fork", instances: 1,
+//     env: { NODE_ENV: "production" } }
 module.exports = {
-  apps: [
-    {
-      name: "sparkle-agent",
-      cwd: path.join(__dirname, "apps/agent"),
-      script: "dist/index.js",
-      interpreter: "node",
-      exec_mode: "fork",
-      instances: 1,
-      env: {
-        NODE_ENV: "production",
-      },
-    },
-    {
-      name: "sparkle-console",
-      cwd: path.join(__dirname, "apps/console"),
-      script: "dist/index.js",
-      interpreter: "node",
-      exec_mode: "fork",
-      instances: 1,
-      env: {
-        NODE_ENV: "production",
-      },
-    },
-    {
-      // 前端：vite preview 托管 apps/web/dist（含 /auth、/llm、/health 反代到 agent）。
-      // 监听端口与上游地址全部自读 config.yaml 的 services 块（见 vite.config.ts），
-      // ecosystem 不再持任何端口/地址（服务寻址单源）。
-      name: "sparkle-web",
-      cwd: path.join(__dirname, "apps/web"),
-      script: "node_modules/.bin/vite",
-      args: "preview",
-      interpreter: "none",
-      exec_mode: "fork",
-      instances: 1,
-      env: {
-        NODE_ENV: "production",
-      },
-    },
-  ],
+  apps: [],
 };

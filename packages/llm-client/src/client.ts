@@ -1,51 +1,44 @@
 import { randomUUID } from "node:crypto";
-import type {
-  LlmChatRequestPayload,
-  LlmProviderOption,
-  LlmRequestUserContentPart,
-} from "@sparkle/shared/schemas/llm-chat";
-import { BizError } from "@sparkle/shared/errors";
-import { AppLogger } from "@sparkle/logger";
+import { LLM_PROVIDER_IDS, type LlmProviderId } from "@sparkle/llm";
+import {
+  type LlmChatRequestPayload,
+  type LlmProviderOption,
+  type LlmRequestUserContentPart,
+} from "@sparkle/llm-api/llm-chat";
+import type { LlmUsageId } from "@sparkle/kernel/contracts/llm";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import type { Config } from "@sparkle/kernel/config/config.loader";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import {
   getLlmProviderFailureContext,
-  imageContentToBase64,
-  type LlmChatRequest,
-  type LlmChatResponsePayload,
-  type LlmContentPart,
   type LlmProvider,
   type LlmProviderChatResult,
-  type LlmProviderId,
-  type LlmToolChoice,
-  type LlmUsageId,
-} from "@sparkle/llm";
-import type { LlmChatCallDao } from "./chat-call.dao.js";
-import type { MetricService } from "./metric.js";
+} from "./provider.js";
+import type {
+  LlmContentPart,
+  LlmChatRequest,
+  LlmChatResponsePayload,
+  LlmToolChoice,
+} from "./types.js";
+import { imageContentToBase64 } from "@sparkle/llm";
+import { llmProviderUnavailableError } from "./retryable-error.js";
 
 const llmClientLogger = new AppLogger({ source: "llm.client" });
 
-/** provider 运行时配置：client 只需要可用模型列表（用于校验与列举）。 */
-export type LlmProviderRuntimeConfig = {
+type LlmProviderConfig = {
+  apiKey?: string;
+  baseUrl: string;
   models: string[];
+  timeoutMs: number;
 };
 
-export type LlmUsageAttemptConfig = {
-  provider: LlmProviderId;
-  model: string;
-  times: number;
+type OpenAiCodexConfig = Config["server"]["llm"]["providers"]["openaiCodex"] & {
+  timeoutMs: Config["server"]["llm"]["timeoutMs"];
 };
 
-export type LlmUsageConfig = {
-  attempts: LlmUsageAttemptConfig[];
-};
-
-export type ProviderConfigs = Partial<Record<LlmProviderId, LlmProviderRuntimeConfig>>;
-
-const PROVIDER_ID_ORDER: readonly LlmProviderId[] = [
-  "deepseek",
-  "openai",
-  "openai-codex",
-  "claude-code",
-];
+type LlmUsageAttemptConfig = Config["server"]["llm"]["usages"]["agent"]["attempts"][number];
+type LlmUsageConfig = Config["server"]["llm"]["usages"]["agent"];
+type ProviderConfigs = Record<LlmProviderId, LlmProviderConfig | OpenAiCodexConfig>;
 
 export interface LlmClient {
   chat(request: LlmChatRequest, options: LlmChatOptions): Promise<LlmChatResponsePayload>;
@@ -54,42 +47,72 @@ export interface LlmClient {
 }
 
 type CreateLlmClientOptions = {
-  llmChatCallDao: LlmChatCallDao;
-  metricService: MetricService;
   providers: Partial<Record<LlmProviderId, LlmProvider>>;
   providerConfigs: ProviderConfigs;
   usages: Record<LlmUsageId, LlmUsageConfig>;
+  /**
+   * 每次 attempt 结束（成功/失败）产出的可落库观测事件。llm-client 只产出事实，
+   * 由上层（agent 装配层）决定是否写入 DB / metric —— 从而使本包对 `@sparkle/persistence`
+   * 零依赖。调用方式为 fire-and-forget，client 内部 catch，绝不影响 LLM 调用结果。
+   */
+  recordObservation?: (observation: LlmChatCallObservation) => void | Promise<void>;
 };
 
 export type LlmChatOptions = {
   usage: LlmUsageId;
   recordCall?: boolean;
-  onSettled?: (observation: LlmChatObservation) => void | Promise<void>;
 };
 
 export type LlmChatDirectOptions = {
   providerId: LlmProviderId;
   model: string;
   recordCall?: boolean;
-  onSettled?: (observation: LlmChatObservation) => void | Promise<void>;
 };
 
 export type LlmListAvailableProvidersOptions = {
   usage: LlmUsageId;
 };
 
-export type LlmChatObservation = {
-  requestId: string;
+/**
+ * 单次 attempt 的可落库观测事件。字段与 `LlmChatCallDao.recordSuccess/recordError`
+ * 的入参一一对应，携带足以完整重放落库的信息（`seq` / native payload / native error /
+ * configured + actual model 经 extension）。落库映射由 agent 侧订阅者完成。
+ */
+export type LlmChatCallSuccessObservation = {
+  status: "success";
   provider: LlmProviderId;
   model: string;
-  request: Record<string, unknown>;
-  response: Record<string, unknown> | null;
-  error: Record<string, unknown> | null;
+  /** 调用来处（主循环 / 摘要 / todo / inner-voice…）；chatDirect 无来处时为 null。 */
+  usage: LlmUsageId | null;
+  extension: Record<string, unknown>;
+  requestId: string;
+  seq: number;
   latencyMs: number;
-  startedAt: Date;
-  finishedAt: Date;
-  status: "success" | "failed";
+  request: Record<string, unknown>;
+  response: Record<string, unknown>;
+  nativeRequestPayload: Record<string, unknown> | null;
+  nativeResponsePayload: Record<string, unknown> | null;
 };
+
+export type LlmChatCallErrorObservation = {
+  status: "failed";
+  provider: LlmProviderId;
+  model: string;
+  /** 调用来处；chatDirect 无来处时为 null。 */
+  usage: LlmUsageId | null;
+  extension: Record<string, unknown> | null;
+  requestId: string;
+  seq: number;
+  latencyMs: number;
+  request: Record<string, unknown>;
+  response?: Record<string, unknown>;
+  nativeRequestPayload: Record<string, unknown> | null;
+  nativeResponsePayload: Record<string, unknown> | null;
+  nativeError: Record<string, unknown> | null;
+  error: unknown;
+};
+
+export type LlmChatCallObservation = LlmChatCallSuccessObservation | LlmChatCallErrorObservation;
 
 export type LlmChatDirectResult = {
   response: LlmChatResponsePayload;
@@ -124,17 +147,15 @@ export function createLlmClient(options: CreateLlmClientOptions): LlmClient {
         for (let currentTry = 0; currentTry < attempt.times; currentTry += 1) {
           try {
             const result = await executeChatAttempt({
-              llmChatCallDao: options.llmChatCallDao,
-              metricService: options.metricService,
               providers: options.providers,
               providerConfigs: options.providerConfigs,
               request,
-              usage,
               attempt,
+              usage,
               requestId,
               seq: (seq += 1),
               recordCall,
-              onSettled: chatOptions?.onSettled,
+              recordObservation: options.recordObservation,
             });
             return result.response;
           } catch (error) {
@@ -153,50 +174,44 @@ export function createLlmClient(options: CreateLlmClientOptions): LlmClient {
       const model = requireModel(chatOptions?.model);
 
       return await executeChatAttempt({
-        llmChatCallDao: options.llmChatCallDao,
-        metricService: options.metricService,
         providers: options.providers,
         providerConfigs: options.providerConfigs,
         request,
-        usage: undefined,
         attempt: {
           provider: providerId,
           model,
           times: 1,
         },
+        usage: null,
         requestId: randomUUID(),
         seq: 1,
         recordCall: chatOptions?.recordCall ?? true,
-        onSettled: chatOptions?.onSettled,
+        recordObservation: options.recordObservation,
       });
     },
   };
 }
 
 async function executeChatAttempt({
-  llmChatCallDao,
-  metricService,
   providers,
   providerConfigs,
   request,
-  usage,
   attempt,
+  usage,
   requestId,
   seq,
   recordCall,
-  onSettled,
+  recordObservation,
 }: {
-  llmChatCallDao: LlmChatCallDao;
-  metricService: MetricService;
   providers: Partial<Record<LlmProviderId, LlmProvider>>;
   providerConfigs: ProviderConfigs;
   request: LlmChatRequest;
-  usage: LlmUsageId | undefined;
   attempt: LlmUsageAttemptConfig;
+  usage: LlmUsageId | null;
   requestId: string;
   seq: number;
   recordCall: boolean;
-  onSettled?: (observation: LlmChatObservation) => void | Promise<void>;
+  recordObservation?: (observation: LlmChatCallObservation) => void | Promise<void>;
 }): Promise<LlmChatDirectResult> {
   requireConfiguredModel(providerConfigs, attempt.provider, attempt.model);
   const provider = providers[attempt.provider];
@@ -205,18 +220,12 @@ async function executeChatAttempt({
     model: attempt.model,
   };
   const startedAt = Date.now();
-  const startedAtDate = new Date();
   let providerResult: LlmProviderChatResult | null = null;
   let response: LlmChatResponsePayload | null = null;
 
   try {
     if (!provider) {
-      throw new BizError({
-        message: "所选 LLM provider 当前不可用",
-        meta: {
-          provider: attempt.provider,
-        },
-      });
+      throw llmProviderUnavailableError({ meta: { provider: attempt.provider } });
     }
 
     providerResult = await provider.chat(requestWithModel);
@@ -224,67 +233,22 @@ async function executeChatAttempt({
     validateToolCalls(requestWithModel, response);
     const latencyMs = Date.now() - startedAt;
 
-    if (usage) {
-      void recordLlmChatAttemptMetric({
-        metricService,
-        usage,
-        provider: attempt.provider,
-        model: attempt.model,
-        status: "success",
-      });
-      void recordLlmChatLatencyMetric({
-        metricService,
-        usage,
-        provider: attempt.provider,
-        model: attempt.model,
-        status: "success",
-        latencyMs,
-      });
-      void recordLlmChatTotalTokensMetric({
-        metricService,
-        usage,
-        provider: attempt.provider,
-        model: attempt.model,
-        totalTokens: response.usage?.totalTokens,
-      });
-    }
-
     if (recordCall) {
-      void llmChatCallDao
-        .recordSuccess({
-          provider: provider.id,
-          model: attempt.model,
-          extension: buildExtension({
-            actualModel: response.model,
-          }),
-          requestId,
-          seq,
-          latencyMs,
-          request: toRecordableChatRequest(requestWithModel),
-          response: toRecordableChatResponse(response),
-          nativeRequestPayload: providerResult.nativeRequestPayload,
-          nativeResponsePayload: providerResult.nativeResponsePayload,
-        })
-        .catch((e: unknown) => {
-          llmClientLogger.warn("Failed to record LLM chat call success", {
-            event: "llm.record_success_failed",
-            error: e instanceof Error ? e.message : String(e),
-          });
-        });
-    }
-
-    if (onSettled) {
-      await onSettled({
-        requestId,
+      emitObservation(recordObservation, {
+        status: "success",
         provider: provider.id,
-        model: response.model,
+        model: attempt.model,
+        usage,
+        extension: buildExtension({
+          actualModel: response.model,
+        }),
+        requestId,
+        seq,
+        latencyMs,
         request: toRecordableChatRequest(requestWithModel),
         response: toRecordableChatResponse(response),
-        error: null,
-        latencyMs,
-        startedAt: startedAtDate,
-        finishedAt: new Date(),
-        status: "success",
+        nativeRequestPayload: providerResult.nativeRequestPayload,
+        nativeResponsePayload: providerResult.nativeResponsePayload,
       });
     }
 
@@ -295,75 +259,35 @@ async function executeChatAttempt({
     };
   } catch (error) {
     const latencyMs = Date.now() - startedAt;
-    const finishedAt = new Date();
     const failureContext = getLlmProviderFailureContext(error);
-    const serializedError = serializeChatError(error);
-
-    if (usage) {
-      void recordLlmChatAttemptMetric({
-        metricService,
-        usage,
-        provider: attempt.provider,
-        model: attempt.model,
-        status: "failed",
-      });
-      void recordLlmChatLatencyMetric({
-        metricService,
-        usage,
-        provider: attempt.provider,
-        model: attempt.model,
-        status: "failed",
-        latencyMs,
-      });
-    }
 
     if (recordCall) {
       const actualModel =
         getActualModelFromResponse(response) ??
         getActualModelFromPayload(providerResult?.nativeResponsePayload) ??
         getActualModelFromPayload(failureContext?.nativeResponsePayload);
-      void llmChatCallDao
-        .recordError({
-          provider: attempt.provider,
-          model: attempt.model,
-          extension:
-            actualModel === undefined
-              ? null
-              : buildExtension({
-                  actualModel,
-                }),
-          requestId,
-          seq,
-          latencyMs,
-          request: toRecordableChatRequest(requestWithModel),
-          ...(response ? { response: toRecordableChatResponse(response) } : {}),
-          nativeRequestPayload:
-            providerResult?.nativeRequestPayload ?? failureContext?.nativeRequestPayload ?? null,
-          nativeResponsePayload:
-            providerResult?.nativeResponsePayload ?? failureContext?.nativeResponsePayload ?? null,
-          nativeError: failureContext?.nativeError ?? null,
-          error,
-        })
-        .catch((e: unknown) => {
-          llmClientLogger.warn("Failed to record LLM chat call error", {
-            event: "llm.record_error_failed",
-            error: e instanceof Error ? e.message : String(e),
-          });
-        });
-    }
-
-    if (onSettled) {
-      await onSettled({
-        requestId,
+      emitObservation(recordObservation, {
+        status: "failed",
         provider: attempt.provider,
         model: attempt.model,
-        request: toRecordableChatRequest(requestWithModel),
-        response: response ? toRecordableChatResponse(response) : null,
-        error: serializedError,
+        usage,
+        extension:
+          actualModel === undefined
+            ? null
+            : buildExtension({
+                actualModel,
+              }),
+        requestId,
+        seq,
         latencyMs,
-        startedAt: startedAtDate,
-        finishedAt,
-        status: "failed",
+        request: toRecordableChatRequest(requestWithModel),
+        ...(response ? { response: toRecordableChatResponse(response) } : {}),
+        nativeRequestPayload:
+          providerResult?.nativeRequestPayload ?? failureContext?.nativeRequestPayload ?? null,
+        nativeResponsePayload:
+          providerResult?.nativeResponsePayload ?? failureContext?.nativeResponsePayload ?? null,
+        nativeError: failureContext?.nativeError ?? null,
+        error,
       });
     }
 
@@ -371,22 +295,35 @@ async function executeChatAttempt({
   }
 }
 
-function serializeChatError(error: unknown): Record<string, unknown> {
-  if (error instanceof Error) {
-    return {
-      name: error.name,
-      message: error.message,
-      code:
-        typeof (error as Error & { code?: unknown }).code === "string"
-          ? (error as Error & { code?: string }).code
-          : undefined,
-    };
+/**
+ * fire-and-forget 发出观测事件：同步调用订阅者（与旧实现 `void dao.recordSuccess().catch()`
+ * 的调用时机一致），只对其返回的 Promise 做 catch；订阅方的任何同步/异步失败都不会影响
+ * LLM 调用结果。
+ */
+function emitObservation(
+  recordObservation: ((observation: LlmChatCallObservation) => void | Promise<void>) | undefined,
+  observation: LlmChatCallObservation,
+): void {
+  if (!recordObservation) {
+    return;
   }
 
-  return {
-    name: "UnknownError",
-    message: typeof error === "string" ? error : "Unknown error",
+  const onFailure = (e: unknown): void => {
+    llmClientLogger.warn("Failed to record LLM chat call observation", {
+      event: "llm.record_observation_failed",
+      status: observation.status,
+      error: e instanceof Error ? e.message : String(e),
+    });
   };
+
+  try {
+    const result = recordObservation(observation);
+    if (result instanceof Promise) {
+      result.catch(onFailure);
+    }
+  } catch (error) {
+    onFailure(error);
+  }
 }
 
 function buildExtension(input: { actualModel: string }): Record<string, unknown> {
@@ -424,9 +361,9 @@ async function listAvailableProviders(
 ): Promise<LlmProviderOption[]> {
   const preferredProvider = usageConfig.attempts[0]?.provider;
   const availability = await Promise.all(
-    PROVIDER_ID_ORDER.map(async providerId => {
+    LLM_PROVIDER_IDS.map(async providerId => {
       const provider = providers[providerId];
-      if (!provider || !providerConfigs[providerId]) {
+      if (!provider) {
         return null;
       }
 
@@ -440,7 +377,9 @@ async function listAvailableProviders(
   );
 
   const orderedIds = availability
-    .filter((providerId): providerId is LlmProviderId => providerId !== null)
+    .filter(
+      (providerId): providerId is (typeof availability)[number] & string => providerId !== null,
+    )
     .sort((left, right) => {
       if (preferredProvider && left === preferredProvider) {
         return -1;
@@ -455,7 +394,7 @@ async function listAvailableProviders(
 
   return orderedIds.map(providerId => ({
     id: providerId,
-    models: providerConfigs[providerId]?.models ?? [],
+    models: providerConfigs[providerId].models,
   }));
 }
 
@@ -468,8 +407,8 @@ function requireUsage(usage: LlmUsageId | undefined): LlmUsageId {
 }
 
 function toRecordableChatRequest(request: LlmChatRequest): Record<string, unknown> {
-  // payload 显式标注为共享契约类型，把「落库 shape」钉死在 @sparkle/shared 上：
-  // 序列化结构一旦漂移，这里立刻编译报错，前端 viewer 与之同源不再静默失配。
+  // payload 显式标注为契约类型，把「落库 shape」钉死在 @sparkle/llm-api/llm-chat 上：
+  // 后端序列化结构一旦漂移，这里立刻编译报错，前端 viewer 与之同源不再静默失配。
   const payload: LlmChatRequestPayload = {
     ...(request.system ? { system: request.system } : {}),
     model: request.model,
@@ -515,7 +454,7 @@ function toRecordableContentPart(part: LlmContentPart): LlmRequestUserContentPar
     mimeType: part.mimeType,
     filename: part.filename,
     // content 一般是 base64 字符串；imageContentToBase64 兜底已被 JSON 毒过的历史图片
-    // （{type:"Buffer",data:[]} 对象）。解码回字节数仅用于记录。
+    // （{type:"Buffer",data:[]} 对象），避免对对象直接 Buffer.from 崩溃。解码回字节数仅用于记录。
     sizeBytes: Buffer.from(imageContentToBase64(part.content), "base64").byteLength,
   };
 }
@@ -541,86 +480,6 @@ function requireUsageConfig(
   return usageConfig;
 }
 
-function recordLlmChatAttemptMetric({
-  metricService,
-  usage,
-  provider,
-  model,
-  status,
-}: {
-  metricService: MetricService;
-  usage: LlmUsageId;
-  provider: LlmProviderId;
-  model: string;
-  status: "success" | "failed";
-}): Promise<void> {
-  return metricService.record({
-    metricName: "llm.chat.attempt",
-    value: 1,
-    tags: {
-      usage,
-      provider,
-      model,
-      status,
-    },
-  });
-}
-
-function recordLlmChatLatencyMetric({
-  metricService,
-  usage,
-  provider,
-  model,
-  status,
-  latencyMs,
-}: {
-  metricService: MetricService;
-  usage: LlmUsageId;
-  provider: LlmProviderId;
-  model: string;
-  status: "success" | "failed";
-  latencyMs: number;
-}): Promise<void> {
-  return metricService.record({
-    metricName: "llm.chat.latency_ms",
-    value: latencyMs,
-    tags: {
-      usage,
-      provider,
-      model,
-      status,
-    },
-  });
-}
-
-function recordLlmChatTotalTokensMetric({
-  metricService,
-  usage,
-  provider,
-  model,
-  totalTokens,
-}: {
-  metricService: MetricService;
-  usage: LlmUsageId;
-  provider: LlmProviderId;
-  model: string;
-  totalTokens: number | undefined;
-}): Promise<void> | undefined {
-  if (typeof totalTokens !== "number" || !Number.isFinite(totalTokens)) {
-    return undefined;
-  }
-
-  return metricService.record({
-    metricName: "llm.chat.total_tokens",
-    value: totalTokens,
-    tags: {
-      usage,
-      provider,
-      model,
-    },
-  });
-}
-
 function requireProviderId(providerId: LlmProviderId | undefined): LlmProviderId {
   if (!providerId) {
     throw new Error("LlmClient.chatDirect requires providerId");
@@ -642,7 +501,7 @@ function requireConfiguredModel(
   providerId: LlmProviderId,
   model: string,
 ): void {
-  if (providerConfigs[providerId]?.models.includes(model)) {
+  if (providerConfigs[providerId].models.includes(model)) {
     return;
   }
 
@@ -660,9 +519,15 @@ function validateToolCalls(request: LlmChatRequest, response: LlmChatResponsePay
     return;
   }
 
-  // 仅保留 toolChoice 强制单工具（required tool_name）的校验：不在这里因为"工具不在
-  // tools 列表里"而 throw 拒绝整条响应——那属 Agent 正常失误，应由工具执行层以
-  // tool_result 反馈、让 Agent 下一轮自我纠正，避免崩掉整轮并违背只追加尾部的缓存友好原则。
+  // 注意：不在这里因为"工具不在 tools 列表里"而 throw 拒绝整条响应。
+  // 调了未授权/未知的工具（典型：把子工具当顶层工具直接调而没走 invoke）属于
+  // Agent 的正常失误，应当让响应正常通过，由工具执行层（ToolSet.execute 对未知
+  // 工具返回 "Unknown tool" 的 tool_result）把反馈以 ToolResponse 追加到尾部，
+  // 让 Agent 下一轮自我纠正。在此 throw 会让整轮 runOnce 崩溃、丢弃响应，Agent
+  // 永远收不到反馈，也违背 KV 缓存友好的"只追加尾部"原则。
+  //
+  // 仅保留 toolChoice 强制单工具（required tool_name）的校验：那是 vision /
+  // summarizer 这类一次性强制工具调用的场景，语义上不存在"让 Agent 改投"的回路。
   const requiredToolName = getRequiredToolName(request.toolChoice);
   if (!requiredToolName) {
     return;

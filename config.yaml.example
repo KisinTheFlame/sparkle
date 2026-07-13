@@ -1,32 +1,33 @@
 # 复制为 config.yaml 后按需修改。config.yaml 已被 .gitignore 忽略。
-
-# 服务寻址单源：各进程的监听端口取自自己的条目（一律绑 0.0.0.0），
-# 别的服务/前端按 host:port 反查上游。ecosystem.config.cjs 不再持任何端口。
-# host 是「如何 reach 它」（reachable host），不是绑定地址。
-services:
-  agent: { host: localhost, port: 20003 } # sparkle-agent（LLM / OAuth 后端）
-  console: { host: localhost, port: 20006 } # sparkle-console（管理台后端）
-  web: { host: localhost, port: 4173 } # sparkle-web（前门：vite preview 静态托管 + 反代）
+# 这是从 Kagami 移植过来的基建骨架的 app-less 极简配置契约（schema 见
+# packages/kernel/src/config/config.loader.ts）。App 落地时在此按需追加服务拓扑。
+#
+# 凭据（apiKey / token 等）建议放到 gitignored 的 config.secret.yaml（深合并覆盖本文件）。
 
 server:
   # SQLite 库地址；相对路径按 config.yaml 所在目录解析为绝对 file: URL。
-  # 与 @sparkle/db 的迁移共用同一库文件（迁移时 DATABASE_URL 指向同一路径）。
+  # @sparkle/persistence 的运行时与 Prisma 迁移共用同一库文件。
   databaseUrl: "file:./data/sparkle.db"
 
+  # OAuth 回调对外可访问的 origin（单源）。claude-code / codex 登录的 publicBaseUrl 缺省取它。
+  publicBaseUrl: "http://localhost:4173"
+
   llm:
-    # 单次 LLM 请求超时
+    # 单次 LLM 请求超时（可省，默认 45s）。
     timeoutMs: 45000
 
-    # Claude Code OAuth 登录配置
+    # 文本向量化（@sparkle/llm-client 的 embedding client）。必填；google 需要 apiKey。
+    # 建议把 apiKey 移到 config.secret.yaml。
+    embedding:
+      provider: google
+      apiKey: "REPLACE_WITH_GEMINI_API_KEY"
+
+    # Claude Code OAuth 登录（可省，均有默认）。
     claudeCodeAuth:
       enabled: true
-      # 对外可访问的基址；缺省派生为 http://localhost:${services.web.port}，可显式覆盖。
-      # publicBaseUrl: "http://localhost:4173"
       oauthRedirectPath: "/callback"
-      oauthStateTtlMs: 600000
-      refreshLeewayMs: 7200000
-      refreshCheckIntervalMs: 300000
 
+    # chat providers 整段可省（各有默认，含占位 models）；下面显式写出 claude-code 常用项。
     providers:
       claudeCode:
         baseUrl: "https://api.anthropic.com"
@@ -35,12 +36,10 @@ server:
         keepAliveReplayIntervalMinutes: 30
 
     # 各用途的多 attempt 路由：按顺序尝试，每个 attempt 可重试 times 次。
+    # 骨架只有 "agent" 一个用途；App 定义自身用途时同步扩展 LlmUsageId 与此处。
     usages:
       agent:
         attempts:
           - provider: "claude-code"
             model: "claude-opus-4-8"
             times: 1
-
-  # 各 App 的配置切片（key 为 App.id），由各 App 自己的 schema 校验。
-  apps: {}

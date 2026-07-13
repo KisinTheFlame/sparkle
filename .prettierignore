@@ -3,6 +3,7 @@ pnpm-lock.yaml
 dist
 build
 coverage
-packages/db/src/generated/prisma
+packages/persistence/src/generated/prisma
+**/src/generated/prisma
 # Handlebars prompt templates are prose content, not code — keep prettier off them.
 *.hbs

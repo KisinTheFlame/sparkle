@@ -1,19 +1,24 @@
 import js from "@eslint/js";
 import prettierConfig from "eslint-config-prettier";
-import reactHooks from "eslint-plugin-react-hooks";
-import reactRefresh from "eslint-plugin-react-refresh";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["**/dist/**", "**/build/**", "**/node_modules/**", "**/src/generated/**"],
+    ignores: [
+      "**/dist/**",
+      "**/build/**",
+      "**/node_modules/**",
+      "**/src/generated/**",
+      ".claude/**",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
-  // 类型感知 linting：仅作用于各包 src（都在各自 tsconfig include 内）。
+  // 类型感知 linting：仅作用于各包 src（都在各自 tsconfig include 内）。测试 / 配置
+  // 文件不在 program 里，不进此 scope，避免 "file not in project" 报错。
   {
-    files: ["apps/agent/src/**/*.ts", "apps/console/src/**/*.ts", "apps/web/src/**/*.{ts,tsx}", "packages/*/src/**/*.ts"],
+    files: ["packages/*/src/**/*.ts"],
     extends: [tseslint.configs.recommendedTypeChecked],
     languageOptions: {
       parserOptions: {
@@ -33,13 +38,6 @@ export default tseslint.config(
       "@typescript-eslint/no-unsafe-return": "warn",
     },
   },
-  // JSX 事件处理器用 async 是常态，关闭 attributes 维度的 void-return 检查。
-  {
-    files: ["apps/web/src/**/*.{ts,tsx}"],
-    rules: {
-      "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: { attributes: false } }],
-    },
-  },
   {
     files: ["**/*.{ts,tsx,js,mjs,cjs}"],
     languageOptions: {
@@ -49,6 +47,17 @@ export default tseslint.config(
       },
     },
     rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "ExportAllDeclaration",
+          message: "禁止使用 re-export，请直接导入真实实现路径。",
+        },
+        {
+          selector: "ExportNamedDeclaration[source!=null]",
+          message: "禁止使用 re-export，请直接导入真实实现路径。",
+        },
+      ],
       "@typescript-eslint/no-unused-vars": [
         "error",
         {
@@ -59,17 +68,7 @@ export default tseslint.config(
       ],
     },
   },
-  {
-    files: ["apps/web/**/*.{ts,tsx}"],
-    plugins: {
-      "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-    },
-  },
+  // .cjs 是 CommonJS（如 PM2 ecosystem 配置），require 是其原生模块系统。
   {
     files: ["**/*.cjs"],
     rules: {

@@ -9,19 +9,34 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./embedding": {
+      "types": "./dist/embedding/index.d.ts",
+      "default": "./dist/embedding/index.js"
+    },
+    "./image": {
+      "types": "./dist/image/index.d.ts",
+      "default": "./dist/image/index.js"
     }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "pretest": "pnpm --filter \"@sparkle/llm-client^...\" build",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
+    "@google/genai": "^1.44.0",
+    "@sparkle/kernel": "workspace:*",
     "@sparkle/llm": "workspace:*",
-    "@sparkle/logger": "workspace:*",
-    "@sparkle/shared": "workspace:*"
+    "@sparkle/llm-api": "workspace:*",
+    "openai": "^6.25.0"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4",
+    "zod": "^3.24.4"
   }
 }

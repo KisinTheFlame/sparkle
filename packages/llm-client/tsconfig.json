@@ -8,9 +8,7 @@
     "strict": true,
     "noEmit": true,
     "paths": {
-      "@sparkle/shared/*": ["./../shared/src/*"],
-      "@sparkle/llm": ["./../llm/src/index.ts"],
-      "@sparkle/logger": ["./../logger/src/index.ts"]
+      "@sparkle/llm-api/*": ["./../llm-api/src/*"]
     }
   },
   "include": ["src"]

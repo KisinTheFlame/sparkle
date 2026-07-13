@@ -1,0 +1,62 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// 应用日志落库：kernel 的 logger DB sink 经 @sparkle/persistence 的 PrismaLogDao 写入。
+// 这是基建骨架里唯一的“运行期可观测性”表；业务表由各 App 自行在此 schema 追加。
+model AppLog {
+  id        Int      @id @default(autoincrement())
+  traceId   String   @map("trace_id")
+  level     String
+  message   String
+  metadata  Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@index([traceId, createdAt], map: "app_log_trace_id_created_at_idx")
+  @@index([level, createdAt], map: "app_log_level_created_at_idx")
+  @@index([createdAt], map: "app_log_created_at_idx")
+  @@map("app_log")
+}
+
+// OAuth 会话（每 provider 一行）：@sparkle/auth 的 PrismaOAuthDao 读写。
+model OauthSession {
+  id            Int       @id @default(autoincrement())
+  provider      String
+  accountId     String?   @map("account_id")
+  email         String?
+  accessToken   String?   @map("access_token")
+  refreshToken  String?   @map("refresh_token")
+  idToken       String?   @map("id_token")
+  expiresAt     DateTime? @map("expires_at")
+  lastRefreshAt DateTime? @map("last_refresh_at")
+  status        String
+  lastError     String?   @map("last_error")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @map("updated_at")
+
+  @@unique([provider], map: "oauth_session_provider_uq")
+  @@index([status, updatedAt], map: "oauth_session_status_updated_at_idx")
+  @@map("oauth_session")
+}
+
+// OAuth 授权码流程的临时 state（PKCE）：@sparkle/auth 的 callback server 校验后消费。
+model OauthState {
+  id           Int       @id @default(autoincrement())
+  state        String    @unique(map: "oauth_state_state_uq")
+  codeVerifier String    @map("code_verifier")
+  redirectUri  String    @map("redirect_uri")
+  expiresAt    DateTime  @map("expires_at")
+  usedAt       DateTime? @map("used_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@index([expiresAt], map: "oauth_state_expires_at_idx")
+  @@map("oauth_state")
+}
