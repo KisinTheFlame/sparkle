@@ -7,7 +7,7 @@ import {
 } from "../../generated/prisma/internal/class.js";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 
-// napcat 独占的 SQLite 库（epic #539 子 issue 2，与主库 kagami.db 物理分离）。镜像
+// napcat 独占的 SQLite 库（epic #539 子 issue 2，与 agent 主库物理分离）。镜像
 // @sparkle/persistence 的 db client：better-sqlite3 adapter + busy_timeout + WAL + 建父目录。
 // napcat 独占本库，WAL 非必需，但与持久化包范式保持一致。
 

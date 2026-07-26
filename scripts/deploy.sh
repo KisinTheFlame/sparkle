@@ -57,7 +57,7 @@ if pnpm db:migrate:status >/dev/null 2>&1; then
   echo "[app:deploy]   schema 已最新，跳过迁移（避免与运行进程争锁）。"
 else
   echo "[app:deploy]   检测到待应用迁移，暂停 sparkle-agent 后迁移..."
-  # 主库 kagami.db（现 agent.db）自 #539 起由 sparkle-agent 独占（browser/napcat/llm 已拆库、console 零 DB
+  # 主库 agent.db 自 #539 起由 sparkle-agent 独占（browser/napcat/llm 已拆库、console 零 DB
   # 且均已在生产落地），迁移只需停 agent 一个进程——这正是 epic #539 的核心收益：
   # 主库 schema 变更不再打断浏览器登录态 / QQ 长连接 / OAuth 刷新等卫星进程热状态。
   pnpm exec pm2 stop sparkle-agent >/dev/null 2>&1 || true
