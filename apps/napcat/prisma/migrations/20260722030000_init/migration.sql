@@ -1,5 +1,5 @@
 -- napcat 独占 SQLite 库初始迁移（epic #539 子 issue 2）。
--- 四张表与主库 kagami.db 中的同名表逐列一致（image_asset 为 #176 删掉 mime 后的现行形状），
+-- 四张表与 agent 主库中的同名表逐列一致（image_asset 为 #176 删掉 mime 后的现行形状），
 -- 让启动期数据搬迁可以 ATTACH 主库后按显式列名 INSERT SELECT 整搬、保留自增主键。
 
 -- CreateTable
