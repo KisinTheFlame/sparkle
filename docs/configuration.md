@@ -36,7 +36,7 @@ Sparkle 的配置读取、配置分区、SQLite 存储布局与 Prisma 迁移流
 
 - 数据库为**进程内 SQLite 文件**，不依赖外部 PostgreSQL；ORM 仍是 Prisma，driver adapter 为 `@prisma/adapter-better-sqlite3`。
 - 直接查库用 `sqlite3` CLI；库文件路径以 `config.yaml` 的 `server.databaseUrl`（`file:` 路径，运行时解析为绝对路径）为准。
-- **`data/` 按服务分目录**（epic #539「每个持库服务独立数据库」，统一 `data/<服务>/<服务>.db` 范式）：agent 独占 `data/agent/agent.db`（`server.databaseUrl`，原主库 kagami.db 更名）；napcat 独占 `data/napcat/napcat.db`、llm 独占 `data/llm/llm.db`、scheduler 独占 `data/scheduler/scheduler.db`、oss 独占 `data/oss/oss.db`（对象元数据；blob 字节在 `data/oss/blobs/`）、gba 独占 `data/gba/gba.db`（各自 `services.<svc>.databaseUrl`，schema 在各 `apps/<svc>/prisma/`）；metric 独占 `data/metric/metric.duckdb`（#475，唯一非 SQLite，走裸 DuckDB 驱动）。console 零 DB（#539，经各服务查询路由聚合）。所有用 SQLite 的服务一律经 Prisma（`@prisma/adapter-better-sqlite3`）接入，不再有裸 better-sqlite3。
+- **`data/` 按服务分目录**（epic #539「每个持库服务独立数据库」，统一 `data/<服务>/<服务>.db` 范式）：agent 独占 `data/agent/agent.db`（`server.databaseUrl`）；napcat 独占 `data/napcat/napcat.db`、llm 独占 `data/llm/llm.db`、scheduler 独占 `data/scheduler/scheduler.db`、oss 独占 `data/oss/oss.db`（对象元数据；blob 字节在 `data/oss/blobs/`）、gba 独占 `data/gba/gba.db`（各自 `services.<svc>.databaseUrl`，schema 在各 `apps/<svc>/prisma/`）；metric 独占 `data/metric/metric.duckdb`（#475，唯一非 SQLite，走裸 DuckDB 驱动）。console 零 DB（#539，经各服务查询路由聚合）。所有用 SQLite 的服务一律经 Prisma（`@prisma/adapter-better-sqlite3`）接入，不再有裸 better-sqlite3。
 - 所有持久化数据放在仓库根 `data/` 下按服务分子目录；整个 `data/` 已在 `.gitignore` 中。
 
 ## Prisma 迁移
