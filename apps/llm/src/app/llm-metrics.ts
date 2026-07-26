@@ -34,7 +34,7 @@ export function recordLlmCallMetrics(
     model: observation.model,
     // usage = KV 缓存身份（agent / vision）；chatDirect 无身份 → "direct"。
     usage: observation.usage ?? "direct",
-    // scene = 调用归因（自由 string，如 contextSummarizer / todoSuggestionAgent）；chatDirect 无归因 → "direct"。
+    // scene = 调用归因（自由 string，如 contextSummarizer）；chatDirect 无归因 → "direct"。
     scene: observation.scene ?? "direct",
   };
 

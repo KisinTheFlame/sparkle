@@ -35,8 +35,6 @@ import { WaitTool } from "../agent/runtime/root-agent/tools/wait.tool.js";
 import { createRootContextSummaryReminderMessage } from "../agent/runtime/context/context-message-factory.js";
 import { SummaryTaskAgent } from "../agent/capabilities/context-summary/task-agent/summary-task-agent.js";
 import { FinalizeSummaryTool } from "../agent/capabilities/context-summary/task-agent/tools/finalize-summary.tool.js";
-import { TodoSuggestionTaskAgent } from "../agent/capabilities/todo/task-agent/todo-suggestion-task-agent.js";
-import { ProposeTodosTool } from "../agent/capabilities/todo/task-agent/tools/propose-todos.tool.js";
 import { PrismaTerminalStateDao } from "../agent/capabilities/terminal/infra/prisma-terminal-state.dao.js";
 import { PrismaTerminalOutputDao } from "../agent/capabilities/terminal/infra/prisma-terminal-output.dao.js";
 import { TerminalApp } from "../agent/apps/terminal/terminal.app.js";
@@ -97,12 +95,6 @@ type BuildAgentRuntimeInput = {
 export type AgentRuntimeBundle = {
   rootAgentRuntime: RootLoopAgent;
   mainAgentContextQueryService: MainAgentContextQueryService;
-  /**
-   * 「发现待办」task agent：工具装配与主 Agent 字节相等（tools / system 前缀命中
-   * KV 缓存），invoke 只挂 propose_todos 终止子工具。由 wiring 层包进
-   * TodoSuggestionService（重试/降级外壳）供 digest 使用。
-   */
-  todoSuggestionTaskAgent: TodoSuggestionTaskAgent;
   /** QQ App：手机 OS 模型下聊天的承载者，已收纳 napcat 网关（自管生命周期 + 入站事件）。 */
   qqApp: QqApp;
   /**
@@ -117,7 +109,7 @@ export type AgentRuntimeBundle = {
 const logger = new AppLogger({ source: "agent.runtime-factory" });
 
 /**
- * fork 型 task agent（summary / todo）的镜像工具目录：与主 Agent
+ * fork 型 task agent（summary）的镜像工具目录：与主 Agent
  * 顶层工具集一字不差（同样的 name / description / parameters / llmTool 与顺序），
  * 执行语义完全隔离——invoke 换成只挂该 task agent 子工具的实例，其余顶层工具用
  * OutOfScopeTool 软包，调到就返回 OUT_OF_SCOPE 错误，不会真的改主 Agent 的
@@ -150,12 +142,12 @@ function createMirroredTaskAgentTools({
 }
 
 /**
- * 两个 fork 型 task agent（summary / todo）的镜像工具装配。它们的差异只有
- * 三处：终止子工具、任务名标签、提交指引；其余（挂 invoke 的 unguarded owner、switch 的
- * 定制指路话术、其它顶层工具的默认拒绝话术）形状完全一致，这里收敛成一个小工厂。
+ * fork 型 task agent 的镜像工具装配（现存 summary 一个）。可变的只有三处：终止子工具、
+ * 任务名标签、提交指引；其余（挂 invoke 的 unguarded owner、switch 的定制指路话术、
+ * 其它顶层工具的默认拒绝话术）形状完全一致，这里收敛成一个小工厂。
  *
  * 拒绝话术会进各 fork agent 的 tools 前缀，是 KV 缓存字节相等的一部分——模板拼出的字符串
- * 与收敛前逐字节相同（见 fork-task-agent-tools 单测钉死），改这里等于同时改两个子 agent 的前缀。
+ * 与收敛前逐字节相同（见 fork-task-agent-tools 单测钉死），改这里等于改各子 agent 的前缀。
  */
 function buildForkTaskAgentTools({
   mainTopLevelTools,
@@ -330,7 +322,7 @@ export async function buildAgentRuntime({
     }),
   ];
 
-  // 主 Agent 的顶层工具实例。fork 型 task agent（summary / todo）之后会复用这些
+  // 主 Agent 的顶层工具实例。fork 型 task agent（summary）之后会复用这些
   // 实例的 llmTool 定义（通过 OutOfScopeTool 包一层），保证各 agent 暴露给 LLM 的
   // tools 字段字节相等，命中 KV cache。
   const switchTool = new SwitchTool({ appManager });
@@ -341,7 +333,7 @@ export async function buildAgentRuntime({
   const readResourceTool = new ReadResourceTool({ resourceService });
   const downloadResourceTool = new DownloadResourceTool({ resourceFileService });
   const uploadResourceTool = new UploadResourceTool({ resourceFileService });
-  // 主 Agent 顶层工具的唯一有序清单：toolCatalog / rootAgentTools / 两个 fork 型
+  // 主 Agent 顶层工具的唯一有序清单：toolCatalog / rootAgentTools / fork 型
   // task agent 的镜像目录都从它派生。顺序即 LLM tools 数组顺序，是 KV 缓存稳定
   // 前缀的一部分——加/删/重排只改这一处。
   const mainTopLevelTools: ToolComponent[] = [
@@ -356,10 +348,10 @@ export async function buildAgentRuntime({
   const toolCatalog = new ToolCatalog(mainTopLevelTools);
   const rootAgentTools = toolCatalog.pick(mainTopLevelTools.map(tool => tool.name));
 
-  // 两个 fork 型 task agent（summary / todo）共用同一套镜像装配，从主 Agent
-  // 的同一份有序顶层工具清单派生（见 buildForkTaskAgentTools），主 Agent 加/删/重排工具时
-  // 镜像自动跟随，不会漂移出字节不等的 tools 前缀；请求前缀与主 Agent 字节相等，命中
-  // Anthropic prompt cache（issue #265 / #410）。
+  // fork 型 task agent（summary）经镜像装配从主 Agent 的同一份有序顶层工具清单派生
+  // （见 buildForkTaskAgentTools），主 Agent 加/删/重排工具时镜像自动跟随，不会漂移出
+  // 字节不等的 tools 前缀；请求前缀与主 Agent 字节相等，命中 Anthropic prompt cache
+  // （issue #265 / #410）。
   const summaryTaskAgent = new SummaryTaskAgent({
     llmClient,
     taskTools: buildForkTaskAgentTools({
@@ -369,15 +361,6 @@ export async function buildAgentRuntime({
       submitHint: 'invoke(tool="finalize_summary", summary=...) 提交最终摘要',
     }),
     reminderMessageFactory: createRootContextSummaryReminderMessage,
-  });
-  const todoSuggestionTaskAgent = new TodoSuggestionTaskAgent({
-    llmClient,
-    taskTools: buildForkTaskAgentTools({
-      mainTopLevelTools,
-      terminalTool: new ProposeTodosTool(),
-      taskLabel: "「发现待办」子任务",
-      submitHint: 'invoke(tool="propose_todos", suggestions=[...]) 提交候选待办',
-    }),
   });
   const rootAgentRuntime = new RootLoopAgent({
     llmClient,
@@ -420,7 +403,6 @@ export async function buildAgentRuntime({
   return {
     rootAgentRuntime,
     mainAgentContextQueryService,
-    todoSuggestionTaskAgent,
     qqApp,
     stateSampler,
     shutdownApps: () => appManager.shutdownAll(),

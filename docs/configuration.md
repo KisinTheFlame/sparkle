@@ -26,7 +26,7 @@ Sparkle 的配置读取、配置分区、SQLite 存储布局与 Prisma 迁移流
 - `server.napcat.wsUrl`、`reconnectMs`、`requestTimeoutMs`、`blockedGroupIds`（QQ 群黑名单：列出的群对小镜不可见，含专用告警群；默认空 = 参与所有被拉入的群）、`startupContextRecentMessageCount`
 - `server.llm.timeoutMs`、`authUsageRefreshIntervalMs`、`embedding`（文本向量化，LLM 网关持有、agent 经 HTTP 调用）、`codexAuth`、`claudeCodeAuth`
 - `server.llm.providers.{deepseek,openai,openaiCodex,claudeCode}`
-- `server.llm.usages.{agent,vision}`（usage = KV 缓存身份，可配的仅这两个。fork 型 task agent `contextSummarizer` / `todoSuggestionAgent` 在调用点用 `usage=agent` 复用主 Agent 前缀命中 prompt cache，不单独配置；调用归因走 `scene` 自由字段，见 #555。每个 usage 可选 `thinking: low|medium|high` 开启 adaptive thinking（#573，现 `agent` 配 `low`）——thinking 参数分割 prompt cache lineage，属 KV 缓存身份的一部分，故收口在 usage 级；删掉该行即关回 disabled）
+- `server.llm.usages.{agent,vision}`（usage = KV 缓存身份，可配的仅这两个。fork 型 task agent `contextSummarizer` 在调用点用 `usage=agent` 复用主 Agent 前缀命中 prompt cache，不单独配置；调用归因走 `scene` 自由字段，见 #555。每个 usage 可选 `thinking: low|medium|high` 开启 adaptive thinking（#573，现 `agent` 配 `low`）——thinking 参数分割 prompt cache lineage，属 KV 缓存身份的一部分，故收口在 usage 级；删掉该行即关回 disabled）
 - 顶层 `services`（与 `server` 平级）：各服务监听端口与地址的唯一事实来源，`services.{agent,console,gateway,web,oss,browser,llm,metric,spire,pixel,napcat}.{host,port}`，所有进程读它寻址；`services.{web,oss,browser,llm,metric,spire,pixel,napcat}` 仅 localhost（`web` 自 #578 起是管理台前端的独立进程，只由 gateway 反代，不对外）。
 - `server.oss.enabled`（对象存储启用开关；地址来自 `services.oss`，整段省略 = 禁用、优雅降级）
 - `server.apps.*`（App 级配置，如 `calc.precision`、`terminal.*`、`hn.*`、`amap.*`；`amap.apiKey` 为凭据，走 `config.secret.yaml`）

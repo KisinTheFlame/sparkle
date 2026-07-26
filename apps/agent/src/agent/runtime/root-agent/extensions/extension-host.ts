@@ -1,5 +1,4 @@
 import type { LlmMessage } from "@sparkle/llm-client";
-import type { AgentContextSnapshot } from "../../context/agent-context.js";
 
 /**
  * 暴露给 root agent 扩展的稳定契约。RootAgentHost 的内部细节（mutationExecutor、
@@ -14,7 +13,6 @@ export interface RootAgentExtensionHost {
   appendWakeReminderIfNeeded(): Promise<void>;
   compactContextIfNeeded(totalTokens: number | null | undefined): Promise<boolean>;
   persistSnapshotIfChanged(input?: { throwOnError?: boolean }): Promise<void>;
-  getContextSnapshot(): Promise<AgentContextSnapshot>;
   appendMessages(messages: LlmMessage[]): Promise<void>;
   recordToolCall(input: { toolName: string; argumentsValue: Record<string, unknown> }): void;
 }

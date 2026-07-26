@@ -43,7 +43,6 @@ import { IthomeNotificationDraft } from "../agent/apps/ithome/ithome-notificatio
 import { PrismaTodoDao } from "../agent/capabilities/todo/infra/prisma-todo.dao.js";
 import { TodoService } from "../agent/capabilities/todo/application/todo.service.js";
 import { TodoReminderPoller } from "../agent/capabilities/todo/application/todo-reminder-poller.js";
-import { TodoSuggestionService } from "../agent/capabilities/todo/application/todo-suggestion.service.js";
 import { buildTodoScheduledTasks } from "../agent/capabilities/todo/application/todo-scheduled-tasks.js";
 import { TodoReminderDraft } from "../agent/apps/todo/todo-reminder-draft.js";
 import { TodoDigestDraft } from "../agent/apps/todo/todo-digest-draft.js";
@@ -198,38 +197,15 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
     cursorStore: napcatCursorStore,
   });
 
-  // TodoReminderPoller 构造放在 agentRuntime 之后：digest 第三段要 fork 主 Agent 上下文，
-  // 依赖 agentRuntime.rootAgentRuntime.getContextSnapshot()。reminder-tick 路径不依赖它，故安全。
   // 提醒/汇总以纯数据回调，draft 在这层（wiring 边界）构造并 push，capabilities 层不依赖 apps 层。
-  const todoSuggestionService = new TodoSuggestionService({
-    // 工具装配与主 Agent 字节相等的 task agent（见 agent-runtime.factory），
-    // propose_todos 经 invoke 终止子工具提交，不新增顶层工具。
-    taskAgent: agentRuntime.todoSuggestionTaskAgent,
-  });
-  const suggestTodos = async (openTodos: { title: string }[]): Promise<string[]> => {
-    try {
-      const snapshot = await agentRuntime.rootAgentRuntime.getContextSnapshot();
-      // snapshot.messages 已由 getSnapshot 深克隆（且此快照无人共享），service 只做只读 spread，
-      // 无需再克隆一次。
-      return await todoSuggestionService.propose({
-        systemPrompt: snapshot.systemPrompt,
-        messages: snapshot.messages,
-        openTodos,
-      });
-    } catch {
-      // fork 主上下文本身出错（快照失败等）：digest 降级为只发前两段。
-      return [];
-    }
-  };
   const todoReminderPoller = new TodoReminderPoller({
     todoService,
     onDueReminder: reminder => {
       notificationCenter.push(new TodoReminderDraft(reminder));
     },
-    onDigest: (summary, suggestions) => {
-      notificationCenter.push(new TodoDigestDraft({ ...summary, suggestions }));
+    onDigest: summary => {
+      notificationCenter.push(new TodoDigestDraft(summary));
     },
-    suggestTodos,
   });
 
   // 定时调度拆成独立 sparkle-scheduler 进程（issue #428）：agent 经 SchedulerClient 把任务集

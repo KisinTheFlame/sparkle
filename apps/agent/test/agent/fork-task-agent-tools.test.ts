@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 /**
- * fork 型 task agent（summary / todo）拒绝话术的**逐字节**基线。
+ * fork 型 task agent（summary）拒绝话术的**逐字节**基线。
  *
  * 这些话术是 OutOfScopeTool 的 reason，会进各 fork agent 的 tools 前缀——前缀与主 Agent
- * 字节相等才命中 prompt cache。两段装配收敛成 buildForkTaskAgentTools 小工厂时，模板拼出的
- * 字符串必须与收敛前逐字相同；本测试把它钉死，防止后续「顺手改个措辞」静默失效两个子 agent
+ * 字节相等才命中 prompt cache。装配收敛在 buildForkTaskAgentTools 小工厂，模板拼出的
+ * 字符串必须逐字保持；本测试把它钉死，防止后续「顺手改个措辞」静默失效子 agent
  * 的 KV 缓存。
  *
  * 这里复刻工厂的拼接规则（而非导出内部函数）：工厂在 agent-runtime.factory 内部，导出它只为
@@ -25,11 +25,6 @@ const FORK_TASK_AGENTS = [
     taskLabel: "上下文摘要子任务",
     submitHint: 'invoke(tool="finalize_summary", summary=...) 提交最终摘要',
   },
-  {
-    name: "todo",
-    taskLabel: "「发现待办」子任务",
-    submitHint: 'invoke(tool="propose_todos", suggestions=[...]) 提交候选待办',
-  },
 ] as const;
 
 describe("fork task agent 拒绝话术（KV 前缀基线）", () => {
@@ -37,7 +32,6 @@ describe("fork task agent 拒绝话术（KV 前缀基线）", () => {
     const rendered = FORK_TASK_AGENTS.map(spec => switchReason(spec.taskLabel, spec.submitHint));
     expect(rendered).toEqual([
       '在上下文摘要子任务中不可调用 switch。请用 invoke(tool="finalize_summary", summary=...) 提交最终摘要。',
-      '在「发现待办」子任务中不可调用 switch。请用 invoke(tool="propose_todos", suggestions=[...]) 提交候选待办。',
     ]);
   });
 
@@ -51,8 +45,5 @@ describe("fork task agent 拒绝话术（KV 前缀基线）", () => {
       "在上下文摘要子任务中不可调用 upload_resource。",
       "在上下文摘要子任务中不可调用 help。",
     ]);
-    expect(defaultReason("「发现待办」子任务", "wait")).toBe(
-      "在「发现待办」子任务中不可调用 wait。",
-    );
   });
 });

@@ -5,10 +5,9 @@ import { TODO_NOTIFICATION_GROUP } from "./todo-reminder-draft.js";
 /**
  * 待办回顾的通知 draft（手机 OS 模型）：App 级的每日两次（09:00 / 21:00）统一提醒。
  *
- * 单一 `sourceId="todo:digest"`，每次回顾一条；items 已由 service 封顶。渲染分三段：
+ * 单一 `sourceId="todo:digest"`，每次回顾一条；items 已由 service 封顶。渲染分两段：
  *   1. 未完成项汇总（空待办时给兜底文案）；
- *   2. 固定提示小镜去 todo App 按自己打算做的事添新待办；
- *   3. （可选）从主 Agent 上下文 fork 发现的具体候选待办；`suggestions` 为空时整段省略。
+ *   2. 固定提示小镜去 todo App 按自己打算做的事添新待办。
  * 两次回顾间隔 12h、互不重叠，merge 取最新即可。
  */
 export class TodoDigestDraft implements NotificationDraft {
@@ -17,20 +16,10 @@ export class TodoDigestDraft implements NotificationDraft {
   public readonly displayName = TODO_NOTIFICATION_GROUP;
   private readonly totalCount: number;
   private readonly titles: string[];
-  private readonly suggestions: string[];
 
-  public constructor({
-    totalCount,
-    items,
-    suggestions = [],
-  }: {
-    totalCount: number;
-    items: { title: string }[];
-    suggestions?: string[];
-  }) {
+  public constructor({ totalCount, items }: { totalCount: number; items: { title: string }[] }) {
     this.totalCount = totalCount;
     this.titles = items.map(item => item.title);
-    this.suggestions = suggestions;
   }
 
   public merge(_prev: NotificationDraft): NotificationDraft {
@@ -45,8 +34,6 @@ export class TodoDigestDraft implements NotificationDraft {
       titles: this.titles,
       hasHidden: hidden > 0,
       hidden,
-      hasSuggestions: this.suggestions.length > 0,
-      suggestions: this.suggestions,
     });
   }
 }
