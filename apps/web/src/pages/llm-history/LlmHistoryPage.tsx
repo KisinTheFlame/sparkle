@@ -42,13 +42,7 @@ const EMPTY_PROVIDERS: Array<{ id: string; models: string[] }> = [];
 
 // 当前代码里在用的 scene 归因值（issue #555）。scene 是自由 string，这里只是把常见值
 // 做成下拉方便筛；DB 里若出现新值，可直接改 URL 的 ?scene= 精确查。
-const SCENE_OPTIONS = [
-  "agent",
-  "contextSummarizer",
-  "todoSuggestionAgent",
-  "innerVoice",
-  "vision",
-] as const;
+const SCENE_OPTIONS = ["agent", "contextSummarizer", "todoSuggestionAgent", "vision"] as const;
 
 type FilterFormState = {
   provider: string;

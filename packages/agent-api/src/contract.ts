@@ -8,8 +8,6 @@ import {
 import {
   AgentQueryAppLogsRequestSchema,
   AgentQueryAppLogsResponseSchema,
-  AgentQueryInnerThoughtsRequestSchema,
-  AgentQueryInnerThoughtsResponseSchema,
   AgentQueryTodosRequestSchema,
   AgentQueryTodosResponseSchema,
 } from "./ops-query.js";
@@ -34,7 +32,7 @@ export const agentApiContract = {
     input: MainAgentContextCompactionRequestSchema,
     output: MainAgentContextCompactionResultSchema,
   }),
-  // —— console 只读查询（epic #539 子 issue 4：console 脱库，agent 持有的三张表经此查询）——
+  // —— console 只读查询（epic #539 子 issue 4：console 脱库，agent 持有的两张表经此查询）——
   //    主消费者是 sparkle-console 服务间直连；注意 gateway 的 /api/* 兜底也反代到 agent，
   //    故这些路由与本契约其余管理台路由同鉴权面（前门可达），不得按「仅内网可达」的假设放宽校验。
   queryAppLogs: defineJsonRoute({
@@ -42,12 +40,6 @@ export const agentApiContract = {
     path: "/ops/app-logs/query",
     input: AgentQueryAppLogsRequestSchema,
     output: AgentQueryAppLogsResponseSchema,
-  }),
-  queryInnerThoughts: defineJsonRoute({
-    method: "POST",
-    path: "/ops/inner-thoughts/query",
-    input: AgentQueryInnerThoughtsRequestSchema,
-    output: AgentQueryInnerThoughtsResponseSchema,
   }),
   queryTodos: defineJsonRoute({
     method: "POST",

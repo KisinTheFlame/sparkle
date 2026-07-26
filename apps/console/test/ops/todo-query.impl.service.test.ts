@@ -6,7 +6,6 @@ import type { AgentOpsQueryClient } from "../../src/ops/application/app-log-quer
 function makeClient(overrides: Partial<AgentOpsQueryClient>): AgentOpsQueryClient {
   return {
     queryAppLogs: vi.fn(),
-    queryInnerThoughts: vi.fn(),
     queryTodos: vi.fn(),
     ...overrides,
   };

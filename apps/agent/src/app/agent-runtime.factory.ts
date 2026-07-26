@@ -13,7 +13,6 @@ import {
 import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type { Config } from "@sparkle/kernel/config/config.loader";
 import type { Database } from "@sparkle/persistence/db/client";
-import { PrismaInnerThoughtDao } from "@sparkle/persistence/dao/impl/inner-thought.impl.dao";
 import type { LlmClient } from "@sparkle/llm-client";
 import type { MetricClient } from "@sparkle/metric-client/client";
 import type { NapcatClient } from "../acl/napcat-client.js";
@@ -38,11 +37,6 @@ import { SummaryTaskAgent } from "../agent/capabilities/context-summary/task-age
 import { FinalizeSummaryTool } from "../agent/capabilities/context-summary/task-agent/tools/finalize-summary.tool.js";
 import { TodoSuggestionTaskAgent } from "../agent/capabilities/todo/task-agent/todo-suggestion-task-agent.js";
 import { ProposeTodosTool } from "../agent/capabilities/todo/task-agent/tools/propose-todos.tool.js";
-import { EmitInnerThoughtTool } from "../agent/capabilities/inner-voice/tools/emit-inner-thought.tool.js";
-import { InnerVoiceTaskAgent } from "../agent/capabilities/inner-voice/task-agent/inner-voice-task-agent.js";
-import { InnerVoiceIdleTracker } from "../agent/capabilities/inner-voice/domain/idle-tracker.js";
-import { collectInnerVoiceIdleSignals } from "../agent/capabilities/inner-voice/domain/ledger-idle-signals.js";
-import { InnerVoiceExtension } from "../agent/runtime/root-agent/extensions/inner-voice.extension.js";
 import { PrismaTerminalStateDao } from "../agent/capabilities/terminal/infra/prisma-terminal-state.dao.js";
 import { PrismaTerminalOutputDao } from "../agent/capabilities/terminal/infra/prisma-terminal-output.dao.js";
 import { TerminalApp } from "../agent/apps/terminal/terminal.app.js";
@@ -156,12 +150,12 @@ function createMirroredTaskAgentTools({
 }
 
 /**
- * 三个 fork 型 task agent（summary / todo / inner-voice）的镜像工具装配。它们的差异只有
+ * 两个 fork 型 task agent（summary / todo）的镜像工具装配。它们的差异只有
  * 三处：终止子工具、任务名标签、提交指引；其余（挂 invoke 的 unguarded owner、switch 的
  * 定制指路话术、其它顶层工具的默认拒绝话术）形状完全一致，这里收敛成一个小工厂。
  *
  * 拒绝话术会进各 fork agent 的 tools 前缀，是 KV 缓存字节相等的一部分——模板拼出的字符串
- * 与收敛前逐字节相同（见 fork-task-agent-tools 单测钉死），改这里等于同时改三个子 agent 的前缀。
+ * 与收敛前逐字节相同（见 fork-task-agent-tools 单测钉死），改这里等于同时改两个子 agent 的前缀。
  */
 function buildForkTaskAgentTools({
   mainTopLevelTools,
@@ -347,7 +341,7 @@ export async function buildAgentRuntime({
   const readResourceTool = new ReadResourceTool({ resourceService });
   const downloadResourceTool = new DownloadResourceTool({ resourceFileService });
   const uploadResourceTool = new UploadResourceTool({ resourceFileService });
-  // 主 Agent 顶层工具的唯一有序清单：toolCatalog / rootAgentTools / 三个 fork 型
+  // 主 Agent 顶层工具的唯一有序清单：toolCatalog / rootAgentTools / 两个 fork 型
   // task agent 的镜像目录都从它派生。顺序即 LLM tools 数组顺序，是 KV 缓存稳定
   // 前缀的一部分——加/删/重排只改这一处。
   const mainTopLevelTools: ToolComponent[] = [
@@ -362,7 +356,7 @@ export async function buildAgentRuntime({
   const toolCatalog = new ToolCatalog(mainTopLevelTools);
   const rootAgentTools = toolCatalog.pick(mainTopLevelTools.map(tool => tool.name));
 
-  // 三个 fork 型 task agent（summary / todo / inner-voice）共用同一套镜像装配，从主 Agent
+  // 两个 fork 型 task agent（summary / todo）共用同一套镜像装配，从主 Agent
   // 的同一份有序顶层工具清单派生（见 buildForkTaskAgentTools），主 Agent 加/删/重排工具时
   // 镜像自动跟随，不会漂移出字节不等的 tools 前缀；请求前缀与主 Agent 字节相等，命中
   // Anthropic prompt cache（issue #265 / #410）。
@@ -385,24 +379,6 @@ export async function buildAgentRuntime({
       submitHint: 'invoke(tool="propose_todos", suggestions=[...]) 提交候选待办',
     }),
   });
-  const innerVoiceIdleTracker = new InnerVoiceIdleTracker();
-  const innerVoiceTaskAgent = new InnerVoiceTaskAgent({
-    llmClient,
-    taskTools: buildForkTaskAgentTools({
-      mainTopLevelTools,
-      terminalTool: new EmitInnerThoughtTool(),
-      taskLabel: "内心独白子任务",
-      submitHint: 'invoke(tool="emit_inner_thought", thoughts=[...]) 提交念头',
-    }),
-  });
-  const innerVoiceExtension = new InnerVoiceExtension({
-    tracker: innerVoiceIdleTracker,
-    taskAgent: innerVoiceTaskAgent,
-    eventQueue,
-    metricService,
-    innerThoughtDao: new PrismaInnerThoughtDao({ database }),
-    runtimeKey: ROOT_AGENT_RUNTIME_SNAPSHOT_RUNTIME_KEY,
-  });
   const rootAgentRuntime = new RootLoopAgent({
     llmClient,
     context,
@@ -418,10 +394,7 @@ export async function buildAgentRuntime({
     // 纯文本轮挂起的自唤醒兜底与 wait 工具共用同一个上限，语义一致：Agent 最多
     // 安静这么久就会自己醒来一轮。
     idleWakeMaxWaitMs: config.server.agent.waitToolMaxWaitMs,
-    loopExtensions: [
-      new AppEntryResetExtension({ session: rootAgentSession }),
-      innerVoiceExtension,
-    ],
+    loopExtensions: [new AppEntryResetExtension({ session: rootAgentSession })],
   });
 
   const restoredSnapshot = await rootAgentRuntimeSnapshotRepository.load(
@@ -429,22 +402,6 @@ export async function buildAgentRuntime({
   );
   if (restoredSnapshot) {
     await rootAgentRuntime.restorePersistedSnapshot(restoredSnapshot);
-  }
-
-  // 摸鱼判定重启回扫：从 ledger 读最近 2h（覆盖 30min 滑动窗 + 30min 不应期，富余充足）
-  // 重建两组时间戳。失败只降级为「冷启动从零累积」，不阻塞 agent 启动。
-  try {
-    const innerVoiceLookbackMs = 2 * 60 * 60 * 1000;
-    const recentLedgerRecords = await linearMessageLedgerDao.listCreatedAfter({
-      runtimeKey: ROOT_AGENT_RUNTIME_SNAPSHOT_RUNTIME_KEY,
-      createdAfter: new Date(Date.now() - innerVoiceLookbackMs),
-      limit: 20_000,
-    });
-    innerVoiceIdleTracker.restore(collectInnerVoiceIdleSignals(recentLedgerRecords));
-  } catch (error) {
-    logger.errorWithCause("Inner voice idle tracker restore failed; starting cold", error, {
-      event: "agent.inner_voice.restore_failed",
-    });
   }
 
   const mainAgentContextQueryService = new DefaultMainAgentContextQueryService({

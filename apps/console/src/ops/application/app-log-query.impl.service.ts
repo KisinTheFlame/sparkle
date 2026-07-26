@@ -7,7 +7,7 @@ import { mapAppLogList } from "../mappers/app-log.mapper.js";
 /** 只依赖用到的三条查询路由，其余 agent 契约（main-agent-context 等）与本查询面无关。 */
 export type AgentOpsQueryClient = Pick<
   JsonClient<typeof agentApiContract>,
-  "queryAppLogs" | "queryInnerThoughts" | "queryTodos"
+  "queryAppLogs" | "queryTodos"
 >;
 
 type DefaultAppLogQueryServiceDeps = {

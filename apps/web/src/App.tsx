@@ -33,11 +33,6 @@ const AppLogHistoryPage = lazy(() =>
     default: module.AppLogHistoryPage,
   })),
 );
-const InnerThoughtPage = lazy(() =>
-  import("@/pages/inner-thought/InnerThoughtPage").then(module => ({
-    default: module.InnerThoughtPage,
-  })),
-);
 const NapcatEventHistoryPage = lazy(() =>
   import("@/pages/napcat-event-history/NapcatEventHistoryPage").then(module => ({
     default: module.NapcatEventHistoryPage,
@@ -77,7 +72,6 @@ function App() {
           <Route path="/control-panel" element={<ControlPanelPage />} />
           <Route path="/scheduler-tasks" element={<SchedulerTasksPage />} />
           <Route path="/llm-history" element={<LlmHistoryPage />} />
-          <Route path="/inner-thought" element={<InnerThoughtPage />} />
           <Route path="/app-log-history" element={<AppLogHistoryPage />} />
           <Route path="/napcat-event-history" element={<NapcatEventHistoryPage />} />
           <Route path="/napcat-group-message-history" element={<NapcatGroupMessageHistoryPage />} />

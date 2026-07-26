@@ -1,6 +1,5 @@
 import {
   Bot,
-  Brain,
   CalendarClock,
   FileText,
   Gamepad2,
@@ -35,7 +34,6 @@ export const navItems: readonly NavItem[] = [
     matchPrefixes: ["/auth", "/auth/"],
   },
   { to: "/llm-history", label: "LLM 调用历史", icon: History },
-  { to: "/inner-thought", label: "内心念头", icon: Brain },
   { to: "/app-log-history", label: "应用日志", icon: FileText },
   { to: "/napcat-event-history", label: "NapCat 事件", icon: Webhook },
   { to: "/napcat-group-message-history", label: "QQ 消息", icon: MessagesSquare },
