@@ -10,28 +10,18 @@ import { initTestLoggerRuntime } from "../../../helpers/logger.js";
 
 initTestLoggerRuntime();
 
-function setup(
-  start = new Date("2026-06-27T00:00:00.000Z"),
-  suggestTodos: (openTodos: { title: string }[]) => Promise<string[]> = async () => [],
-) {
+function setup(start = new Date("2026-06-27T00:00:00.000Z")) {
   let current = start;
   const now = (): Date => current;
   const dao = new InMemoryTodoDao(now);
   const service = new TodoService({ todoDao: dao, now });
   const reminders: DueReminder[] = [];
   const digests: DigestSummary[] = [];
-  const digestSuggestions: string[][] = [];
-  const suggestCalls: { title: string }[][] = [];
   const poller = new TodoReminderPoller({
     todoService: service,
     onDueReminder: r => reminders.push(r),
-    onDigest: (d, suggestions) => {
+    onDigest: d => {
       digests.push(d);
-      digestSuggestions.push(suggestions);
-    },
-    suggestTodos: openTodos => {
-      suggestCalls.push(openTodos);
-      return suggestTodos(openTodos);
     },
   });
   return {
@@ -40,8 +30,6 @@ function setup(
     poller,
     reminders,
     digests,
-    digestSuggestions,
-    suggestCalls,
     advanceClock: (ms: number): void => {
       current = new Date(current.getTime() + ms);
     },
@@ -90,31 +78,6 @@ describe("TodoReminderPoller.runDigest", () => {
     expect(digests[0].totalCount).toBe(0);
   });
 
-  it("把未完成项标题喂给 suggestTodos，并把返回的建议透传给 onDigest", async () => {
-    const { service, poller, digestSuggestions, suggestCalls } = setup(
-      new Date("2026-06-27T00:00:00.000Z"),
-      async () => ["写周报", "回复闻震"],
-    );
-    await service.addTodo({ title: "a" });
-    await service.addTodo({ title: "b" });
-    await poller.runDigest();
-    expect(suggestCalls).toHaveLength(1);
-    expect(suggestCalls[0].map(item => item.title)).toEqual(["a", "b"]);
-    expect(digestSuggestions).toEqual([["写周报", "回复闻震"]]);
-  });
-
-  it("suggestTodos reject → 仍照发 digest，且第三段降级为空（不丢 digest）", async () => {
-    const { poller, digests, digestSuggestions } = setup(
-      new Date("2026-06-27T00:00:00.000Z"),
-      async () => {
-        throw new Error("fork boom");
-      },
-    );
-    await poller.runDigest();
-    expect(digests).toHaveLength(1);
-    expect(digestSuggestions).toEqual([[]]);
-  });
-
   it("digest 真实失败（buildDigest 抛错）→ rethrow，让调度器不推进 dedupe 游标、靠补发重试", async () => {
     // dedupe 任务必须把真实失败抛给调度器 SDK，否则 markSeen-after-success 会误判成功、静默丢当天日报。
     const poller = new TodoReminderPoller({
@@ -125,7 +88,6 @@ describe("TodoReminderPoller.runDigest", () => {
       } as unknown as TodoService,
       onDueReminder: () => {},
       onDigest: () => {},
-      suggestTodos: async () => [],
     });
     await expect(poller.runDigest()).rejects.toThrow("db blip");
   });

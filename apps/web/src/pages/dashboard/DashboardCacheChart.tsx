@@ -26,7 +26,7 @@ import type { DashboardRange } from "./dashboard-charts";
 
 const LLM_TOKENS = "llm.call.tokens";
 // 只看主 Agent：按 scene=agent 过滤。usage=agent 会混入 fork 型调用
-// （contextSummarizer / todoSuggestionAgent，它们共享 usage=agent 缓存身份），
+// （如 contextSummarizer，与主 Agent 共享 usage=agent 缓存身份），
 // scene 才是「哪个业务场景」的归因维度（issue #555）。
 const AGENT_SCENE = { scene: { op: "eq" as const, value: "agent" } };
 const CHART_HEIGHT = 300;
