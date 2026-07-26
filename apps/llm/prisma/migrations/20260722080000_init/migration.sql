@@ -1,5 +1,5 @@
 -- llm 独占 SQLite 库初始迁移（epic #539 子 issue 3）。
--- 五张表与主库 kagami.db 中的同名表逐列一致（取自生产库现行 .schema），
+-- 五张表与 agent 主库中的同名表逐列一致（取自生产库现行 .schema），
 -- 让启动期数据搬迁可以按显式列名 INSERT 整搬、保留自增主键。
 
 -- CreateTable
