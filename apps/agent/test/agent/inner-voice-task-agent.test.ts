@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { createUnguardedSubtoolOwner, ToolCatalog } from "@kagami/agent-runtime";
-import type { LlmChatResponsePayload, LlmClient } from "@kagami/llm-client";
+import { createUnguardedSubtoolOwner, ToolCatalog } from "@sparkle/agent-runtime";
+import type { LlmChatResponsePayload, LlmClient } from "@sparkle/llm-client";
 import { InnerVoiceTaskAgent } from "../../src/agent/capabilities/inner-voice/task-agent/inner-voice-task-agent.js";
 import {
   EmitInnerThoughtTool,

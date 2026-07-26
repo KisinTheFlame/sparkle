@@ -3,8 +3,8 @@ import type {
   BinaryContractMap,
   BinaryEnvelopeRouteContract,
   BinaryRawRouteContract,
-} from "@kagami/http/contract";
-import { interpolatePath } from "@kagami/http/url";
+} from "@sparkle/http/contract";
+import { interpolatePath } from "@sparkle/http/url";
 import {
   DEFAULT_UNREACHABLE_MESSAGE,
   decodeBizErrorWire,

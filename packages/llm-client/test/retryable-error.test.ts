@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { bizErrorFromWire, toBizErrorWire } from "@kagami/kernel/errors/biz-error-wire";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { bizErrorFromWire, toBizErrorWire } from "@sparkle/kernel/errors/biz-error-wire";
 import {
   isRetryableLlmFailure,
   llmProviderUnavailableError,

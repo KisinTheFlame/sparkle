@@ -8,13 +8,13 @@
     "strict": true,
     "noEmit": true,
     "paths": {
-      "@kagami/persistence/prisma": [
+      "@sparkle/persistence/prisma": [
         "./../../packages/persistence/src/generated/prisma/internal/prismaNamespace.ts"
       ],
-      "@kagami/persistence/*": ["./../../packages/persistence/src/*"],
-      "@kagami/kernel/*": ["./../../packages/kernel/src/*"],
-      "@kagami/http/*": ["./../../packages/http/src/*"],
-      "@kagami/metric-api/*": ["./../../packages/metric-api/src/*"]
+      "@sparkle/persistence/*": ["./../../packages/persistence/src/*"],
+      "@sparkle/kernel/*": ["./../../packages/kernel/src/*"],
+      "@sparkle/http/*": ["./../../packages/http/src/*"],
+      "@sparkle/metric-api/*": ["./../../packages/metric-api/src/*"]
     }
   },
   "include": ["src", "test"]

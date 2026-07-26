@@ -1,4 +1,4 @@
-import { defineJsonRoute } from "@kagami/http/contract";
+import { defineJsonRoute } from "@sparkle/http/contract";
 import { LlmProviderOptionSchema } from "./llm-chat.js";
 import {
   LlmGetChatCallRequestSchema,
@@ -28,7 +28,7 @@ const GENERATE_IMAGE_TIMEOUT_MS = 300_000;
 const EnvelopeRequest = z.unknown();
 
 /**
- * kagami-llm 进程对 agent 暴露的内部 RPC 契约（单一事实源）。服务端 handler 与 agent 侧 client
+ * sparkle-llm 进程对 agent 暴露的内部 RPC 契约（单一事实源）。服务端 handler 与 agent 侧 client
  * 都从这里派生类型 —— 改 output，两端一起编译报错（issue #230）。
  *
  * - `listProviders`：真 JSON schema，output 全类型化，是编译期强制的样板。

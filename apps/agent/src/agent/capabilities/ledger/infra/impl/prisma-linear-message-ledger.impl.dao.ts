@@ -1,5 +1,5 @@
-import * as Prisma from "@kagami/persistence/prisma";
-import type { Database } from "@kagami/persistence/db/client";
+import * as Prisma from "@sparkle/persistence/prisma";
+import type { Database } from "@sparkle/persistence/db/client";
 import type { LinearMessageLedgerInsert, LinearMessageLedgerRecord } from "../../domain/ledger.js";
 import type { LinearMessageLedgerDao } from "../linear-message-ledger.dao.js";
 import {

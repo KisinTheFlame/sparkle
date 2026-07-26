@@ -1,6 +1,6 @@
-import { toInputJsonObject } from "@kagami/persistence/common/prisma-json";
-import type { Database } from "@kagami/persistence/db/client";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { toInputJsonObject } from "@sparkle/persistence/common/prisma-json";
+import type { Database } from "@sparkle/persistence/db/client";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type { RootAgentRuntimeSnapshotRepository } from "./root-agent-runtime-snapshot.repository.js";
 import {
   PersistedRootAgentRuntimeSnapshotSchema,

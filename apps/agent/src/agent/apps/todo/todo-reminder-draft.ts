@@ -1,4 +1,4 @@
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import type { NotificationDraft } from "../../runtime/root-agent/notification/notification-draft.js";
 
 export const TODO_NOTIFICATION_GROUP = "待办";

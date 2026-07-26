@@ -1,4 +1,4 @@
-import type { MetricChartBucket } from "@kagami/metric-api/chart";
+import type { MetricChartBucket } from "@sparkle/metric-api/chart";
 
 // 桶时间轴共享助手：单指标查询（buildSeries 补空桶）与派生查询（对齐补 null）共用同一套桶对齐，
 // 避免两处各写一份、漂移出不一致的桶边界。

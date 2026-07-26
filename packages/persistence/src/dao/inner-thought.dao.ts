@@ -24,7 +24,7 @@ export type InsertInnerThoughtInput = {
 
 /**
  * inner-voice 念头账本（issue #359）：agent 写（每次摸鱼触发落一行）+ agent 的 OpsQueryHandler 读
- * （console 自 #539 子 issue 4 起零 DB，经 @kagami/agent-api 查询路由取数，不再直连本 DAO）。
+ * （console 自 #539 子 issue 4 起零 DB，经 @sparkle/agent-api 查询路由取数，不再直连本 DAO）。
  */
 export interface InnerThoughtDao {
   insert(input: InsertInnerThoughtInput): Promise<void>;

@@ -1,13 +1,13 @@
 import type { FastifyInstance } from "fastify";
-import { registerJsonRoute } from "@kagami/http/register";
-import { consoleApiContract } from "@kagami/console-api/contract";
+import { registerJsonRoute } from "@sparkle/http/register";
+import { consoleApiContract } from "@sparkle/console-api/contract";
 import type { LlmChatCallQueryService } from "../application/llm-chat-call-query.service.js";
 
 type LlmChatCallHandlerDeps = {
   llmChatCallQueryService: LlmChatCallQueryService;
 };
 
-/** LLM 调用历史查询路由。路由与 schema 的单一事实源在 @kagami/console-api（#279 PR4）。 */
+/** LLM 调用历史查询路由。路由与 schema 的单一事实源在 @sparkle/console-api（#279 PR4）。 */
 export class LlmChatCallHandler {
   private readonly llmChatCallQueryService: LlmChatCallQueryService;
 

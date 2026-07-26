@@ -4,7 +4,7 @@ import {
   toSerializableLlmNativeRecordOrNull,
 } from "../../provider.js";
 import { llmProviderUnavailableError, llmUpstreamCallFailedError } from "../../retryable-error.js";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import type { OpenAiCodexAuthProvider } from "../../providers/openai-codex-auth.js";
 import type { ImageProvider } from "../provider.js";
 import type { ImageGenerationRequest, ImageGenerationResult } from "../types.js";
@@ -201,7 +201,7 @@ async function fetchCodexImage(params: {
         Accept: "text/event-stream",
         "Content-Type": "application/json",
         ...(params.accountId ? { "ChatGPT-Account-Id": params.accountId } : {}),
-        "User-Agent": "Kagami/1.0",
+        "User-Agent": "Sparkle/1.0",
       },
       body: JSON.stringify(params.requestBody),
       signal: AbortSignal.timeout(params.config.timeoutMs),

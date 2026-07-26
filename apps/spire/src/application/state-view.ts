@@ -5,7 +5,7 @@ import {
   SpireIntentSchema,
   SpireRelicViewSchema,
   SpireScreenSchema,
-} from "@kagami/spire-api/contract";
+} from "@sparkle/spire-api/contract";
 import type { EnemyState, GameState } from "@kisinwen/sts-engine/engine/types";
 import { costOf, getCardDef } from "@kisinwen/sts-engine/engine/cards/cards";
 import { getEnemyDef } from "@kisinwen/sts-engine/engine/enemies/enemies";
@@ -20,7 +20,7 @@ import { currentOptions } from "@kisinwen/sts-engine/engine/run/run";
 // 服务返回这个纯 JSON，agent 侧 render/screen.ts 据此渲染文字屏幕（分工原则，issue #234）。
 // 意图展示数值在此按当前状态重算（玩家看到的是含力量/虚弱/易伤修正后的实际伤害）。
 //
-// 形状的单一事实源是 @kagami/spire-api 契约（issue #230）：这里的类型全部由契约 schema 派生
+// 形状的单一事实源是 @sparkle/spire-api 契约（issue #230）：这里的类型全部由契约 schema 派生
 // （门面 == 契约），改形状先改契约，服务端与 agent 侧 client 一起编译报错。
 
 export type IntentView = z.infer<typeof SpireIntentSchema>;

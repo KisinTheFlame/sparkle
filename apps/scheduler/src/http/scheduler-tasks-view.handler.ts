@@ -1,10 +1,10 @@
 import type { FastifyInstance } from "fastify";
-import { registerJsonRoute } from "@kagami/http/register";
+import { registerJsonRoute } from "@sparkle/http/register";
 import {
   schedulerTasksViewContract,
   type SchedulerTaskView,
   type SchedulerTasksViewResponse,
-} from "@kagami/scheduler-api/tasks-view";
+} from "@sparkle/scheduler-api/tasks-view";
 import type { SchedulerEngine } from "../application/scheduler-engine.js";
 import { taskKeyString, type TaskRunStore } from "../infra/db/task-run-store.js";
 

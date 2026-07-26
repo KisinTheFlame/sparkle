@@ -1,5 +1,5 @@
 {
-  "name": "@kagami/auth",
+  "name": "@sparkle/auth",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -14,15 +14,15 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "pretest": "pnpm --filter \"@kagami/auth^...\" build",
+    "pretest": "pnpm --filter \"@sparkle/auth^...\" build",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@kagami/http": "workspace:*",
-    "@kagami/kernel": "workspace:*",
-    "@kagami/llm": "workspace:*",
-    "@kagami/llm-api": "workspace:*",
+    "@sparkle/http": "workspace:*",
+    "@sparkle/kernel": "workspace:*",
+    "@sparkle/llm": "workspace:*",
+    "@sparkle/llm-api": "workspace:*",
     "fastify": "^5.6.2"
   },
   "devDependencies": {

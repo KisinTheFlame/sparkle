@@ -1,4 +1,4 @@
-import { isRecord } from "@kagami/kernel/json/is-record";
+import { isRecord } from "@sparkle/kernel/json/is-record";
 import {
   attachLlmProviderFailureContext,
   toSerializableLlmNativeRecord,

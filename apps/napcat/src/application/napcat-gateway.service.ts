@@ -3,7 +3,7 @@ import {
   type NapcatSendPrivateMessageRequest,
   type NapcatSendGroupMessageRequest,
   type NapcatSendMessageResponse,
-} from "@kagami/napcat-api/message";
+} from "@sparkle/napcat-api/message";
 
 /**
  * 出站消息的内部输入：在 HTTP wire schema 之上加一个**仅内部使用**的可选 `replyToMessageId`。

@@ -1,4 +1,4 @@
-import { type MetricChartQueryRequest } from "@kagami/metric-api/chart";
+import { type MetricChartQueryRequest } from "@sparkle/metric-api/chart";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query";
 import { metricClient } from "@/lib/rpc";

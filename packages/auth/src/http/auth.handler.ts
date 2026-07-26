@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
-import { registerJsonRoute } from "@kagami/http/register";
-import { authApiContract } from "@kagami/llm-api/auth-contract";
-import { type AuthProvider } from "@kagami/llm-api/auth";
+import { registerJsonRoute } from "@sparkle/http/register";
+import { authApiContract } from "@sparkle/llm-api/auth-contract";
+import { type AuthProvider } from "@sparkle/llm-api/auth";
 import type { AuthUsageCacheManager } from "../application/auth-usage-cache.impl.service.js";
 import type { OAuthAuthService } from "../application/oauth-auth.service.js";
 
@@ -11,8 +11,8 @@ type AuthHandlerDeps = {
 };
 
 /**
- * OAuth 凭据管理路由（挂载在 kagami-llm 进程）。路由与 schema 的单一事实源在
- * @kagami/llm-api/auth-contract（#279 PR6）；:provider 经契约 params 通道解析，
+ * OAuth 凭据管理路由（挂载在 sparkle-llm 进程）。路由与 schema 的单一事实源在
+ * @sparkle/llm-api/auth-contract（#279 PR6）；:provider 经契约 params 通道解析，
  * 不再有手动 ParamsSchema.parse。
  */
 export class AuthHandler {

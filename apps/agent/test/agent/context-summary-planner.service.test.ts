@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import type { LlmClient, LlmChatResponsePayload } from "@kagami/llm-client";
+import type { LlmClient, LlmChatResponsePayload } from "@sparkle/llm-client";
 import {
   createUnguardedSubtoolOwner,
   TaskAgentMaxRoundsExceededError,
   ToolCatalog,
-} from "@kagami/agent-runtime";
+} from "@sparkle/agent-runtime";
 import { SummaryTaskAgent } from "../../src/agent/capabilities/context-summary/task-agent/summary-task-agent.js";
 import {
   FINALIZE_SUMMARY_TOOL_NAME,

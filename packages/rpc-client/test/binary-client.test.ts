@@ -1,5 +1,5 @@
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { defineBinaryEnvelopeRoute, defineBinaryRawRoute } from "@kagami/http/contract";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { defineBinaryEnvelopeRoute, defineBinaryRawRoute } from "@sparkle/http/contract";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { createBinaryClient } from "../src/binary-client.js";

@@ -1,7 +1,7 @@
-import type { AppStateStore, JsonValue } from "@kagami/agent-runtime";
-import { normalizeInputJsonValue } from "@kagami/persistence/common/prisma-json";
-import type { Database } from "@kagami/persistence/db/client";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import type { AppStateStore, JsonValue } from "@sparkle/agent-runtime";
+import { normalizeInputJsonValue } from "@sparkle/persistence/common/prisma-json";
+import type { Database } from "@sparkle/persistence/db/client";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 
 const logger = new AppLogger({ source: "agent.app-state-store" });
 

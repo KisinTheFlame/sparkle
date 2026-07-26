@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { AsyncTool, type AsyncTaskManager, type AsyncTaskRunResult } from "@kagami/agent-runtime";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { AsyncTool, type AsyncTaskManager, type AsyncTaskRunResult } from "@sparkle/agent-runtime";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type { ImageClient } from "../../../../acl/image-client.js";
 import type { OssClient } from "../../../../acl/oss-client.js";
 
@@ -33,7 +33,7 @@ type Deps = {
 };
 
 /**
- * 生图（异步）：把 prompt 交给 kagami-llm 的生图端点（走 codex 订阅额度、后端 gpt-image-2），生成是
+ * 生图（异步）：把 prompt 交给 sparkle-llm 的生图端点（走 codex 订阅额度、后端 gpt-image-2），生成是
  * 多秒操作故做成异步工具——调用立刻回占位、主循环不阻塞，出图后经 `<async_tool_result>` 尾部追加。
  * 完成时**原图直接进你的视野**（多模态块），并叠加落 OSS 拿 resid（之后 switch(qq) 用 send_resource 发群）。
  *

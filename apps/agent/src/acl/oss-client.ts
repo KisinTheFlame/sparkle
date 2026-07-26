@@ -1,13 +1,13 @@
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { createBinaryClient, type BinaryClient } from "@kagami/rpc-client/binary-client";
-import { ossApiContract } from "@kagami/oss-api/contract";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { createBinaryClient, type BinaryClient } from "@sparkle/rpc-client/binary-client";
+import { ossApiContract } from "@sparkle/oss-api/contract";
 
 /**
- * 自建对象存储（@kagami/oss）的最小 HTTP client：把「bytes + content-type」PUT 进去，拿对外
+ * 自建对象存储（@sparkle/oss）的最小 HTTP client：把「bytes + content-type」PUT 进去，拿对外
  * key（resid）。对标 S3 / MinIO 的 typed object store——content-type 随对象存取，但 client 不关心
  * 图片等媒体语义（isImage 之类的判定留给上层 resource service）。
  *
- * wire 层走 @kagami/oss-api 契约驱动的 createBinaryClient（issue #310）：putObject 是 binary-envelope
+ * wire 层走 @sparkle/oss-api 契约驱动的 createBinaryClient（issue #310）：putObject 是 binary-envelope
  * （上行字节 + content-type 头、下行 `{ key }` 信封，全由工厂处理，错误码经 mapFallbackError 归一）；
  * getObject 是 binary-raw（工厂只做 URL 插值 + fetch，返回裸 Response），下面所有 404 / maxBytes /
  * mime 兜底都是领域逻辑、留在本 client。

@@ -8,7 +8,7 @@
     "strict": true,
     "noEmit": true,
     "paths": {
-      "@kagami/spire-api/*": ["./../../packages/spire-api/src/*"]
+      "@sparkle/spire-api/*": ["./../../packages/spire-api/src/*"]
     }
   },
   "include": ["src", "test"]

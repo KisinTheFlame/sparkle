@@ -1,4 +1,4 @@
-import { defineJsonRoute } from "@kagami/http/contract";
+import { defineJsonRoute } from "@sparkle/http/contract";
 import { z } from "zod";
 
 // —— 客户端超时（wire 事实，随契约走）——
@@ -11,7 +11,7 @@ const ACTION_TIMEOUT_MS = 20_000;
 export const TypeValueSchema = z.object({ text: z.string() });
 
 /**
- * kagami-browser 进程对 agent 暴露的动作 RPC 契约（单一事实源，issue #230）。九条路由全是 JSON
+ * sparkle-browser 进程对 agent 暴露的动作 RPC 契约（单一事实源，issue #230）。九条路由全是 JSON
  * wire；screenshot 的图片以 base64 over JSON 传输（localhost 低频，+33% 体积可接受），由 agent 侧
  * 门面解回 Buffer —— wire 契约与门面变换分层，契约只钉 wire 形状。
  *

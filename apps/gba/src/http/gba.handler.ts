@@ -4,14 +4,14 @@ import {
   registerBinaryEnvelopeRoute,
   registerBinaryRawRoute,
   registerJsonRoute,
-} from "@kagami/http/register";
-import { gbaApiContract, gbaConsoleContract, gbaRomsContract } from "@kagami/gba-api/contract";
+} from "@sparkle/http/register";
+import { gbaApiContract, gbaConsoleContract, gbaRomsContract } from "@sparkle/gba-api/contract";
 import type { GbaService } from "../application/gba.service.js";
 import { MAX_ROM_BYTES, toRomView } from "../application/rom-library.js";
 
 /**
- * kagami-gba 的 HTTP 面：游玩路由（agent 直连）+ ROM 管理路由（控制台经 gateway `/gba/roms`）。
- * 全量走 @kagami/gba-api 契约。上传是 binary-envelope（裸字节 + header 带 encodeURIComponent
+ * sparkle-gba 的 HTTP 面：游玩路由（agent 直连）+ ROM 管理路由（控制台经 gateway `/gba/roms`）。
+ * 全量走 @sparkle/gba-api 契约。上传是 binary-envelope（裸字节 + header 带 encodeURIComponent
  * 过的 ROM 名）；JSON 与二进制路由共存于同一实例——不用全局 useRawBodyPassthrough（会弄坏
  * JSON 路由），只给 application/octet-stream 注册透传 parser（见 runtime configure）。
  */

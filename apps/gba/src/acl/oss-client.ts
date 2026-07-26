@@ -1,9 +1,9 @@
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { createBinaryClient, type BinaryClient } from "@kagami/rpc-client/binary-client";
-import { ossApiContract } from "@kagami/oss-api/contract";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { createBinaryClient, type BinaryClient } from "@sparkle/rpc-client/binary-client";
+import { ossApiContract } from "@sparkle/oss-api/contract";
 
 /**
- * 自建对象存储（@kagami/oss）的最小 HTTP client。gba 进程用它存取 ROM 字节：控制台上传时
+ * 自建对象存储（@sparkle/oss）的最小 HTTP client。gba 进程用它存取 ROM 字节：控制台上传时
  * putObject 换 key（元数据落 gba 自己的 sqlite），loadGame 时 getObject 拉回、deleteRom 时
  * best-effort 删除。
  *

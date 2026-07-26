@@ -1,5 +1,5 @@
-import type { App, AsyncTaskManager, ToolComponent } from "@kagami/agent-runtime";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import type { App, AsyncTaskManager, ToolComponent } from "@sparkle/agent-runtime";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import { createAtelierGenerateTool } from "../../capabilities/atelier/tools/generate.tool.js";
 import type { RootAgentEffect } from "../../runtime/effect/root-agent-effect.js";
 import type { ImageClient } from "../../../acl/image-client.js";
@@ -16,10 +16,10 @@ type AtelierAppDeps = {
 };
 
 /**
- * 画室 App：把「用 AI 生图」包成 Kagami 桌面上的一个能力单元。结构照抄 PixelApp——薄壳，只组装
+ * 画室 App：把「用 AI 生图」包成 Sparkle 桌面上的一个能力单元。结构照抄 PixelApp——薄壳，只组装
  * 一个 generate 工具 + help/onFocus 模板。
  *
- * 与 pixel（她一格格手绘）的区别：atelier 是把文字描述交给 kagami-llm 的生图端点（gpt-image-2，走
+ * 与 pixel（她一格格手绘）的区别：atelier 是把文字描述交给 sparkle-llm 的生图端点（gpt-image-2，走
  * codex 订阅额度）生成。generate 是**异步**工具：调用立刻回占位、出图后经 `<async_tool_result>` 尾部
  * 追加，原图直接进她的视野。无状态、无独立进程——复用已上线的 llm 服务端点。
  */

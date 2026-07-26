@@ -1,4 +1,4 @@
-import type { LlmMessage } from "@kagami/llm-client";
+import type { LlmMessage } from "@sparkle/llm-client";
 
 /** 阈值触发的自动压缩固定用这一档：摘要前 90%，保留最近 10%。 */
 const AUTO_CONTEXT_COMPRESS_RATIO = 90;

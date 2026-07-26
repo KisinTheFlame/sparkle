@@ -91,7 +91,7 @@ model EmbeddingCache {
 }
 
 // claude-code 图片 File API 缓存：图片内容 sha256 → 已上传的 Anthropic file_id。
-// 让同一张图（跨轮次 / 跨 kagami-llm 重启 / 跨会话）只上传一次。Files API 文件不过期
+// 让同一张图（跨轮次 / 跨 sparkle-llm 重启 / 跨会话）只上传一次。Files API 文件不过期
 // （persist until deleted），故由 llm 进程的每日 GC 按 lastUsedAt 回收（#433）。仅 claude-code provider 用。
 model ClaudeFileCache {
   contentSha256 String   @id @map("content_sha256")

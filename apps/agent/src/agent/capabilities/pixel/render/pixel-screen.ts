@@ -1,6 +1,6 @@
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
-import { EMPTY_GLYPH } from "@kagami/pixel-api/palette";
-import type { CanvasResponse, CanvasState } from "@kagami/pixel-api/contract";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
+import { EMPTY_GLYPH } from "@sparkle/pixel-api/palette";
+import type { CanvasResponse, CanvasState } from "@sparkle/pixel-api/contract";
 
 // === CanvasState → 文字屏幕（走 .hbs 模板）===
 //

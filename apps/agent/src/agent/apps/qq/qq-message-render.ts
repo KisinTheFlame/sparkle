@@ -1,5 +1,5 @@
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
-import type { NapcatReceiveMessageSegment } from "@kagami/napcat-api/segment";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
+import type { NapcatReceiveMessageSegment } from "@sparkle/napcat-api/segment";
 import type { GroupNoticeMessage } from "../../capabilities/messaging/conversation.js";
 
 // === QQ App 群/私聊消息渲染 ===

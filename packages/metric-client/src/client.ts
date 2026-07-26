@@ -1,7 +1,7 @@
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { createClient, type JsonClient } from "@kagami/rpc-client/client";
-import { metricApiContract } from "@kagami/metric-api/contract";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { createClient, type JsonClient } from "@sparkle/rpc-client/client";
+import { metricApiContract } from "@sparkle/metric-api/contract";
 
 /** 打点标签：平凡的字符串 map。 */
 export type MetricTags = Record<string, string>;
@@ -34,9 +34,9 @@ type FetchLike = typeof fetch;
 const logger = new AppLogger({ source: "metric.service" });
 
 /**
- * 独立 metric 服务（`@kagami/metric`）的 fire-and-forget 上报 SDK。
+ * 独立 metric 服务（`@sparkle/metric`）的 fire-and-forget 上报 SDK。
  *
- * 传输层复用 @kagami/metric-api 契约驱动的 `createClient`（与 llm/browser/spire 一族一致，不再
+ * 传输层复用 @sparkle/metric-api 契约驱动的 `createClient`（与 llm/browser/spire 一族一致，不再
  * 手写 fetch）。fire-and-forget 语义 = 在 `createClient` 之上包一层「吞掉它一切 throw」的 try/catch：
  * createClient 会读+parse 响应体、非 2xx / 坏响应即 throw，本 SDK 把这些收敛成「记日志后咽下、
  * 永不 reject」。

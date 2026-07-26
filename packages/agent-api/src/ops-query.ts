@@ -1,14 +1,14 @@
 import { z } from "zod";
-import { JsonRecordSchema } from "@kagami/http/wire";
+import { JsonRecordSchema } from "@sparkle/http/wire";
 
 /**
  * console 只读查询的 wire schema（epic #539 子 issue 4：console 脱库，agent 持有的
  * app_log / inner_thought / todo_item 经本契约查询）。
  *
- * 形状与 @kagami/console-api 的对应 response item 逐字段逐约束对齐（ISO 字符串时间），
+ * 形状与 @sparkle/console-api 的对应 response item 逐字段逐约束对齐（ISO 字符串时间），
  * 让 console 侧成为纯转发聚合层：DB Date → ISO 的序列化与 legacy 值归一（如 todo 的
  * repeatEveryMs<=0 归 null）都归 agent handler。服务间 POST JSON，page/pageSize 是真数字，
- * 上限与 console-api（@kagami/http/wire PaginationQuerySchema）的 100 对齐。
+ * 上限与 console-api（@sparkle/http/wire PaginationQuerySchema）的 100 对齐。
  */
 
 const QueryPaginationSchema = {

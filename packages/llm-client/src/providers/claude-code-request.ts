@@ -1,4 +1,4 @@
-import { imageContentToBase64 } from "@kagami/llm";
+import { imageContentToBase64 } from "@sparkle/llm";
 import type { JsonSchema, LlmChatRequest, LlmContentPart } from "../types.js";
 import type {
   ClaudeMessageRequest,

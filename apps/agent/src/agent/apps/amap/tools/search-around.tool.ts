@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@kagami/agent-runtime";
+import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@sparkle/agent-runtime";
 import { escapeAttr, renderPoiList } from "../amap-screen.js";
 import type { AmapClient } from "../client/amap-client.js";
 import type { RootAgentEffect } from "../../../runtime/effect/root-agent-effect.js";

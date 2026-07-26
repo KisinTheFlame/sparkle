@@ -1,8 +1,8 @@
 // OAuth 额度遥测的下沉端口（epic #521）。packages/auth 是认证/额度领域包，Metric 是宿主应用的观测
-// 设施——领域包不该反向依赖 @kagami/metric-client。故这里只定义一个窄端口，由宿主（apps/llm）注入
+// 设施——领域包不该反向依赖 @sparkle/metric-client。故这里只定义一个窄端口，由宿主（apps/llm）注入
 // Metric 实现；默认 noop，测试与未装配时零副作用。
 //
-// window / provider 取值故意在本文件自持（不引 @kagami/llm-api/auth-usage-trend）：那条趋势契约在
+// window / provider 取值故意在本文件自持（不引 @sparkle/llm-api/auth-usage-trend）：那条趋势契约在
 // epic 收尾（#520）会被整条删除，sink 不该跟它耦合。
 
 export type AuthUsageMetricProvider = "claude-code" | "openai-codex";

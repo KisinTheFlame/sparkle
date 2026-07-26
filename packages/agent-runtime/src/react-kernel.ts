@@ -1,4 +1,4 @@
-import type { LlmMessage } from "@kagami/llm";
+import type { LlmMessage } from "@sparkle/llm";
 import type { EffectInterpreter } from "./effect.js";
 import type { ToolExecutor, ToolSetExecutionResult } from "./tool/tool-catalog.js";
 import type { ToolContext, Tool } from "./tool/tool-component.js";

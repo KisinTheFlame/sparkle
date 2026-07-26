@@ -1,5 +1,5 @@
 import { mkdirSync } from "node:fs";
-import { sqliteFilePathFromUrl } from "@kagami/kernel/utils/sqlite-path";
+import { sqliteFilePathFromUrl } from "@sparkle/kernel/utils/sqlite-path";
 import path from "node:path";
 import {
   getPrismaClientClass,

@@ -18,7 +18,7 @@ import type {
 } from "../metric.dao.js";
 
 /**
- * DuckDB 版 metric 数据层（#475 P1）。metric 从共享 SQLite / Prisma 迁出，落 kagami-metric 独占的
+ * DuckDB 版 metric 数据层（#475 P1）。metric 从共享 SQLite / Prisma 迁出，落 sparkle-metric 独占的
  * 单个 DuckDB 文件——列式引擎为「扫大表、按维度聚合」而生，原生 `quantile_cont`（p95，为 P2 铺路）、
  * 高基数 top-N 可 `QUALIFY` 下推，消灭 SQLite 行存 + JSON 抽取在分析聚合上的短板（见观察台 #371）。
  *

@@ -50,5 +50,5 @@ export function getPageTitle(pathname: string): string {
       pathname.startsWith(`${to}/`) ||
       matchPrefixes?.some(prefix => pathname === prefix || pathname.startsWith(prefix)) === true,
   );
-  return matchedItem?.label ?? "Kagami";
+  return matchedItem?.label ?? "Sparkle";
 }

@@ -1,16 +1,16 @@
 import type { FastifyInstance } from "fastify";
-import { registerBinaryRawRoute, registerJsonRoute } from "@kagami/http/register";
+import { registerBinaryRawRoute, registerJsonRoute } from "@sparkle/http/register";
 import {
   pixelApiContract,
   type CanvasResponse,
   type CanvasState,
-} from "@kagami/pixel-api/contract";
+} from "@sparkle/pixel-api/contract";
 import type { PixelService } from "../application/pixel.service.js";
 import { CanvasRejectError } from "../domain/errors.js";
 
 // === 像素画 HTTP 路由 ===
 //
-// 绘图 / 查看端点走 @kagami/pixel-api 契约的 registerJsonRoute，回 CanvasResponse（领域拒绝
+// 绘图 / 查看端点走 @sparkle/pixel-api 契约的 registerJsonRoute，回 CanvasResponse（领域拒绝
 // 以 { ok:false, reason } 带回当前画布，200）。render 是 binary-raw：手写 image/png header 回原始
 // PNG 字节；无画布回 409 + JSON reason。绝不调 useRawBodyPassthrough（绘图上行是 JSON）。
 

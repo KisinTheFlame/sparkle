@@ -12,10 +12,10 @@ import type {
   LlmContentPart,
   LlmToolCall,
 } from "../types.js";
-import { imageContentToBase64 } from "@kagami/llm";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { imageContentToBase64 } from "@sparkle/llm";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import { llmProviderUnavailableError, llmUpstreamCallFailedError } from "../retryable-error.js";
-import type { Config } from "@kagami/kernel/config/config.loader";
+import type { Config } from "@sparkle/kernel/config/config.loader";
 import type { OpenAiCodexAuthProvider } from "./openai-codex-auth.js";
 
 const DEFAULT_INSTRUCTIONS = "You are a helpful assistant.";
@@ -153,7 +153,7 @@ async function fetchCodexResponse(params: {
         Accept: "text/event-stream",
         "Content-Type": "application/json",
         ...(params.auth.accountId ? { "ChatGPT-Account-Id": params.auth.accountId } : {}),
-        "User-Agent": "Kagami/1.0",
+        "User-Agent": "Sparkle/1.0",
       },
       body: JSON.stringify(params.requestBody),
       signal: AbortSignal.timeout(params.config.timeoutMs),
@@ -301,7 +301,7 @@ function buildPromptCacheKey(
         : request.toolChoice.tool_name,
   });
 
-  return `kagami-codex-${createHash("sha256").update(keySeed).digest("hex").slice(0, 32)}`;
+  return `sparkle-codex-${createHash("sha256").update(keySeed).digest("hex").slice(0, 32)}`;
 }
 
 function toCodexInputContentPart(part: LlmContentPart): Record<string, unknown> {

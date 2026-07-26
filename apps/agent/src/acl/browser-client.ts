@@ -1,6 +1,6 @@
 import type { z } from "zod";
-import { createClient, notReadyFallbackMapper, type JsonClient } from "@kagami/rpc-client/client";
-import { browserApiContract, type TypeValueSchema } from "@kagami/browser-api/contract";
+import { createClient, notReadyFallbackMapper, type JsonClient } from "@sparkle/rpc-client/client";
+import { browserApiContract, type TypeValueSchema } from "@sparkle/browser-api/contract";
 import {
   BrowserError,
   type BrowserErrorCode,
@@ -22,7 +22,7 @@ type TypeValue = z.infer<typeof TypeValueSchema>;
  * 重新 JSON.stringify——tool_result 字节因此与进程拆分前完全一致（KV 缓存契约，issue #173，由
  * apps/agent/test/acl/browser-client-wire.test.ts 的字节基线钉死）。
  *
- * wire 层走 @kagami/browser-api 契约驱动的 createClient（issue #230）：请求/响应形状与服务端
+ * wire 层走 @sparkle/browser-api 契约驱动的 createClient（issue #230）：请求/响应形状与服务端
  * handler 共享同一份 Zod schema，改契约两端同时编译报错。门面只保留两处变换：screenshot 的
  * base64 → Buffer、eval 的 { result } 信封拆包。
  */
@@ -52,7 +52,7 @@ type HttpBrowserClientDeps = {
 type WireError = { code?: string; message?: string; context?: BrowserErrorContext };
 
 /**
- * 把浏览器动作经 HTTP 打到独立的 kagami-browser 进程。
+ * 把浏览器动作经 HTTP 打到独立的 sparkle-browser 进程。
  *
  * - 非 2xx：响应体 `{ code, message, context }` 原样重建成 BrowserError 再抛（decodeError），交
  *   工具基类经现有 serializeBrowserError 产出同样字节。

@@ -1,7 +1,7 @@
-import { runService } from "@kagami/kernel/http/service-runner";
+import { runService } from "@sparkle/kernel/http/service-runner";
 import { buildSchedulerRuntime, closeDb } from "./app/scheduler-runtime.js";
 
-// scheduler 进程（kagami-scheduler，issue #428）：通用薄时钟 + 执行历史存储（TaskRun，#493）。
+// scheduler 进程（sparkle-scheduler，issue #428）：通用薄时钟 + 执行历史存储（TaskRun，#493）。
 // 独立 PM2 进程，agent 重启不打断它。日志只走 stdout（请求日志由 PM2 的 scheduler-out.log 承载）。
 runService({
   name: "scheduler",

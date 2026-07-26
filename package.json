@@ -1,5 +1,5 @@
 {
-  "name": "kagami",
+  "name": "sparkle",
   "private": true,
   "version": "0.0.0",
   "packageManager": "pnpm@10.18.3",
@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
-    "@kagami/config": "workspace:*",
+    "@sparkle/config": "workspace:*",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.0.1",

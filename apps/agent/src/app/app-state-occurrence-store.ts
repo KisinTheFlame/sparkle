@@ -1,5 +1,5 @@
-import type { AppStateStore } from "@kagami/agent-runtime";
-import type { OccurrenceStore } from "@kagami/scheduler-client/types";
+import type { AppStateStore } from "@sparkle/agent-runtime";
+import type { OccurrenceStore } from "@sparkle/scheduler-client/types";
 
 /** app_state 里一个任务 occurrence 去重记录的 appId：存 `{ lastProcessedScheduledAt }`。 */
 function occurrenceAppId(taskName: string): string {

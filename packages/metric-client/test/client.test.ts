@@ -1,5 +1,5 @@
-import { initLoggerRuntime } from "@kagami/kernel/logger/runtime";
-import type { LogEvent, LogSink } from "@kagami/kernel/logger/types";
+import { initLoggerRuntime } from "@sparkle/kernel/logger/runtime";
+import type { LogEvent, LogSink } from "@sparkle/kernel/logger/types";
 import { describe, expect, it, vi } from "vitest";
 import { HttpMetricClient, NOOP_METRIC_CLIENT } from "../src/client.js";
 

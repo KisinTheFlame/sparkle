@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import { MutedSendError } from "../../../../src/agent/capabilities/messaging/application/muted-send-error.js";
 import { SendResourceTool } from "../../../../src/agent/capabilities/messaging/tools/send-resource.tool.js";
 import type { ResourceService } from "../../../../src/agent/capabilities/resource/application/resource.service.js";
 import type { AgentMessageService } from "../../../../src/agent/capabilities/messaging/application/agent-message.service.js";
-import type { NapcatChatTarget } from "@kagami/napcat-api/message";
+import type { NapcatChatTarget } from "@sparkle/napcat-api/message";
 
 const GROUP_TARGET: NapcatChatTarget = { chatType: "group", groupId: "123" };
 

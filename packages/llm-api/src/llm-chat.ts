@@ -1,9 +1,9 @@
-import { LLM_PROVIDER_IDS } from "@kagami/llm";
+import { LLM_PROVIDER_IDS } from "@sparkle/llm";
 import { z } from "zod";
-import { JsonRecordSchema } from "@kagami/http/wire";
+import { JsonRecordSchema } from "@sparkle/http/wire";
 
-// provider 标识全集的单源在 @kagami/llm；这里只派生 zod schema，不再手写字面量。
-// 需要 `LlmProviderId` 类型的代码请直接从 @kagami/llm 导入（项目禁止 re-export barrel）。
+// provider 标识全集的单源在 @sparkle/llm；这里只派生 zod schema，不再手写字面量。
+// 需要 `LlmProviderId` 类型的代码请直接从 @sparkle/llm 导入（项目禁止 re-export barrel）。
 export const LlmProviderIdSchema = z.enum(LLM_PROVIDER_IDS);
 
 export const LlmToolCallPayloadSchema = z

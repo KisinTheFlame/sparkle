@@ -1,14 +1,14 @@
 import { randomUUID } from "node:crypto";
-import { LLM_PROVIDER_IDS, type LlmProviderId } from "@kagami/llm";
+import { LLM_PROVIDER_IDS, type LlmProviderId } from "@sparkle/llm";
 import {
   type LlmChatRequestPayload,
   type LlmProviderOption,
   type LlmRequestUserContentPart,
-} from "@kagami/llm-api/llm-chat";
-import type { LlmUsageId } from "@kagami/kernel/contracts/llm";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import type { Config } from "@kagami/kernel/config/config.loader";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+} from "@sparkle/llm-api/llm-chat";
+import type { LlmUsageId } from "@sparkle/kernel/contracts/llm";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import type { Config } from "@sparkle/kernel/config/config.loader";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import {
   getLlmProviderFailureContext,
   type LlmProvider,
@@ -20,7 +20,7 @@ import type {
   LlmChatResponsePayload,
   LlmToolChoice,
 } from "./types.js";
-import { imageContentToBase64 } from "@kagami/llm";
+import { imageContentToBase64 } from "@sparkle/llm";
 import { llmProviderUnavailableError } from "./retryable-error.js";
 
 const llmClientLogger = new AppLogger({ source: "llm.client" });
@@ -52,7 +52,7 @@ type CreateLlmClientOptions = {
   usages: Record<LlmUsageId, LlmUsageConfig>;
   /**
    * 每次 attempt 结束（成功/失败）产出的可落库观测事件。llm-client 只产出事实，
-   * 由上层（agent 装配层）决定是否写入 DB / metric —— 从而使本包对 `@kagami/persistence`
+   * 由上层（agent 装配层）决定是否写入 DB / metric —— 从而使本包对 `@sparkle/persistence`
    * 零依赖。调用方式为 fire-and-forget，client 内部 catch，绝不影响 LLM 调用结果。
    */
   recordObservation?: (observation: LlmChatCallObservation) => void | Promise<void>;
@@ -440,7 +440,7 @@ function requireScene(scene: string | undefined): string {
 }
 
 function toRecordableChatRequest(request: LlmChatRequest): Record<string, unknown> {
-  // payload 显式标注为契约类型，把「落库 shape」钉死在 @kagami/llm-api/llm-chat 上：
+  // payload 显式标注为契约类型，把「落库 shape」钉死在 @sparkle/llm-api/llm-chat 上：
   // 后端序列化结构一旦漂移，这里立刻编译报错，前端 viewer 与之同源不再静默失配。
   const payload: LlmChatRequestPayload = {
     ...(request.system ? { system: request.system } : {}),

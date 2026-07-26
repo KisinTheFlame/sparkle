@@ -1,7 +1,7 @@
 import {
   type NapcatQqMessageListQuery,
   type NapcatQqMessageListResponse,
-} from "@kagami/console-api/napcat-group-message";
+} from "@sparkle/console-api/napcat-group-message";
 import { mapNapcatQqMessageList } from "../mappers/napcat-group-message.mapper.js";
 import type { NapcatQqMessageQueryService } from "./napcat-group-message-query.service.js";
 import type { NapcatQueryClient } from "./napcat-event-query.impl.service.js";

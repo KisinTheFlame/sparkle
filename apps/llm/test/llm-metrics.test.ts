@@ -1,5 +1,5 @@
-import type { LlmChatCallObservation } from "@kagami/llm-client";
-import type { MetricClient, RecordMetricInput } from "@kagami/metric-client/client";
+import type { LlmChatCallObservation } from "@sparkle/llm-client";
+import type { MetricClient, RecordMetricInput } from "@sparkle/metric-client/client";
 import { describe, expect, it } from "vitest";
 import { recordLlmCallMetrics } from "../src/app/llm-metrics.js";
 

@@ -2,12 +2,12 @@ import {
   type LlmChatCallDetailResponse,
   type LlmChatCallListQuery,
   type LlmChatCallListResponse,
-} from "@kagami/console-api/llm-chat-call";
-import type { JsonClient } from "@kagami/rpc-client/client";
-import type { llmApiContract } from "@kagami/llm-api/contract";
+} from "@sparkle/console-api/llm-chat-call";
+import type { JsonClient } from "@sparkle/rpc-client/client";
+import type { llmApiContract } from "@sparkle/llm-api/contract";
 import type { LlmChatCallQueryService } from "./llm-chat-call-query.service.js";
 import { mapLlmChatCallDetail, mapLlmChatCallList } from "../mappers/llm-chat-call.mapper.js";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 
 /** 只依赖用到的两条查询路由，其余 llm 契约（chat/embed 等内部 RPC）与 console 无关。 */
 export type LlmQueryClient = Pick<

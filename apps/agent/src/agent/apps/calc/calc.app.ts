@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { App, AppStartupContext } from "@kagami/agent-runtime";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import type { App, AppStartupContext } from "@sparkle/agent-runtime";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import { CalculateTool } from "./tools/calculate.tool.js";
 
 const CALC_APP_ID = "calc";

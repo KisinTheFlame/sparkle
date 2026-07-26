@@ -1,4 +1,4 @@
-import { type AppLogListQuery } from "@kagami/console-api/app-log";
+import { type AppLogListQuery } from "@sparkle/console-api/app-log";
 import { useQuery } from "@tanstack/react-query";
 import { createHistoryListQueryOptions, queryKeys } from "@/lib/query";
 import { consoleClient } from "@/lib/rpc";

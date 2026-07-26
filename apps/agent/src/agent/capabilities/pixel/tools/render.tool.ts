@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@kagami/agent-runtime";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@sparkle/agent-runtime";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import { serializePixelError } from "../domain/errors.js";
 import type { RootAgentEffect } from "../../../runtime/effect/root-agent-effect.js";
 import type { OssClient } from "../../../../acl/oss-client.js";

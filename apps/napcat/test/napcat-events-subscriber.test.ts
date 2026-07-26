@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import type { NapcatAgentEvent, NapcatOutboxEvent } from "@kagami/napcat-api/event";
+import type { NapcatAgentEvent, NapcatOutboxEvent } from "@sparkle/napcat-api/event";
 import { NapcatSseSubscriber } from "../src/http/napcat-events.handler.js";
-import { createBackpressureAwareWrite } from "@kagami/http/sse";
+import { createBackpressureAwareWrite } from "@sparkle/http/sse";
 import type { NapcatEventOutboxDao } from "../src/infra/napcat-event-outbox.dao.js";
-import { initLoggerRuntime } from "@kagami/kernel/logger/runtime";
-import type { LogEvent, LogSink } from "@kagami/kernel/logger/types";
+import { initLoggerRuntime } from "@sparkle/kernel/logger/runtime";
+import type { LogEvent, LogSink } from "@sparkle/kernel/logger/types";
 
 /** 最小事件：好友列表更新（形状最简，内容与本测试无关）。 */
 function event(): NapcatAgentEvent {

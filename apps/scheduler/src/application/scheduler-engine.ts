@@ -1,12 +1,12 @@
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import type { SchedulerTickEvent } from "@kagami/scheduler-api/event";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import type { SchedulerTickEvent } from "@sparkle/scheduler-api/event";
 import type {
   SchedulerRegisterRequest,
   SchedulerRegisterResponse,
   SchedulerStatusResponse,
   SchedulerTaskManifest,
-} from "@kagami/scheduler-api/contract";
-import type { SchedulerTaskSchedule } from "@kagami/scheduler-api/schedule";
+} from "@sparkle/scheduler-api/contract";
+import type { SchedulerTaskSchedule } from "@sparkle/scheduler-api/schedule";
 import { CronDriver } from "../infra/cron-driver.js";
 import { IntervalDriver } from "../infra/interval-driver.js";
 import type { TickBroadcaster } from "./tick-broadcaster.js";

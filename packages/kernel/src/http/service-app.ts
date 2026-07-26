@@ -6,7 +6,7 @@ import { toHttpErrorResponse } from "../errors/http-error.js";
 import type { AppLogger } from "../logger/logger.js";
 import { withTraceContext } from "../logger/runtime.js";
 
-const TRACE_ID_HEADER_NAME = "X-Kagami-Trace-Id";
+const TRACE_ID_HEADER_NAME = "X-Sparkle-Trace-Id";
 
 export type AppRouteHandler = {
   register(app: FastifyInstance): void;

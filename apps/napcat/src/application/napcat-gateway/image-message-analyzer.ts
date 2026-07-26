@@ -1,9 +1,9 @@
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { truncateWithEllipsis } from "@kagami/kernel/utils/text";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
-import { normalizeImageForLlm } from "@kagami/image/normalize";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { truncateWithEllipsis } from "@sparkle/kernel/utils/text";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
+import { normalizeImageForLlm } from "@sparkle/image/normalize";
 import type { NapcatReceiveImageSegment } from "../../domain/napcat-segment.js";
-import { detectMime } from "@kagami/kernel/utils/detect-mime";
+import { detectMime } from "@sparkle/kernel/utils/detect-mime";
 import type { OssClient } from "../../acl/oss-client.js";
 import type { ImageAssetDao } from "../../infra/image-asset.dao.js";
 

@@ -1,4 +1,4 @@
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 
 /**
  * vision 固定系统指令：进 API `system` 字段的稳定前缀（#594）。对所有 vision 调用逐字节恒定，

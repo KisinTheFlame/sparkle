@@ -1,5 +1,5 @@
-import { initLoggerRuntime } from "@kagami/kernel/logger/runtime";
-import type { LogSink } from "@kagami/kernel/logger/types";
+import { initLoggerRuntime } from "@sparkle/kernel/logger/runtime";
+import type { LogSink } from "@sparkle/kernel/logger/types";
 
 const sink: LogSink = {
   write: () => {},

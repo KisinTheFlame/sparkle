@@ -1,15 +1,15 @@
 import type { z } from "zod";
-import { createClient, notReadyFallbackMapper, type JsonClient } from "@kagami/rpc-client/client";
+import { createClient, notReadyFallbackMapper, type JsonClient } from "@sparkle/rpc-client/client";
 import {
   gbaApiContract,
   type GbaButton,
   type GbaPressStepSchema,
   type GbaRomViewSchema,
   type GbaRunStateSchema,
-} from "@kagami/gba-api/contract";
+} from "@sparkle/gba-api/contract";
 import { GbaError } from "../agent/capabilities/gba/domain/errors.js";
 
-// === GBA 掌机客户端：把游玩动作经 HTTP 打到独立的 kagami-gba 进程（issue #541）===
+// === GBA 掌机客户端：把游玩动作经 HTTP 打到独立的 sparkle-gba 进程（issue #541）===
 //
 // 运行模型：App 前台=服务端以真机速率实时运行、后台=冻结；press 是同步等待（服务端把按键
 // 计划逐帧消费完、settle 走完才回图,最长 ~5s+编码）。领域拒绝（{ ok:false, reason }——后台

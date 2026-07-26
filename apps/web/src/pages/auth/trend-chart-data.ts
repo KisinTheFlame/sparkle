@@ -1,5 +1,5 @@
-import { type AuthProvider } from "@kagami/llm-api/auth";
-import { type MetricPointsQueryResponse } from "@kagami/metric-api/points";
+import { type AuthProvider } from "@sparkle/llm-api/auth";
+import { type MetricPointsQueryResponse } from "@sparkle/metric-api/points";
 
 // 趋势图数据源已从旧 auth_usage_snapshot 专用管道切到通用 Metric raw 原始点端点（epic #521）：
 // 每个 10 分钟采样点照画、不聚合。metric 名 / window tag 值与 apps/llm 打点侧约定一致。

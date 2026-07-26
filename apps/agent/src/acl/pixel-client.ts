@@ -1,9 +1,9 @@
-import { createClient, notReadyFallbackMapper, type JsonClient } from "@kagami/rpc-client/client";
-import { createBinaryClient, type BinaryClient } from "@kagami/rpc-client/binary-client";
-import { pixelApiContract, type CanvasResponse } from "@kagami/pixel-api/contract";
+import { createClient, notReadyFallbackMapper, type JsonClient } from "@sparkle/rpc-client/client";
+import { createBinaryClient, type BinaryClient } from "@sparkle/rpc-client/binary-client";
+import { pixelApiContract, type CanvasResponse } from "@sparkle/pixel-api/contract";
 import { PixelError } from "../agent/capabilities/pixel/domain/errors.js";
 
-// === 像素画客户端：把绘图动作经 HTTP 打到独立的 kagami-pixel 进程（issue #365）===
+// === 像素画客户端：把绘图动作经 HTTP 打到独立的 sparkle-pixel 进程（issue #365）===
 //
 // 绘图 / 查看端点走契约驱动的 createClient，返回 CanvasResponse（领域拒绝是 { ok:false }，
 // 不抛异常）；服务不可达 / 500 / 坏响应统一映射 PIXEL_NOT_READY。render 走 createBinaryClient

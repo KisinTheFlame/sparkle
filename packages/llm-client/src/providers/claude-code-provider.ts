@@ -6,10 +6,10 @@ import {
   type LlmProviderChatResult,
 } from "../provider.js";
 import type { LlmChatRequest } from "../types.js";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import { llmProviderUnavailableError, llmUpstreamCallFailedError } from "../retryable-error.js";
-import type { Config } from "@kagami/kernel/config/config.loader";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import type { Config } from "@sparkle/kernel/config/config.loader";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type { ClaudeCodeAuthProvider } from "./claude-code-auth.js";
 import { toClaudeCodeRequestBody } from "./claude-code-request.js";
 import { mapClaudeMessageResult, parseClaudeMessageResponse } from "./claude-code-response.js";

@@ -1,12 +1,12 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import {
   createServiceApp,
   type AppRouteHandler,
   type ServiceErrorHandler,
-} from "@kagami/kernel/http/service-app";
-import { HealthHandler } from "@kagami/kernel/http/health.handler";
+} from "@sparkle/kernel/http/service-app";
+import { HealthHandler } from "@sparkle/kernel/http/health.handler";
 import { BrowserService } from "../application/browser.service.js";
 import { SerialExecutor } from "../application/serial-executor.js";
 import { BrowserError } from "../domain/errors.js";
@@ -22,7 +22,7 @@ export type BrowserRuntime = {
 };
 
 /**
- * 浏览器进程（kagami-browser）运行时装配。独立 PM2 进程，自管 CloakBrowser 生命周期，
+ * 浏览器进程（sparkle-browser）运行时装配。独立 PM2 进程，自管 CloakBrowser 生命周期，
  * agent 重启不影响它（issue #173）。零持久化：不碰共享 SQLite（epic #539 子 issue 1），
  * 登录态全在 CloakBrowser 的 userDataDir profile 里。
  */

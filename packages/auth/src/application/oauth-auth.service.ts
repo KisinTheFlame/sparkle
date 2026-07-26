@@ -5,8 +5,8 @@ import {
   type AuthRefreshResponse,
   type AuthStatusResponse,
   type AuthUsageLimitsResponse,
-} from "@kagami/llm-api/auth";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+} from "@sparkle/llm-api/auth";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import { SharedOAuthServiceCore } from "../shared/service.js";
 import type {
   OAuthCallbackInput,

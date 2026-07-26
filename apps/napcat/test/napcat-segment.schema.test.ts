@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NapcatSendGroupMessageRequestSchema } from "@kagami/napcat-api/message";
+import { NapcatSendGroupMessageRequestSchema } from "@sparkle/napcat-api/message";
 import { NapcatReceiveMessageSegmentSchema } from "../src/domain/napcat-segment.js";
 
 // 出站 segment 没有 zod 校验层（出站只用 NapcatSendMessageSegment 联合**类型**在编译期约束，

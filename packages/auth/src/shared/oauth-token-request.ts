@@ -1,4 +1,4 @@
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import { safeParseJson } from "./safe-parse-json.js";
 
 /**

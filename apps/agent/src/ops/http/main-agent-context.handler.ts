@@ -1,13 +1,13 @@
 import type { FastifyInstance } from "fastify";
-import { registerJsonRoute } from "@kagami/http/register";
-import { agentApiContract } from "@kagami/agent-api/contract";
+import { registerJsonRoute } from "@sparkle/http/register";
+import { agentApiContract } from "@sparkle/agent-api/contract";
 import type { MainAgentContextQueryService } from "../application/main-agent-context-query.service.js";
 
 type MainAgentContextHandlerDeps = {
   mainAgentContextQueryService: MainAgentContextQueryService;
 };
 
-/** 主 Agent 上下文查询/压缩路由。路由与 schema 的单一事实源在 @kagami/agent-api（#279 PR5）。 */
+/** 主 Agent 上下文查询/压缩路由。路由与 schema 的单一事实源在 @sparkle/agent-api（#279 PR5）。 */
 export class MainAgentContextHandler {
   private readonly mainAgentContextQueryService: MainAgentContextQueryService;
 

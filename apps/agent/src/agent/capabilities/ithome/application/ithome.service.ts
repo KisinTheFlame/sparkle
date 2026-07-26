@@ -1,4 +1,4 @@
-import { truncateWithEllipsisDetailed, type TruncatedText } from "@kagami/kernel/utils/text";
+import { truncateWithEllipsisDetailed, type TruncatedText } from "@sparkle/kernel/utils/text";
 import type { IthomeArticleDao, IthomeArticleListItem } from "./ithome-article.dao.js";
 import type { IthomeFeedCursorDao } from "./ithome-feed-cursor.dao.js";
 import type { IthomeClient } from "./ithome-client.js";

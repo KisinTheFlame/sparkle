@@ -24,9 +24,9 @@ describe("registerJsonRoute", () => {
         }) as { greeting: string },
     );
 
-    const res = await app.inject({ method: "GET", url: "/echo?name=kagami" });
+    const res = await app.inject({ method: "GET", url: "/echo?name=sparkle" });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ greeting: "hi kagami" });
+    expect(res.json()).toEqual({ greeting: "hi sparkle" });
     await app.close();
   });
 

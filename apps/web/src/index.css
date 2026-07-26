@@ -116,7 +116,7 @@
     @apply font-serif;
   }
 
-  /* 数据是 Kagami 的笔触：等宽数字不跳动 */
+  /* 数据是 Sparkle 的笔触：等宽数字不跳动 */
   :where(code, pre, kbd, samp) {
     @apply font-mono;
     font-variant-numeric: tabular-nums;

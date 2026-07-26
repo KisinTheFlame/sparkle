@@ -1,4 +1,4 @@
-import type { OssObjectSummary } from "@kagami/oss-api/oss-object";
+import type { OssObjectSummary } from "@sparkle/oss-api/oss-object";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import { OssObjectPreview } from "./OssObjectPreview";
 

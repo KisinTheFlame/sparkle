@@ -1,5 +1,5 @@
-import { type TodoListResponse } from "@kagami/console-api/todo";
-import type { AgentTodoWireItem } from "@kagami/agent-api/ops-query";
+import { type TodoListResponse } from "@sparkle/console-api/todo";
+import type { AgentTodoWireItem } from "@sparkle/agent-api/ops-query";
 
 type MapTodoListInput = {
   page: number;

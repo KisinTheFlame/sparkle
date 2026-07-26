@@ -57,11 +57,11 @@ describe("createServiceApp 默认错误出口", () => {
     await app.close();
   });
 
-  it("每个响应带 X-Kagami-Trace-Id 头", async () => {
+  it("每个响应带 X-Sparkle-Trace-Id 头", async () => {
     const app = buildApp();
     const res = await app.inject({ method: "GET", url: "/ok" });
     expect(res.statusCode).toBe(200);
-    expect(res.headers["x-kagami-trace-id"]).toMatch(/[0-9a-f-]{36}/);
+    expect(res.headers["x-sparkle-trace-id"]).toMatch(/[0-9a-f-]{36}/);
     await app.close();
   });
 });

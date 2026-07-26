@@ -7,7 +7,7 @@ import {
   type ToolExecutionResult,
   type ToolKind,
   ZodToolComponent,
-} from "@kagami/agent-runtime";
+} from "@sparkle/agent-runtime";
 import { renderInvokeToolGuide } from "./invoke-tool-docs.js";
 
 export const INVOKE_TOOL_NAME = "invoke";

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import { HttpLlmClient } from "../../src/acl/http-llm-client.js";
-import { isRetryableLlmFailure, type LlmChatRequest } from "@kagami/llm-client";
+import { isRetryableLlmFailure, type LlmChatRequest } from "@sparkle/llm-client";
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {

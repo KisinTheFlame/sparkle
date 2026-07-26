@@ -4,7 +4,7 @@ import type { z } from "zod";
  * 服务间调用的**单一事实源**：一条路由的方法 / 路径 / 入参 schema / 出参 schema。
  *
  * 生产者用 {@link registerJsonRoute} 把契约接到自己的 Fastify handler（execute 返回类型由
- * `output` 反推）；消费者用 `@kagami/rpc-client` 的 `createClient(contract)` 拿到 typed client。
+ * `output` 反推）；消费者用 `@sparkle/rpc-client` 的 `createClient(contract)` 拿到 typed client。
  * 两端从同一份 Zod schema 派生类型 —— 改契约的 `output`，服务端 handler 与消费端调用点会**同时**
  * 编译报错。这解决了「HTTP 这一跳的类型空洞」（服务端 `z.unknown()` + 客户端 `as` 各写一遍）。
  *

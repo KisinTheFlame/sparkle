@@ -1,6 +1,6 @@
 import type { Database } from "../db/client.js";
-import { NapcatAgentEventSchema, type NapcatOutboxEvent } from "@kagami/napcat-api/event";
-import type { NapcatAgentEvent } from "@kagami/napcat-api/event";
+import { NapcatAgentEventSchema, type NapcatOutboxEvent } from "@sparkle/napcat-api/event";
+import type { NapcatAgentEvent } from "@sparkle/napcat-api/event";
 import type { NapcatEventOutboxDao } from "../napcat-event-outbox.dao.js";
 
 type PrismaNapcatEventOutboxDaoDeps = {

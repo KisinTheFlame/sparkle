@@ -1,4 +1,4 @@
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type { ClaudeFileCacheDao } from "./claude-file-cache.dao.js";
 import {
   ANTHROPIC_VERSION,
@@ -7,7 +7,7 @@ import {
 } from "./claude-code-constants.js";
 
 /**
- * Claude Files API 缓存的按最近使用时间 GC（#433）。由 kagami-llm 进程的每日 scheduler task 调用：
+ * Claude Files API 缓存的按最近使用时间 GC（#433）。由 sparkle-llm 进程的每日 scheduler task 调用：
  * 取 last_used_at 早于 idle cutoff 的行，逐个 DELETE /v1/files/{id} 删远端文件，成功（含 404 已删）
  * 的行再从本地表删除。File API 文件 persist-until-deleted，不清理会只增不减撞组织存储配额。
  *

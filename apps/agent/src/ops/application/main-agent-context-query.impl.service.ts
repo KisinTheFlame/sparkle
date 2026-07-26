@@ -2,7 +2,7 @@ import type {
   MainAgentContextCompactionRequest,
   MainAgentContextCompactionResult,
   MainAgentContextSnapshot,
-} from "@kagami/agent-api/main-agent-context";
+} from "@sparkle/agent-api/main-agent-context";
 import type { RootLoopAgent } from "../../agent/runtime/root-agent/root-agent-runtime.js";
 import type { MainAgentContextQueryService } from "./main-agent-context-query.service.js";
 

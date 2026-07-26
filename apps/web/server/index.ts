@@ -1,6 +1,6 @@
-// kagami-web：管理台前端的独立进程，自己托管自己的构建产物（issue #578）。
+// sparkle-web：管理台前端的独立进程，自己托管自己的构建产物（issue #578）。
 //
-// 在此之前前端产物由 kagami-gateway 托管——gateway 得在 build 期把 apps/web/dist 拷进自己的
+// 在此之前前端产物由 sparkle-gateway 托管——gateway 得在 build 期把 apps/web/dist 拷进自己的
 // dist/public（#496），两个 app 的构建与生命周期被焊死。现在 web 有了自己的进程：gateway 退化
 // 成纯反代（非 /api 的请求原样转给这里），web 自己发自己的文件，两边只剩一条 HTTP 边界。
 //
@@ -12,7 +12,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
-import { createHealthResponse } from "@kagami/http/wire";
+import { createHealthResponse } from "@sparkle/http/wire";
 import { loadWebServerConfig } from "./config.js";
 import {
   getCacheControlHeader,
@@ -54,7 +54,7 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(config.port, BIND_HOST, () => {
-  process.stdout.write(`[kagami-web] listening on http://${BIND_HOST}:${config.port}\n`);
+  process.stdout.write(`[sparkle-web] listening on http://${BIND_HOST}:${config.port}\n`);
 });
 
 let shuttingDown = false;
@@ -63,7 +63,7 @@ function shutdown(signal: NodeJS.Signals): void {
     return;
   }
   shuttingDown = true;
-  process.stdout.write(`[kagami-web] ${signal} received, shutting down\n`);
+  process.stdout.write(`[sparkle-web] ${signal} received, shutting down\n`);
   const finish = (): void => {
     process.exit(0);
   };
@@ -83,7 +83,7 @@ process.on("SIGINT", () => {
 // 交给 PM2 干净重启，而不是让进程带着损坏状态硬崩、丢掉崩溃原因。
 process.on("uncaughtException", error => {
   process.stderr.write(
-    `[kagami-web] uncaughtException, exiting: ${
+    `[sparkle-web] uncaughtException, exiting: ${
       error instanceof Error ? (error.stack ?? error.message) : String(error)
     }\n`,
   );
@@ -91,7 +91,7 @@ process.on("uncaughtException", error => {
 });
 process.on("unhandledRejection", reason => {
   process.stderr.write(
-    `[kagami-web] unhandledRejection, exiting: ${
+    `[sparkle-web] unhandledRejection, exiting: ${
       reason instanceof Error ? (reason.stack ?? reason.message) : String(reason)
     }\n`,
   );
@@ -130,7 +130,7 @@ async function serveStaticAsset(
   } catch (error) {
     // 响应头已发（200），无法改状态码；销毁 socket 断开即可。
     process.stderr.write(
-      `[kagami-web] static stream failed for ${selectedPath}: ${
+      `[sparkle-web] static stream failed for ${selectedPath}: ${
         error instanceof Error ? error.message : String(error)
       }\n`,
     );

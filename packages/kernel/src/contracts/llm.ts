@@ -1,6 +1,6 @@
 // LLM 调用的「KV 缓存身份」标识：**一切影响 prompt cache 命中的配置（provider / model /
 // attempts，将来的 thinking / cache_control）都收口在同一个 usage 下**，不得按调用点分叉。
-// provider 标识（`LlmProviderId`）的单源另在 @kagami/llm。
+// provider 标识（`LlmProviderId`）的单源另在 @sparkle/llm。
 //
 // 只有两个值：
 // - `agent`：主 Agent 及一切 fork 出去、字节级复用主 Agent 消息前缀的 task agent

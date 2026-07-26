@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ToolComponent } from "@kagami/agent-runtime";
+import type { ToolComponent } from "@sparkle/agent-runtime";
 import { TodoService } from "../../../../src/agent/capabilities/todo/application/todo.service.js";
 import { AddTodoTool } from "../../../../src/agent/apps/todo/tools/add-todo.tool.js";
 import { ListTodosTool } from "../../../../src/agent/apps/todo/tools/list-todos.tool.js";

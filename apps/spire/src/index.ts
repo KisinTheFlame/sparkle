@@ -1,7 +1,7 @@
-import { runService } from "@kagami/kernel/http/service-runner";
+import { runService } from "@sparkle/kernel/http/service-runner";
 import { buildSpireServiceRuntime } from "./app/spire-service-runtime.js";
 
-// kagami-spire 进程：日志只走 stdout（同 browser/llm 卫星进程），由 PM2 的 spire-out.log 承载。
+// sparkle-spire 进程：日志只走 stdout（同 browser/llm 卫星进程），由 PM2 的 spire-out.log 承载。
 runService({
   name: "spire_service",
   source: "spire-service-bootstrap",

@@ -1,7 +1,7 @@
 import type {
   MetricPointsQueryRequest,
   MetricPointsQueryResponse,
-} from "@kagami/metric-api/points";
+} from "@sparkle/metric-api/points";
 
 export interface MetricPointsService {
   query(request: MetricPointsQueryRequest): Promise<MetricPointsQueryResponse>;

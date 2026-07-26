@@ -1,4 +1,4 @@
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type {
   NapcatForwardMessageNode,
   NapcatGroupBanData,
@@ -26,7 +26,7 @@ import {
   type NapcatReceiveMessageSegment,
 } from "./shared.js";
 import { isNapcatReceiveImageSegment } from "../../domain/napcat-segment.js";
-import { truncateWithEllipsis } from "@kagami/kernel/utils/text";
+import { truncateWithEllipsis } from "@sparkle/kernel/utils/text";
 import type { NapcatQqMessageDao } from "../../infra/napcat-group-message.dao.js";
 import type {
   NapcatImageAnalysisResult,

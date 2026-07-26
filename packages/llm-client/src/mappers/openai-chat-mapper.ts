@@ -14,8 +14,8 @@ import type {
   LlmToolCall,
   LlmUsage,
 } from "../types.js";
-import { imageContentToBase64, type LlmProviderId } from "@kagami/llm";
-import { isRecord } from "@kagami/kernel/json/is-record";
+import { imageContentToBase64, type LlmProviderId } from "@sparkle/llm";
+import { isRecord } from "@sparkle/kernel/json/is-record";
 import { llmUpstreamCallFailedError } from "../retryable-error.js";
 
 type OpenAiStyleUsage = {

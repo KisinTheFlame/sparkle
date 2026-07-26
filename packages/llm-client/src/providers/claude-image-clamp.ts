@@ -1,5 +1,5 @@
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { clampToApiLimit } from "@kagami/image/normalize";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { clampToApiLimit } from "@sparkle/image/normalize";
 import type { LlmChatRequest, LlmMessage, LlmContentPart } from "../types.js";
 
 /**

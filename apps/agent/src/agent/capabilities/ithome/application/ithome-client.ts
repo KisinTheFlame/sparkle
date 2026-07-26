@@ -1,10 +1,10 @@
 import { XMLParser } from "fast-xml-parser";
 import { parse } from "node-html-parser";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 
 const ITHOME_RSS_URL = "https://www.ithome.com/rss/";
 const DEFAULT_USER_AGENT =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Kagami/1.0";
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Sparkle/1.0";
 
 export type IthomeFeedItem = {
   upstreamId: string;

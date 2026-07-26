@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import { NonEmptyStringSchema, NonNegativeIntSchema, parseOrThrow } from "./wire-schemas.js";
 import type { NapcatGatewayTransport } from "./transport.js";
 import type { NapcatGroupFileListing } from "../napcat-gateway.service.js";

@@ -1,5 +1,5 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import { once } from "node:events";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -7,15 +7,15 @@ import path from "node:path";
 import {
   ClaudeCodeUsageLimitsResponseSchema,
   type ClaudeCodeUsageLimitsResponse,
-} from "@kagami/llm-api/claude-code-auth";
+} from "@sparkle/llm-api/claude-code-auth";
 import {
   CodexUsageLimitsResponseSchema,
   type CodexUsageLimitsResponse,
-} from "@kagami/llm-api/codex-auth";
+} from "@sparkle/llm-api/codex-auth";
 import type { ClaudeCodeProviderAuth } from "../claude-code/types.js";
 import type { CodexProviderAuth } from "../codex/types.js";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { serializeError } from "@kagami/kernel/logger/serializer";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { serializeError } from "@sparkle/kernel/logger/serializer";
 import {
   NOOP_AUTH_USAGE_SNAPSHOT_SINK,
   type AuthUsageMetricWindow,
@@ -376,7 +376,7 @@ export async function fetchCodexUsageLimitsViaAppServer({
   binaryPath,
   timeoutMs = DEFAULT_CODEX_TIMEOUT_MS,
 }: FetchCodexUsageLimitsViaAppServerInput): Promise<CodexUsageLimitsResponse> {
-  const codexHome = await mkdtemp(path.join(tmpdir(), "kagami-codex-home-"));
+  const codexHome = await mkdtemp(path.join(tmpdir(), "sparkle-codex-home-"));
   const authFilePath = path.join(codexHome, "auth.json");
   const authFile = {
     auth_mode: "chatgpt",
@@ -553,7 +553,7 @@ async function readCodexRateLimitsFromChildProcess(input: {
 
     sendRequest(1, "initialize", {
       clientInfo: {
-        name: "kagami",
+        name: "sparkle",
         version: "0.0.0",
       },
     });

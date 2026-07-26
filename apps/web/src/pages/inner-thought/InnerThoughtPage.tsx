@@ -1,4 +1,7 @@
-import { type InnerThoughtItem, type InnerThoughtOutcome } from "@kagami/console-api/inner-thought";
+import {
+  type InnerThoughtItem,
+  type InnerThoughtOutcome,
+} from "@sparkle/console-api/inner-thought";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { Badge, type BadgeProps } from "@/components/ui/badge";

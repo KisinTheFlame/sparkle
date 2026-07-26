@@ -1,4 +1,4 @@
-import { type NapcatEventListQuery } from "@kagami/console-api/napcat-event";
+import { type NapcatEventListQuery } from "@sparkle/console-api/napcat-event";
 import { useQuery } from "@tanstack/react-query";
 import { createHistoryListQueryOptions, queryKeys } from "@/lib/query";
 import { consoleClient } from "@/lib/rpc";

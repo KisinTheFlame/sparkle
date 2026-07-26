@@ -1,4 +1,4 @@
-import { type AuthProvider, type AuthStatus, type AuthStatusResponse } from "@kagami/llm-api/auth";
+import { type AuthProvider, type AuthStatus, type AuthStatusResponse } from "@sparkle/llm-api/auth";
 
 /** 对外展示用的登录状态：refresh_failed 会被归一到 active / expired / unavailable。 */
 export type PrimaryAuthStatus = Exclude<AuthStatus, "refresh_failed">;

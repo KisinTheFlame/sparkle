@@ -15,7 +15,7 @@ import { UploadGroupFileTool } from "./tools/upload-group-file.tool.js";
 import { QqApp } from "./qq.app.js";
 
 type BuildQqAppInput = {
-  /** 出站门面：打到独立的 kagami-napcat 进程（issue #347）。入站走 NapcatEventSubscriber（server-runtime）。 */
+  /** 出站门面：打到独立的 sparkle-napcat 进程（issue #347）。入站走 NapcatEventSubscriber（server-runtime）。 */
   napcatClient: NapcatClient;
   notificationCenter: NotificationCenter;
   /** 前台输入敲门端口（组合根组装的闭包：knock 计数 + enqueue foreground_input）。 */
@@ -42,7 +42,7 @@ export type QqAppBundle = {
 
 /**
  * 装配 QQ App 这条竖切。napcat 拆成独立进程后（issue #347），网关不再由本 App 构造 / 持有：
- * 出站经注入的 `napcatClient`（HttpNapcatClient）打到 kagami-napcat；入站由 server-runtime 的
+ * 出站经注入的 `napcatClient`（HttpNapcatClient）打到 sparkle-napcat；入站由 server-runtime 的
  * NapcatEventSubscriber 订阅 SSE 后喂 `qqApp.handleNapcatEvent`。本工厂只装配 App + 工具 + 出站门面。
  *
  * send_message 的发送目标 = QqApp 当前打开的会话：QqApp 与工具互为引用（工具问 App 当前会话，

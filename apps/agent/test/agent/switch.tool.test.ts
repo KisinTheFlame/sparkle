@@ -1,4 +1,4 @@
-import { AppManager, type App } from "@kagami/agent-runtime";
+import { AppManager, type App } from "@sparkle/agent-runtime";
 import { describe, expect, it } from "vitest";
 import { SwitchTool } from "../../src/agent/runtime/root-agent/tools/switch.tool.js";
 

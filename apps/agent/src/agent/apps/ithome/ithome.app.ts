@@ -1,5 +1,5 @@
-import type { App } from "@kagami/agent-runtime";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import type { App } from "@sparkle/agent-runtime";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import { renderIthomeArticleListContent } from "./ithome-screen.js";
 import type { RootAgentEffect } from "../../runtime/effect/root-agent-effect.js";
 import type { IthomeService } from "../../capabilities/ithome/application/ithome.service.js";
@@ -12,7 +12,7 @@ type IthomeAppDeps = {
 };
 
 /**
- * IT 之家 App。把 ithome capability 的 IthomeService 包装成 Kagami 桌面上的一个
+ * IT 之家 App。把 ithome capability 的 IthomeService 包装成 Sparkle 桌面上的一个
  * 能力单元。
  *
  * - 工具：open_ithome_article(articleId)

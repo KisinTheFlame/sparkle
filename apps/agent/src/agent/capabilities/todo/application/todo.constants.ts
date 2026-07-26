@@ -1,7 +1,7 @@
 /**
  * TODO capability 的代码常量。
  *
- * 这些值在不同环境之间不变、也没有运维会在活系统上调，按 Kagami 约定它们属于
+ * 这些值在不同环境之间不变、也没有运维会在活系统上调，按 Sparkle 约定它们属于
  * 代码常量而非 config.yaml（详见 CLAUDE.md 配置原则 / 学习 config-yaml-is-for-ops-not-code）。
  * scheduled task 直接用这里的字面值注册，不进 config.loader / config.yaml。
  */

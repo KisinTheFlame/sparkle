@@ -4,7 +4,7 @@ import {
   createContextCompactionSlice,
 } from "../../src/agent/runtime/context/context-compaction.js";
 import { createUserMessage } from "../../src/agent/runtime/context/context-message-factory.js";
-import type { LlmMessage } from "@kagami/llm-client";
+import type { LlmMessage } from "@sparkle/llm-client";
 
 const IMAGE_COUNT_THRESHOLD = 550;
 

@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import type { LlmChatCallWireDetail } from "@kagami/llm-api/query";
+import type { LlmChatCallWireDetail } from "@sparkle/llm-api/query";
 import {
   DefaultLlmChatCallQueryService,
   type LlmQueryClient,
 } from "../../src/ops/application/llm-chat-call-query.impl.service.js";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 
 function makeClient(overrides: Partial<LlmQueryClient>): LlmQueryClient {
   return {

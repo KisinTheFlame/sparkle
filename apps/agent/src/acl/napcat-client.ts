@@ -1,5 +1,5 @@
-import { createClient, type JsonClient } from "@kagami/rpc-client/client";
-import { napcatApiContract } from "@kagami/napcat-api/contract";
+import { createClient, type JsonClient } from "@sparkle/rpc-client/client";
+import { napcatApiContract } from "@sparkle/napcat-api/contract";
 import type {
   NapcatChatTarget,
   NapcatFriendInfo,
@@ -12,9 +12,9 @@ import type {
   NapcatSendImageRequest,
   NapcatSendMessageResponse,
   NapcatSendPrivateMessageRequest,
-} from "@kagami/napcat-api/message";
+} from "@sparkle/napcat-api/message";
 
-// napcat wire 类型的事实源是 @kagami/napcat-api/message；agent 侧消费方直接从那里导入
+// napcat wire 类型的事实源是 @sparkle/napcat-api/message；agent 侧消费方直接从那里导入
 // （no-restricted-syntax 禁止 barrel/re-export）。
 
 const NAPCAT_UNREACHABLE_MESSAGE = "NapCat 服务调用失败";
@@ -28,7 +28,7 @@ export type NapcatChatTargetInput = NapcatChatTarget;
 
 /**
  * agent 侧的 napcat 出站门面：把原 in-process 的 NapcatGatewayService 方法经 HTTP 打到独立的
- * kagami-napcat 进程（issue #347）。方法签名与旧 NapcatGatewayService（去掉 start/stop）一致，
+ * sparkle-napcat 进程（issue #347）。方法签名与旧 NapcatGatewayService（去掉 start/stop）一致，
  * 让 QqApp / messaging / 群文件工具近乎 drop-in——只把注入类型从 NapcatGatewayService 换成
  * NapcatClient。wire 信封的包/拆（{messages}、{shutUpUntilMs}、{friends}、{} 等）收在实现里。
  *

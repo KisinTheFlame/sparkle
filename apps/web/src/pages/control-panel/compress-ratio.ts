@@ -1,7 +1,7 @@
 import {
   MAIN_AGENT_CONTEXT_COMPRESS_RATIO_MAX,
   MAIN_AGENT_CONTEXT_COMPRESS_RATIO_MIN,
-} from "@kagami/agent-api/main-agent-context";
+} from "@sparkle/agent-api/main-agent-context";
 
 /** 面板默认档，与阈值触发的自动压缩同一比例（摘要前 90%，保留最近 10%）。 */
 export const DEFAULT_COMPRESS_RATIO = 90;
@@ -14,7 +14,7 @@ export type CompressRatioParseResult =
 
 /**
  * 把输入框里的原始字符串解析成合法压缩比例。区间与服务端 schema 共用
- * @kagami/agent-api 的常量，避免前后端各写一份边界。
+ * @sparkle/agent-api 的常量，避免前后端各写一份边界。
  */
 export function parseCompressRatio(raw: string): CompressRatioParseResult {
   const trimmed = raw.trim();

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { InMemoryQueue } from "@kagami/agent-runtime";
+import { InMemoryQueue } from "@sparkle/agent-runtime";
 import { RootLoopAgent } from "../../src/agent/runtime/root-agent/root-agent-runtime.js";
 import type { AgentEventQueue } from "../../src/agent/runtime/event/event.queue.js";
 import { initTestLoggerRuntime } from "../helpers/logger.js";

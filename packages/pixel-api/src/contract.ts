@@ -1,4 +1,4 @@
-import { defineBinaryRawRoute, defineJsonRoute } from "@kagami/http/contract";
+import { defineBinaryRawRoute, defineJsonRoute } from "@sparkle/http/contract";
 import { z } from "zod";
 import { EMPTY_GLYPH, PIXEL_PALETTE } from "./palette.js";
 
@@ -71,7 +71,7 @@ export type CanvasResponse = z.infer<typeof CanvasResponseSchema>;
 const PixelSchema = z.object({ x: CoordSchema, y: CoordSchema, color: z.string().min(1) });
 
 /**
- * kagami-pixel 进程对 agent 暴露的 RPC 契约（单一事实源，issue #230 / #365）。
+ * sparkle-pixel 进程对 agent 暴露的 RPC 契约（单一事实源，issue #230 / #365）。
  *
  * 绘图端点上行 JSON、下行 CanvasResponse；render 是 binary-raw（下行原始 PNG 字节，content-type
  * image/png 由服务端手写 header，不进 Zod）。绝不在服务端调 useRawBodyPassthrough——绘图上行是

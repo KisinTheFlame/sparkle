@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Database } from "@kagami/persistence/db/client";
-import type { MetricClient } from "@kagami/metric-client/client";
-import type { SchedulerTick } from "@kagami/scheduler-client/types";
+import type { Database } from "@sparkle/persistence/db/client";
+import type { MetricClient } from "@sparkle/metric-client/client";
+import type { SchedulerTick } from "@sparkle/scheduler-client/types";
 import { buildDataRetentionTasks } from "../../../../src/agent/capabilities/data-retention/data-retention-scheduled-tasks.js";
 import { RETENTION_TASKS } from "../../../../src/agent/capabilities/data-retention/retention-tasks.js";
 

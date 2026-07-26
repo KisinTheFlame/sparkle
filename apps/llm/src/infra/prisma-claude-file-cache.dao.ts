@@ -3,7 +3,7 @@ import type {
   ClaudeFileCacheDao,
   ClaudeFileCacheRecord,
   ClaudeFileCacheSaveInput,
-} from "@kagami/llm-client";
+} from "@sparkle/llm-client";
 
 /**
  * claude-code 图片 File API 缓存的 Prisma 实现：sha256 → 已上传 Anthropic file_id。

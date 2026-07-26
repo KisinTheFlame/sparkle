@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { imageContentToBase64 } from "@kagami/llm";
+import { imageContentToBase64 } from "@sparkle/llm";
 
 const PNG = Buffer.from("hello-image-bytes");
 const BASE64 = PNG.toString("base64");

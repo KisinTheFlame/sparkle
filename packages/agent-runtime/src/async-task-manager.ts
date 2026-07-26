@@ -1,6 +1,6 @@
 /**
  * 异步任务成功时可携带的图片块。结构级类型（裸 base64 + mime + 可选文件名），刻意不引
- * `@kagami/llm` 的 `LlmImageContentPart`——内核保持通用、不耦合具体 LLM 内容模型；生成方
+ * `@sparkle/llm` 的 `LlmImageContentPart`——内核保持通用、不耦合具体 LLM 内容模型；生成方
  * 在回流装配时把它映射成多模态 content part（见 apps/agent 的 createAsyncToolResultMessage）。
  */
 export type AsyncTaskImage = {

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { LlmChatCallObservation } from "@kagami/llm-client";
+import type { LlmChatCallObservation } from "@sparkle/llm-client";
 import type { LlmChatCallDao } from "../src/infra/llm-chat-call.dao.js";
 import { persistLlmChatCall } from "../src/app/persist-llm-chat-call.js";
 

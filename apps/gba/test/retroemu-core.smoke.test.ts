@@ -4,7 +4,7 @@ import { RetroemuCore } from "../src/emulator/retroemu-core.js";
 
 /**
  * 真核心冒烟（环境门控，CI 不跑）：ROM 是版权物不进仓库，本地跑法——
- *   GBA_TEST_ROM=/path/to/game.gba pnpm --filter @kagami/gba-service test
+ *   GBA_TEST_ROM=/path/to/game.gba pnpm --filter @sparkle/gba-service test
  * 覆盖 PoC 四项：核心加载 / 步进注键 / 读帧 / SRAM 读写（issue #541）。
  */
 const romPath = process.env.GBA_TEST_ROM;
@@ -33,8 +33,8 @@ describe.runIf(romPath)("RetroemuCore（真 mGBA 核心冒烟）", () => {
 
     const sram = core.getSram();
     expect(sram).not.toBeNull();
-    core.setSram(Buffer.from("KAGAMI"));
-    expect(core.getSram()?.subarray(0, 6).toString()).toBe("KAGAMI");
+    core.setSram(Buffer.from("SPARKLE"));
+    expect(core.getSram()?.subarray(0, 7).toString()).toBe("SPARKLE");
 
     // savestate 往返（无感重启的核心前提）：serialize 出快照 → 跑走 30 帧 → unserialize 回来
     const state = core.getState();

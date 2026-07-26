@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { AppManager, createAppSubtoolOwner } from "@kagami/agent-runtime";
+import { AppManager, createAppSubtoolOwner } from "@sparkle/agent-runtime";
 import { HnApp } from "../../../src/agent/apps/hn/hn.app.js";
 import { InvokeTool } from "../../../src/agent/runtime/root-agent/tools/invoke.tool.js";
 

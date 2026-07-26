@@ -1,6 +1,6 @@
-import { type AuthProvider } from "@kagami/llm-api/auth";
-import type { LlmProviderId } from "@kagami/llm";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { type AuthProvider } from "@sparkle/llm-api/auth";
+import type { LlmProviderId } from "@sparkle/llm";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 
 export type InternalAuthProvider = Extract<LlmProviderId, "openai-codex" | "claude-code">;
 

@@ -1,4 +1,4 @@
-import type { LoopAgentExtension, ReActCommittedRoundResult } from "@kagami/agent-runtime";
+import type { LoopAgentExtension, ReActCommittedRoundResult } from "@sparkle/agent-runtime";
 import type {
   RootAgentCompletion,
   RootAgentToolExecutionData,

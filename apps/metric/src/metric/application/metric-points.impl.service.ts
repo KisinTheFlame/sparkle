@@ -4,8 +4,8 @@ import {
   type MetricPointsQueryRequest,
   type MetricPointsQueryResponse,
   type MetricPointsSeries,
-} from "@kagami/metric-api/points";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+} from "@sparkle/metric-api/points";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import type { MetricDao, MetricRawPointRow } from "../infra/metric.dao.js";
 import type { MetricPointsService } from "./metric-points.service.js";
 

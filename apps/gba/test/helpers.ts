@@ -1,8 +1,8 @@
-import type { GbaButton } from "@kagami/gba-api/contract";
+import type { GbaButton } from "@sparkle/gba-api/contract";
 import type { EmulatorCore, GbaFrameRgba } from "../src/emulator/emulator-core.js";
 import type { OssClient, OssObject } from "../src/acl/oss-client.js";
 import type { GbaStore, ResumeStateRow, RomRow } from "../src/persistence/gba-store.js";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 
 /** 确定性的假内核：记录每帧 held 集合，SRAM 是可注入的内存缓冲。 */
 export class FakeEmulatorCore implements EmulatorCore {

@@ -1,11 +1,11 @@
 import type { FastifyInstance } from "fastify";
-import { registerJsonRoute } from "@kagami/http/register";
-import { browserApiContract } from "@kagami/browser-api/contract";
+import { registerJsonRoute } from "@sparkle/http/register";
+import { browserApiContract } from "@sparkle/browser-api/contract";
 import type { BrowserService } from "../application/browser.service.js";
 import type { SerialExecutor } from "../application/serial-executor.js";
 
 /**
- * 浏览器动作 HTTP 端点，全量走 @kagami/browser-api 契约（单一事实源，与 agent 侧 createClient
+ * 浏览器动作 HTTP 端点，全量走 @sparkle/browser-api 契约（单一事实源，与 agent 侧 createClient
  * 共享同一份 Zod schema —— 改契约 input/output，此处 execute 与 agent 门面同时编译报错，issue #230）。
  *
  * - 所有动作经 SerialExecutor 串行执行，保住 epoch / pageStack 不变量。

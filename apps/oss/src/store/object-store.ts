@@ -3,7 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdir, open, readdir, rename, stat, unlink } from "node:fs/promises";
 import path from "node:path";
 import type { Readable } from "node:stream";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import {
   blobShard,
   formatObjectKey,

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@kagami/agent-runtime";
+import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@sparkle/agent-runtime";
 import type { QqApp } from "../qq.app.js";
 
 const ListConversationsArgumentsSchema = z.object({});

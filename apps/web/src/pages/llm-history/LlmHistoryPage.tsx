@@ -1,4 +1,7 @@
-import { type LlmChatCallStatus, type LlmChatCallSummary } from "@kagami/console-api/llm-chat-call";
+import {
+  type LlmChatCallStatus,
+  type LlmChatCallSummary,
+} from "@sparkle/console-api/llm-chat-call";
 import { useQuery } from "@tanstack/react-query";
 import { type FormEvent, useMemo } from "react";
 import { HistoryListPageLayout } from "@/components/layout/HistoryListPageLayout";

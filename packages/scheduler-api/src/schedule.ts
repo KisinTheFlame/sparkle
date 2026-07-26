@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * kagami-scheduler 的通用调度原语 wire（issue #428）。这些 schema 不含任何具体业务语义——
+ * sparkle-scheduler 的通用调度原语 wire（issue #428）。这些 schema 不含任何具体业务语义——
  * 调度器只认识"一个按 cron/interval 触发、叫某个名字、带某种补偿策略的任务"。具体任务（ithome /
  * todo / data-retention）由使用方（agent）在代码里写死并注册，调度器永不认识它们的含义。
  */

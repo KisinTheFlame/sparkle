@@ -3,7 +3,7 @@ import {
   CodexAuthRefreshResponseSchema,
   CodexAuthStatusResponseSchema,
   CodexUsageLimitsResponseSchema,
-} from "@kagami/llm-api/codex-auth";
+} from "@sparkle/llm-api/codex-auth";
 import { describe, expect, it } from "vitest";
 
 describe("codex auth schemas", () => {

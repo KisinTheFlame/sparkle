@@ -1,9 +1,9 @@
 import type { FastifyInstance } from "fastify";
-import type { Database } from "@kagami/persistence/db/client";
-import { closeDb as defaultCloseDb } from "@kagami/persistence/db/client";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { getLoggerRuntime } from "@kagami/kernel/logger/runtime";
-import type { SchedulerClient } from "@kagami/scheduler-client/scheduler-client";
+import type { Database } from "@sparkle/persistence/db/client";
+import { closeDb as defaultCloseDb } from "@sparkle/persistence/db/client";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { getLoggerRuntime } from "@sparkle/kernel/logger/runtime";
+import type { SchedulerClient } from "@sparkle/scheduler-client/scheduler-client";
 
 export type AgentRuntimeController = {
   stop(): Promise<void>;

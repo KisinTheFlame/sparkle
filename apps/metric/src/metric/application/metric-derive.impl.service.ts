@@ -1,9 +1,9 @@
-import type { MetricChartQueryResponse } from "@kagami/metric-api/chart";
+import type { MetricChartQueryResponse } from "@sparkle/metric-api/chart";
 import type {
   MetricDeriveOp,
   MetricDeriveOperand as WireDeriveOperand,
   MetricDeriveRequest,
-} from "@kagami/metric-api/derive";
+} from "@sparkle/metric-api/derive";
 import type { MetricDao, MetricDeriveOperand } from "../infra/metric.dao.js";
 import { bucketToMilliseconds, listBucketStarts } from "./bucket-time.js";
 import type { MetricDeriveService } from "./metric-derive.service.js";

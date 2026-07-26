@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { createClient, type JsonClient } from "@kagami/rpc-client/client";
-import { schedulerApiContract, type SchedulerTaskManifest } from "@kagami/scheduler-api/contract";
-import { SchedulerTickEventSchema, SCHEDULER_TICKS_SSE_PATH } from "@kagami/scheduler-api/event";
-import type { SchedulerReportRunRequest } from "@kagami/scheduler-api/run";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { createClient, type JsonClient } from "@sparkle/rpc-client/client";
+import { schedulerApiContract, type SchedulerTaskManifest } from "@sparkle/scheduler-api/contract";
+import { SchedulerTickEventSchema, SCHEDULER_TICKS_SSE_PATH } from "@sparkle/scheduler-api/event";
+import type { SchedulerReportRunRequest } from "@sparkle/scheduler-api/run";
 import type {
   OccurrenceStore,
   SchedulerTaskRegistration,
@@ -47,7 +47,7 @@ type SchedulerClientDeps = {
 };
 
 /**
- * kagami-scheduler 的使用方 SDK（issue #428）：把"名字 + 周期 + 补偿策略"注册给独立调度器进程，
+ * sparkle-scheduler 的使用方 SDK（issue #428）：把"名字 + 周期 + 补偿策略"注册给独立调度器进程，
  * 长连它的 SSE tick 流，收到 tick 自动派发到本地 handler。业务逻辑全在使用方——本 SDK 只负责
  * 注册、订阅、本地并发（mutex/queue）、occurrence 去重、执行结果两阶段回报。
  *

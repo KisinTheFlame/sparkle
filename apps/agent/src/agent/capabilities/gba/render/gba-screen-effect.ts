@@ -1,6 +1,6 @@
-import type { ToolExecutionResult } from "@kagami/agent-runtime";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import type { ToolExecutionResult } from "@sparkle/agent-runtime";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import type { RootAgentEffect } from "../../../runtime/effect/root-agent-effect.js";
 import type { OssClient } from "../../../../acl/oss-client.js";
 

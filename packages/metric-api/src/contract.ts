@@ -1,10 +1,10 @@
-import { defineJsonRoute } from "@kagami/http/contract";
+import { defineJsonRoute } from "@sparkle/http/contract";
 import { MetricChartQueryRequestSchema, MetricChartQueryResponseSchema } from "./chart.js";
 import { MetricDeriveRequestSchema } from "./derive.js";
 import { MetricPointsQueryRequestSchema, MetricPointsQueryResponseSchema } from "./points.js";
 import { RecordMetricRequestSchema, RecordMetricResponseSchema } from "./record.js";
 
-// === @kagami/metric-api：kagami-metric 服务的 HTTP 契约（issue #279 PR3 / #444） ===
+// === @sparkle/metric-api：sparkle-metric 服务的 HTTP 契约（issue #279 PR3 / #444） ===
 //
 // 两类消费者：
 // - record：agent 的 fire-and-forget 打点客户端。注意 agent 侧刻意**不走 createClient**——

@@ -1,5 +1,5 @@
-import { colorByName, EMPTY_GLYPH, nameByGlyph, PALETTE_NAMES } from "@kagami/pixel-api/palette";
-import { MAX_CANVAS_SIZE, type CanvasState } from "@kagami/pixel-api/contract";
+import { colorByName, EMPTY_GLYPH, nameByGlyph, PALETTE_NAMES } from "@sparkle/pixel-api/palette";
+import { MAX_CANVAS_SIZE, type CanvasState } from "@sparkle/pixel-api/contract";
 import { CanvasRejectError } from "./errors.js";
 
 // === 画布模型 + 绘图算子（纯领域，无 I/O）===

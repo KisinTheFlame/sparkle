@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { parse } from "yaml";
-import { resolveConfigPath } from "@kagami/config/source";
+import { resolveConfigPath } from "@sparkle/config/source";
 
 export interface WebServerConfig {
   /** 自身监听端口（来自 services.web.port）。 */
@@ -17,7 +17,7 @@ interface RawConfig {
 
 /**
  * 只读 config.yaml 的 services.web，不触 config.secret.yaml——静态托管没有任何隐私输入。
- * 定位逻辑收敛到 @kagami/config，与 gateway 同一套。
+ * 定位逻辑收敛到 @sparkle/config，与 gateway 同一套。
  */
 export function loadWebServerConfig(): WebServerConfig {
   const configPath = resolveConfigPath(import.meta.url);

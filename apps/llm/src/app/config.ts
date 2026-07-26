@@ -1,6 +1,6 @@
-import { DefaultConfigManager } from "@kagami/kernel/config/config.impl.manager";
-import { loadStaticConfig, type Config } from "@kagami/kernel/config/config.loader";
-import type { ConfigManager } from "@kagami/kernel/config/config.manager";
+import { DefaultConfigManager } from "@sparkle/kernel/config/config.impl.manager";
+import { loadStaticConfig, type Config } from "@sparkle/kernel/config/config.loader";
+import type { ConfigManager } from "@sparkle/kernel/config/config.manager";
 
 export type LlmServiceConfig = {
   /** 监听端口，来自顶层 services.llm.port（单一事实来源，见 issue #162）。 */
@@ -11,7 +11,7 @@ export type LlmServiceConfig = {
 };
 
 /**
- * kagami-llm 进程配置。端口取 `services.llm.port`；LLM provider / usages / embedding 与
+ * sparkle-llm 进程配置。端口取 `services.llm.port`；LLM provider / usages / embedding 与
  * OAuth 配置直接复用 `server.llm` —— 这些原本就是 LLM/凭据的配置，只是消费方从 agent
  * 进程变成本服务进程。
  */

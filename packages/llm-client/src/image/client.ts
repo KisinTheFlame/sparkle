@@ -1,4 +1,4 @@
-import type { Config } from "@kagami/kernel/config/config.loader";
+import type { Config } from "@sparkle/kernel/config/config.loader";
 import type { OpenAiCodexAuthProvider } from "../providers/openai-codex-auth.js";
 import { createOpenAiCodexImageProvider } from "./providers/openai-codex-image-provider.js";
 import type { ImageProvider } from "./provider.js";

@@ -1,5 +1,5 @@
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { truncateWithEllipsis } from "@kagami/kernel/utils/text";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { truncateWithEllipsis } from "@sparkle/kernel/utils/text";
 import {
   RETRYABLE_STATUS,
   computeBackoffMs,

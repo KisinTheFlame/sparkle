@@ -8,9 +8,9 @@
     "strict": true,
     "noEmit": true,
     "paths": {
-      "@kagami/kernel/*": ["./../../packages/kernel/src/*"],
-      "@kagami/http/*": ["./../../packages/http/src/*"],
-      "@kagami/browser-api/*": ["./../../packages/browser-api/src/*"]
+      "@sparkle/kernel/*": ["./../../packages/kernel/src/*"],
+      "@sparkle/http/*": ["./../../packages/http/src/*"],
+      "@sparkle/browser-api/*": ["./../../packages/browser-api/src/*"]
     }
   },
   "include": ["src", "test"]

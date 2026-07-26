@@ -3,7 +3,7 @@ import {
   createPaginatedResponseSchema,
   PaginationQuerySchema,
   parseOptionalStringInput,
-} from "@kagami/http/wire";
+} from "@sparkle/http/wire";
 
 export const TodoItemStatusSchema = z.enum(["pending", "completed", "removed"]);
 

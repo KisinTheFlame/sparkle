@@ -5,7 +5,7 @@ import {
   type RetroemuInputManager,
   type RetroemuVideoOutput,
 } from "retroemu/src/core/LibretroHost.js";
-import type { GbaButton } from "@kagami/gba-api/contract";
+import type { GbaButton } from "@sparkle/gba-api/contract";
 import { GBA_NOMINAL_FPS, type EmulatorCore, type GbaFrameRgba } from "./emulator-core.js";
 
 /** libretro joypad 按键 id（RETRO_DEVICE_ID_JOYPAD_*）→ GBA 键位映射。 */
@@ -115,7 +115,7 @@ export class RetroemuCore implements EmulatorCore {
 
     // romPath 只用于扩展名探测（.gba → mgba 核心）与存档目录推导（fake no-op），字节走 romData，
     // 磁盘上并不存在该文件。saveDir 指到系统临时目录，避免在仓库里 mkdir 出无用目录。
-    await host.loadAndStart("kagami-rom.gba", {
+    await host.loadAndStart("sparkle-rom.gba", {
       romData: rom,
       saveDir: os.tmpdir(),
       systemDir: os.tmpdir(),

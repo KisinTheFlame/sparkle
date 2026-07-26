@@ -1,4 +1,4 @@
-# 设计系统 — Kagami 镜
+# 设计系统 — Sparkle 镜
 
 > 方向代号：**鲜艳的蒙德里安 / The Painted Ledger**（饱和原色 + 二维色块构图）
 > 任何视觉 / UI 决策前先读本文件。未经明确批准不要偏离。
@@ -6,7 +6,7 @@
 
 ## 产品语境
 
-- **这是什么：** Kagami（镜）的 Web 管理台，是一扇观察「一个拥有自己生活的 Agent」内心活动的窗。不是聊天机器人 UI。
+- **这是什么：** Sparkle（镜）的 Web 管理台，是一扇观察「一个拥有自己生活的 Agent」内心活动的窗。不是聊天机器人 UI。
 - **谁在用：** 仅创建者一人（私人观测台，不对外）。
 - **品类 / 邻居：** 开发者观测台 / Agent 运行时仪表盘（精神近邻：Linear、Grafana 的克制，但刻意不抄它们的视觉语言）。
 - **项目类型：** 数据密集的内部 Web 仪表盘。承载中文（CJK），到处是 ID、时间戳、token 计数、JSON。
@@ -28,7 +28,7 @@
 - **CJK 标题：** 思源宋体 Noto Serif SC — 宋体的庄重与老大师同源；**宋体做中文标题是本系统的标志性冒险**，让数 token 的工具读起来像 Agent 在写日记。
 - **正文（拉丁）：** Literata — 纸本文字感，适合观测日志与长说明。
 - **正文 / UI 标签（CJK 密集）：** 思源黑体 Noto Sans SC。
-- **数据 / 表格 / 代码（必须 tabular-nums）：** JetBrains Mono — 承载所有 ID / token / 时间戳 / JSON / provider payload。数据是 Kagami 的「笔触」，不藏，用漂亮等宽呈现，让技术密度本身成为审美。
+- **数据 / 表格 / 代码（必须 tabular-nums）：** JetBrains Mono — 承载所有 ID / token / 时间戳 / JSON / provider payload。数据是 Sparkle 的「笔触」，不藏，用漂亮等宽呈现，让技术密度本身成为审美。
   - 备选升级（付费）：Commit Mono；拉丁正文亦可换 Söhne / 标题换 Cormorant Garamond / GT Sectra（同档审美）。
 - **加载：** Google Fonts（或 Bunny Fonts）`<link>`；CJK 子集化按需自托管以控体积。
 - **字号刻度（rem，base 16px）：** 12 / 13 / 15（正文）/ 17 / 20 / 24（区块标题）/ 34（中文 display）/ 52（拉丁 display）。
@@ -77,7 +77,7 @@
 - 组件外观（button / card / table / badge / dialog / select / chart / json-panel / mobile-card）与 layout（侧栏画布边竖栏、列表/详情画框）已按本系统重写；`AuthPage` 等自带 slate/粉彩样式的页面已并入颜料盘。
 - **填实色块：** `Badge` 提供 `signal/llm/scheduler/story/cost` 填实语义变体（2px 黑描边、不渐变、不 hover 淡化）；状态 / 类型 / 级别徽章用填实语义色；Auth 额度卡做成填实大色块（按用量绿→黄→玫红）。侧栏选中 = 正黄块，字标用 `--sidebar-brand`。
 - **数据依赖：** 「大色块上墙」需要聚合 / 统计数据；`main-agent-context` landing 的统计色块簇需后端补聚合字段才能真实呈现（见 TODOS）。当前前端只在**数据已就绪**处上色块（Auth 额度、各状态徽章、feed 事件/消息标签），不硬编假数。
-- 预览样张：`~/.gstack/projects/KisinTheFlame-kagami/designs/design-system-20260630/preview.html`。
+- 预览样张：`~/.gstack/projects/KisinTheFlame-sparkle/designs/design-system-20260630/preview.html`。
 
 ## 决策日志
 

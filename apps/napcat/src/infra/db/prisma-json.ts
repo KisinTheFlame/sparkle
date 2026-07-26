@@ -1,5 +1,5 @@
-import { isRecord } from "@kagami/kernel/json/is-record";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { isRecord } from "@sparkle/kernel/json/is-record";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 
 import type * as Prisma from "../../generated/prisma/internal/prismaNamespace.js";
 

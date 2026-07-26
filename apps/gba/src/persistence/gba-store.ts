@@ -21,7 +21,7 @@ export interface ResumeStateRow {
 }
 
 /**
- * kagami-gba 元数据存储的端口。ROM 字节在 OSS（oss_key 引用），这里只存元数据 + 电池存档
+ * sparkle-gba 元数据存储的端口。ROM 字节在 OSS（oss_key 引用），这里只存元数据 + 电池存档
  * （SRAM ≤128KB，BLOB 直接入库）+ 单行 run_state（重启恢复上次 ROM，冷启动语义）+ 单行
  * resume_state（优雅关停的无感重启现场）。方法全异步——底层 Prisma（better-sqlite3 adapter）
  * 一律异步；测试用 InMemoryGbaStore 实现同一接口。
@@ -70,7 +70,7 @@ type RomWithSave = {
 const SELECT_HAS_SAVE = { batterySave: { select: { romId: true } } } as const;
 
 /**
- * kagami-gba 的元数据库（Prisma，better-sqlite3 adapter）。schema 由 prisma/migrations 拥有，
+ * sparkle-gba 的元数据库（Prisma，better-sqlite3 adapter）。schema 由 prisma/migrations 拥有，
  * 进程只连不建表。级联删除 / 单行 upsert 语义见各方法注释。
  */
 export class PrismaGbaStore implements GbaStore {

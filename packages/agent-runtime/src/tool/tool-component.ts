@@ -1,8 +1,8 @@
 import { z } from "zod";
-import type { JsonSchema, LlmMessage, Tool } from "@kagami/llm";
+import type { JsonSchema, LlmMessage, Tool } from "@sparkle/llm";
 import type { Effect } from "../effect.js";
 
-// JsonSchema / Tool 是 LLM 协议层类型，定义在 @kagami/llm；这里 import 后再 export，
+// JsonSchema / Tool 是 LLM 协议层类型，定义在 @sparkle/llm；这里 import 后再 export，
 // 让 agent-runtime 内部沿用 "从 tool-component 引入" 的习惯（避开 export...from 限制）。
 export type { JsonSchema, Tool };
 

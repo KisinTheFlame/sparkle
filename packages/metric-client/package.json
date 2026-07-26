@@ -1,5 +1,5 @@
 {
-  "name": "@kagami/metric-client",
+  "name": "@sparkle/metric-client",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -16,9 +16,9 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@kagami/kernel": "workspace:*",
-    "@kagami/metric-api": "workspace:*",
-    "@kagami/rpc-client": "workspace:*"
+    "@sparkle/kernel": "workspace:*",
+    "@sparkle/metric-api": "workspace:*",
+    "@sparkle/rpc-client": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",

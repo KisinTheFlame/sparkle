@@ -1,4 +1,4 @@
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import type {
   SpireEnemyView,
   SpireHandCardView,

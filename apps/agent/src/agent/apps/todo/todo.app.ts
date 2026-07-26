@@ -1,5 +1,5 @@
-import type { App } from "@kagami/agent-runtime";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import type { App } from "@sparkle/agent-runtime";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import { TODO_LIST_RENDER_LIMIT } from "../../capabilities/todo/application/todo.constants.js";
 import type { TodoService } from "../../capabilities/todo/application/todo.service.js";
 import type { RootAgentEffect } from "../../runtime/effect/root-agent-effect.js";

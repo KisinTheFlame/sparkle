@@ -21,11 +21,11 @@ export type QueryTodoItemListInput = {
 
 /**
  * Todo 的只读查询 DAO：供 agent 的 OpsQueryHandler 分页查询 todo_item 用
- * （console 自 #539 子 issue 4 起零 DB，经 @kagami/agent-api 查询路由取数）。
+ * （console 自 #539 子 issue 4 起零 DB，经 @sparkle/agent-api 查询路由取数）。
  *
  * 注意与 agent 侧 `TodoDao`（capabilities/todo）区分——那个 DAO 承载 agent 的读写
  * 业务（限额插入 / CAS 续期 / 完成 / soft delete），属 agent 私有；console 只需只读
- * 分页，故这里在 @kagami/persistence 单独提供一个零业务的查询接口，两者各连同一张表。
+ * 分页，故这里在 @sparkle/persistence 单独提供一个零业务的查询接口，两者各连同一张表。
  */
 export interface TodoItemQueryDao {
   /** 按 status 过滤后的总数（status 省略则全量）。 */

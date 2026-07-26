@@ -1,5 +1,5 @@
-import type { LlmMessage } from "@kagami/llm-client";
-import { truncateWithEllipsisDetailed, type TruncatedText } from "@kagami/kernel/utils/text";
+import type { LlmMessage } from "@sparkle/llm-client";
+import { truncateWithEllipsisDetailed, type TruncatedText } from "@sparkle/kernel/utils/text";
 import { createAgentSystemPrompt } from "../root-agent/system-prompt.js";
 import type {
   AgentContext,
@@ -209,7 +209,7 @@ function summarizeMessage(message: LlmMessage, previewLength: number): AgentCont
 }
 
 function renderUserMessagePreview(
-  content: string | import("@kagami/llm-client").LlmContentPart[],
+  content: string | import("@sparkle/llm-client").LlmContentPart[],
 ): string {
   if (typeof content === "string") {
     return content;

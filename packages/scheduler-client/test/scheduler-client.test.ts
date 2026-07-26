@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { initLoggerRuntime } from "@kagami/kernel/logger/runtime";
+import { initLoggerRuntime } from "@sparkle/kernel/logger/runtime";
 import { SchedulerClient } from "../src/scheduler-client.js";
 import type { OccurrenceStore, SchedulerTaskRegistration, SchedulerTick } from "../src/types.js";
 

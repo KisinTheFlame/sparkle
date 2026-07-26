@@ -1,5 +1,5 @@
 import { mkdirSync } from "node:fs";
-import { sqliteFilePathFromUrl } from "@kagami/kernel/utils/sqlite-path";
+import { sqliteFilePathFromUrl } from "@sparkle/kernel/utils/sqlite-path";
 import path from "node:path";
 import {
   getPrismaClientClass,
@@ -7,7 +7,7 @@ import {
 } from "../../generated/prisma/internal/class.js";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 
-// oss 独占的 SQLite 库（blob / object 对象元数据）。镜像 @kagami/persistence 的 db client：
+// oss 独占的 SQLite 库（blob / object 对象元数据）。镜像 @sparkle/persistence 的 db client：
 // better-sqlite3 adapter + busy_timeout + WAL + 建父目录。oss 独占本库。
 
 // 锁等待超时：并发写同一 SQLite 文件时，等待持锁方释放的毫秒数，超时才抛 SQLITE_BUSY。

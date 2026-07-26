@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TERMINATE_EFFECT_TYPE } from "@kagami/agent-runtime";
+import { TERMINATE_EFFECT_TYPE } from "@sparkle/agent-runtime";
 import { FinalizeSummaryTool } from "../../src/agent/capabilities/context-summary/task-agent/tools/finalize-summary.tool.js";
 
 describe("finalize_summary tool", () => {

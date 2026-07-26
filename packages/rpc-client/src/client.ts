@@ -1,8 +1,8 @@
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { bizErrorFromWire, isBizErrorWire } from "@kagami/kernel/errors/biz-error-wire";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { bizErrorFromWire, isBizErrorWire } from "@sparkle/kernel/errors/biz-error-wire";
 import type { z } from "zod";
-import type { JsonContractMap, JsonRouteContract } from "@kagami/http/contract";
-import { interpolatePath, toQueryString } from "@kagami/http/url";
+import type { JsonContractMap, JsonRouteContract } from "@sparkle/http/contract";
+import { interpolatePath, toQueryString } from "@sparkle/http/url";
 
 /**
  * 契约驱动的 typed HTTP client 工厂。给一份生产者契约集合，回出一个方法名逐一对应的 client：
@@ -12,8 +12,8 @@ import { interpolatePath, toQueryString } from "@kagami/http/url";
  * 改契约 output → 调用点编译报错（issue #230 强制机制）。运行期对响应 `output.parse`，堵掉旧
  * 手写 client 的 `as` 空洞。
  *
- * 放在独立 `@kagami/rpc-client` 而非 `@kagami/http`，是为了把「重建 BizError」对 `@kagami/kernel`
- * 的依赖隔离在消费端，让服务端 `@kagami/http` 维持零 kernel 依赖。
+ * 放在独立 `@sparkle/rpc-client` 而非 `@sparkle/http`，是为了把「重建 BizError」对 `@sparkle/kernel`
+ * 的依赖隔离在消费端，让服务端 `@sparkle/http` 维持零 kernel 依赖。
  */
 type FetchLike = typeof fetch;
 

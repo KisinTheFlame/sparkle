@@ -1,4 +1,4 @@
-import type { OssObjectSummary } from "@kagami/oss-api/oss-object";
+import type { OssObjectSummary } from "@sparkle/oss-api/oss-object";
 import { type FormEvent, useMemo } from "react";
 import { HistoryListPageLayout } from "@/components/layout/HistoryListPageLayout";
 import { Button } from "@/components/ui/button";

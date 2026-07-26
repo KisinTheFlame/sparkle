@@ -4,7 +4,7 @@ import {
   type MetricChartQueryRequest,
   type MetricChartRangePreset,
   type MetricChartTagFilters,
-} from "@kagami/metric-api/chart";
+} from "@sparkle/metric-api/chart";
 import { RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";

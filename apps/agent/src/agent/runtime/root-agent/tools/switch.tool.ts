@@ -5,7 +5,7 @@ import {
   type ToolContext,
   type ToolExecutionResult,
   type ToolKind,
-} from "@kagami/agent-runtime";
+} from "@sparkle/agent-runtime";
 import type { RootAgentEffect } from "../../effect/root-agent-effect.js";
 import type { RootAgentSessionController } from "../session/root-agent-session.js";
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@kagami/agent-runtime";
-import { FORWARD_ID_DISPLAY_PREFIX } from "@kagami/napcat-api/rendering";
+import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@sparkle/agent-runtime";
+import { FORWARD_ID_DISPLAY_PREFIX } from "@sparkle/napcat-api/rendering";
 import type { QqApp } from "../qq.app.js";
 
 // forward_id 容忍 string | number：占位符带 fwd- 前缀本会强制成字符串，但 LLM 偶尔仍会把它

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 
 describe("BizError", () => {
   it("should preserve message, meta, and cause", () => {

@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { ZodToolComponent, type ToolKind } from "@kagami/agent-runtime";
+import { ZodToolComponent, type ToolKind } from "@sparkle/agent-runtime";
 import type { AgentMessageService } from "../application/agent-message.service.js";
 import type { PendingDraftStore } from "../application/pending-draft.store.js";
 import type { AiToneScorer } from "../infra/ai-tone-scorer.js";
 import { MutedSendError, formatMutedNote } from "../application/muted-send-error.js";
-import type { NapcatChatTarget } from "@kagami/napcat-api/message";
+import type { NapcatChatTarget } from "@sparkle/napcat-api/message";
 
 const SEND_MESSAGE_TOOL_NAME = "send_message";
 

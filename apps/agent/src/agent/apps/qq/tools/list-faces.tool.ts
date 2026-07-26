@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ZodToolComponent, type ToolKind } from "@kagami/agent-runtime";
-import { QQ_FACE_NAMES } from "@kagami/napcat-api/rendering";
+import { ZodToolComponent, type ToolKind } from "@sparkle/agent-runtime";
+import { QQ_FACE_NAMES } from "@sparkle/napcat-api/rendering";
 
 const ListFacesArgumentsSchema = z.object({});
 

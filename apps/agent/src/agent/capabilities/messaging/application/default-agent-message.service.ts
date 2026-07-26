@@ -1,5 +1,5 @@
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import type { NapcatChatTarget } from "@kagami/napcat-api/message";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import type { NapcatChatTarget } from "@sparkle/napcat-api/message";
 import type { NapcatClient } from "../../../../acl/napcat-client.js";
 import type { AgentMessageService } from "./agent-message.service.js";
 import type { GroupMuteStateStore } from "./group-mute-state.store.js";

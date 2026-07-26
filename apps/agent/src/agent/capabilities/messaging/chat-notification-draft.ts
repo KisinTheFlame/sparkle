@@ -1,8 +1,8 @@
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
-import { truncateWithEllipsis } from "@kagami/kernel/utils/text";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
+import { truncateWithEllipsis } from "@sparkle/kernel/utils/text";
 import type { NotificationDraft } from "../../runtime/root-agent/notification/notification-draft.js";
-import type { NapcatGroupMessageData, NapcatPrivateMessageData } from "@kagami/napcat-api/message";
-import type { NapcatReceiveMessageSegment } from "@kagami/napcat-api/segment";
+import type { NapcatGroupMessageData, NapcatPrivateMessageData } from "@sparkle/napcat-api/message";
+import type { NapcatReceiveMessageSegment } from "@sparkle/napcat-api/segment";
 
 const MAX_DISPLAY_COUNT = 99;
 /** 预览正文截断上限（码点数）：一行通知里给正文留的空间，超出截断加省略号。 */

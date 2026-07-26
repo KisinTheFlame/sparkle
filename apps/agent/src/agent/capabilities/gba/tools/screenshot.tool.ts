@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ToolExecutionResult, ToolKind } from "@kagami/agent-runtime";
+import type { ToolExecutionResult, ToolKind } from "@sparkle/agent-runtime";
 import { GbaToolComponent } from "./gba-tool-component.js";
 import { buildGbaScreenToolResult } from "../render/gba-screen-effect.js";
 import { withForegroundRealign } from "./foreground-realign.js";

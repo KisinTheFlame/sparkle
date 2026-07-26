@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { LlmMessage, LlmToolCall } from "@kagami/llm-client";
+import type { LlmMessage, LlmToolCall } from "@sparkle/llm-client";
 import { WaitTool } from "../../src/agent/runtime/root-agent/tools/wait.tool.js";
 
 function makeToolCall(name: string, id = `${name}-${Math.random()}`): LlmToolCall {

@@ -1,10 +1,10 @@
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import type { FastifyInstance } from "fastify";
-import { loadStaticConfig } from "@kagami/kernel/config/config.loader";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { createServiceApp } from "@kagami/kernel/http/service-app";
-import { HealthHandler } from "@kagami/kernel/http/health.handler";
+import { loadStaticConfig } from "@sparkle/kernel/config/config.loader";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { createServiceApp } from "@sparkle/kernel/http/service-app";
+import { HealthHandler } from "@sparkle/kernel/http/health.handler";
 import { MetricChartHandler } from "../metric/http/metric-chart.handler.js";
 import { MetricDeriveHandler } from "../metric/http/metric-derive.handler.js";
 import { MetricPointsHandler } from "../metric/http/metric-points.handler.js";
@@ -26,7 +26,7 @@ export type MetricRuntime = {
 /**
  * Metric 服务运行时装配。独立进程，一手包办 metric 摄取（`POST /metric/record`）与 metric 图表查询
  * （`POST /metric/query`，内联聚合规格）。#475 P1 起 metric 从共享 SQLite / Prisma 迁到
- * **kagami-metric 独占的 DuckDB 单文件**（列式，为 p95 / 分析聚合而生）；不再与其它进程共享库，
+ * **sparkle-metric 独占的 DuckDB 单文件**（列式，为 p95 / 分析聚合而生）；不再与其它进程共享库，
  * 也不持有任何 Agent 活内存。
  */
 export async function buildMetricRuntime(): Promise<MetricRuntime> {
@@ -62,7 +62,7 @@ export async function buildMetricRuntime(): Promise<MetricRuntime> {
  * 独立」（#475/#539）。
  *
  * 依赖 loadStaticConfig 已把 databaseUrl 绝对化（锚 config.yaml 目录）。若收到相对路径则显式抛错，
- * 而非按进程 cwd 静默解析——kagami-metric 的 PM2 cwd 是 `apps/metric`，相对解析会把库落到
+ * 而非按进程 cwd 静默解析——sparkle-metric 的 PM2 cwd 是 `apps/metric`，相对解析会把库落到
  * `apps/metric/data/` 造成 split-brain。
  */
 function resolveMetricDuckdbPath(databaseUrl: string): string {

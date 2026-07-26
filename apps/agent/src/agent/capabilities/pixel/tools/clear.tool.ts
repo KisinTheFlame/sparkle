@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ToolKind } from "@kagami/agent-runtime";
+import type { ToolKind } from "@sparkle/agent-runtime";
 import { PixelToolComponent } from "./pixel-tool-component.js";
 import { renderDrawResponse } from "../render/pixel-screen.js";
 import type { PixelClient } from "../../../../acl/pixel-client.js";

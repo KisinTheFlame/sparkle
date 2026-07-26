@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
-import { registerJsonRoute } from "@kagami/http/register";
-import { metricApiContract } from "@kagami/metric-api/contract";
+import { registerJsonRoute } from "@sparkle/http/register";
+import { metricApiContract } from "@sparkle/metric-api/contract";
 import type { MetricPointsService } from "../application/metric-points.service.js";
 
 type MetricPointsHandlerDeps = {

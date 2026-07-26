@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@kagami/agent-runtime";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@sparkle/agent-runtime";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import type { ResourceFileService } from "../application/resource-file.service.js";
 
 const UPLOAD_RESOURCE_TOOL_NAME = "upload_resource";
@@ -10,7 +10,7 @@ const UploadResourceArgumentsSchema = z.object({
 });
 
 /**
- * 把资源根目录（默认 ~/kagami）里的一个本地文件存进 OSS，得到一个 res-N，之后可被其他
+ * 把资源根目录（默认 ~/sparkle）里的一个本地文件存进 OSS，得到一个 res-N，之后可被其他
  * 能力引用（如发到群、read_resource 调回）。是 download_resource 的反向操作。
  *
  * **全局工具**：和 read_resource / download_resource 同级。结果只回尾部，KV 友好。
@@ -18,7 +18,7 @@ const UploadResourceArgumentsSchema = z.object({
 export class UploadResourceTool extends ZodToolComponent<typeof UploadResourceArgumentsSchema> {
   public readonly name = UPLOAD_RESOURCE_TOOL_NAME;
   public readonly description =
-    "把资源根目录（默认 ~/kagami，与 terminal 工作目录重合）里的一个本地文件存进 OSS，" +
+    "把资源根目录（默认 ~/sparkle，与 terminal 工作目录重合）里的一个本地文件存进 OSS，" +
     "拿到一个 res-N，之后能被其他能力引用（发到群、read_resource 调回等）。" +
     "path 是根目录下的相对路径（不得逃出根目录）。";
   public readonly parameters = {

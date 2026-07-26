@@ -1,15 +1,15 @@
 /**
  * LLM 协议层的消息表示。OpenAI 风格的 user / assistant / tool 三态，完全通用，
- * 不含任何具体 provider 的 wire 格式细节，也不含项目（Kagami / napcat）业务语义。
+ * 不含任何具体 provider 的 wire 格式细节，也不含项目（Sparkle / napcat）业务语义。
  * （provider 标识枚举 `LLM_PROVIDER_IDS` 例外：它是协议契约层"接入了哪些 provider"
  * 的清单，属跨前后端/内核共享的契约本身，故收在此最底层包里单源维护。）
  *
- * 这是 Agent Runtime 与 LLM 之间流动的基本单元——`@kagami/agent-runtime` 的
+ * 这是 Agent Runtime 与 LLM 之间流动的基本单元——`@sparkle/agent-runtime` 的
  * ReAct kernel、Tool、Effect 等都直接用它，不再用 `TMessage` 泛型抽象。
  */
 
 /**
- * Kagami 当前接入的 LLM provider 标识全集。这是 LLM 协议层的契约枚举：config
+ * Sparkle 当前接入的 LLM provider 标识全集。这是 LLM 协议层的契约枚举：config
  * schema、后端 provider 装配、auth 全部从这里派生，避免字面量在多处各写一遍而
  * 漂移。**新增 / 删除 provider 只改这一处。**
  *

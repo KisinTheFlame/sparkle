@@ -1,4 +1,4 @@
-import type { AppId, Effect, ReplaceLeadingMessagesEffect } from "@kagami/agent-runtime";
+import type { AppId, Effect, ReplaceLeadingMessagesEffect } from "@sparkle/agent-runtime";
 
 /**
  * 把 content（一段字符串）以 role=user 追加到主 Agent 上下文尾部。
@@ -6,7 +6,7 @@ import type { AppId, Effect, ReplaceLeadingMessagesEffect } from "@kagami/agent-
  *
  * 可选 images：携带图片（base64 字符串）时，追加的是一条多模态 user 消息（文本 + 图片块），
  * 图片直接进上下文、不经 vision 转文字。用于 Browser App 的 screenshot、read_resource。
- * 数组支持多张：极端长图经 @kagami/image 切片后按序进同一条消息（#556）。
+ * 数组支持多张：极端长图经 @sparkle/image 切片后按序进同一条消息（#556）。
  * content 用 base64 字符串而非 Buffer：消息会进持久上下文（快照/ledger 走 JSON），
  * Buffer 经 JSON 往返会坏掉。KV 友好：仍只往尾部 append，不碰前缀。
  */

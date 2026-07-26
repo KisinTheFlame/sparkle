@@ -1,13 +1,13 @@
 import type { FastifyInstance } from "fastify";
-import { registerJsonRoute } from "@kagami/http/register";
-import { consoleApiContract } from "@kagami/console-api/contract";
+import { registerJsonRoute } from "@sparkle/http/register";
+import { consoleApiContract } from "@sparkle/console-api/contract";
 import type { NapcatEventQueryService } from "../application/napcat-event-query.service.js";
 
 type NapcatEventHandlerDeps = {
   napcatEventQueryService: NapcatEventQueryService;
 };
 
-/** NapCat 事件查询路由。路由与 schema 的单一事实源在 @kagami/console-api（#279 PR4）。 */
+/** NapCat 事件查询路由。路由与 schema 的单一事实源在 @sparkle/console-api（#279 PR4）。 */
 export class NapcatEventHandler {
   private readonly napcatEventQueryService: NapcatEventQueryService;
 

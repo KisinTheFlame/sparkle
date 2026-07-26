@@ -1,8 +1,8 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { createServiceApp, type ServiceErrorHandler } from "@kagami/kernel/http/service-app";
-import { HealthHandler } from "@kagami/kernel/http/health.handler";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { createServiceApp, type ServiceErrorHandler } from "@sparkle/kernel/http/service-app";
+import { HealthHandler } from "@sparkle/kernel/http/health.handler";
 import { SaveStore } from "../persistence/save-store.js";
 import { SpireService } from "../application/spire.service.js";
 import { SpireHandler } from "../http/spire.handler.js";
@@ -18,7 +18,7 @@ export type SpireServiceRuntime = {
 };
 
 /**
- * kagami-spire 进程运行时装配。独立 PM2 进程，持有内存对局 + JSON 存档，纯游戏后端。
+ * sparkle-spire 进程运行时装配。独立 PM2 进程，持有内存对局 + JSON 存档，纯游戏后端。
  * 无 DB、无 LLM 依赖——与 agent 完全隔离（设计文档 P1/P2）。
  */
 export async function buildSpireServiceRuntime(): Promise<SpireServiceRuntime> {

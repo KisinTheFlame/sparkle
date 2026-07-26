@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ToolKind } from "@kagami/agent-runtime";
+import type { ToolKind } from "@sparkle/agent-runtime";
 import { BrowserToolComponent } from "./browser-tool-component.js";
 import { BrowserError } from "../domain/errors.js";
 import type { BrowserClient } from "../../../../acl/browser-client.js";

@@ -1,5 +1,5 @@
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import type { AuthUsageCacheManager, OAuthAuthRefreshScheduler } from "@kagami/auth";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import type { AuthUsageCacheManager, OAuthAuthRefreshScheduler } from "@sparkle/auth";
 
 const logger = new AppLogger({ source: "llm-service.auth-refresh-timers" });
 
@@ -12,7 +12,7 @@ export type AuthRefreshTimers = {
 };
 
 /**
- * 在 kagami-llm 进程内用自己的 timer 驱动 OAuth 刷新 + usage 快照刷新。
+ * 在 sparkle-llm 进程内用自己的 timer 驱动 OAuth 刷新 + usage 快照刷新。
  * 不引入 agent 的 TaskScheduler（那是 agent app 层类型），只调 auth 模块暴露的能力。
  * 每个 runOnce/refreshAll 都 fire-and-forget 且内部 catch，任何一次失败都不影响后续与主流程。
  */

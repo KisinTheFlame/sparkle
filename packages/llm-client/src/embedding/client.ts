@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
-import type { Config } from "@kagami/kernel/config/config.loader";
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import type { Config } from "@sparkle/kernel/config/config.loader";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type { EmbeddingCacheDao } from "./cache.dao.js";
 import { createGeminiEmbeddingProvider } from "./providers/gemini-provider.js";
 import { createTeiEmbeddingGemmaProvider } from "./providers/tei-embedding-gemma-provider.js";

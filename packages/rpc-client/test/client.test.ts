@@ -1,6 +1,6 @@
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { toBizErrorWire } from "@kagami/kernel/errors/biz-error-wire";
-import { defineJsonRoute } from "@kagami/http/contract";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { toBizErrorWire } from "@sparkle/kernel/errors/biz-error-wire";
+import { defineJsonRoute } from "@sparkle/http/contract";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { createClient } from "../src/client.js";
@@ -29,14 +29,14 @@ function jsonResponse(body: unknown, status = 200): Response {
 
 describe("createClient", () => {
   it("GET：input 序列化进 query，响应经 output.parse 返回", async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ greeting: "hi kagami" }));
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ greeting: "hi sparkle" }));
     const client = createClient(contracts, { baseUrl: "http://svc", fetch: fetchImpl });
 
-    const result = await client.getGreeting({ name: "kagami" });
+    const result = await client.getGreeting({ name: "sparkle" });
 
-    expect(result).toEqual({ greeting: "hi kagami" });
+    expect(result).toEqual({ greeting: "hi sparkle" });
     const [url, init] = fetchImpl.mock.calls[0];
-    expect(url).toBe("http://svc/greeting?name=kagami");
+    expect(url).toBe("http://svc/greeting?name=sparkle");
     expect(init.method).toBe("GET");
   });
 
@@ -146,11 +146,11 @@ describe("createClient — 默认 fetch 绑定 globalThis", () => {
   }
 
   it("不传 options.fetch → 默认 fetch 以 globalThis 为接收者调用（挡住 Illegal invocation 回归）", async () => {
-    const restore = installBrowserFetch(jsonResponse({ greeting: "hi kagami" }));
+    const restore = installBrowserFetch(jsonResponse({ greeting: "hi sparkle" }));
     try {
       const client = createClient(contracts, { baseUrl: "http://svc" });
-      await expect(client.getGreeting({ name: "kagami" })).resolves.toEqual({
-        greeting: "hi kagami",
+      await expect(client.getGreeting({ name: "sparkle" })).resolves.toEqual({
+        greeting: "hi sparkle",
       });
     } finally {
       restore();

@@ -1,10 +1,10 @@
-import { defineJsonRoute } from "@kagami/http/contract";
+import { defineJsonRoute } from "@sparkle/http/contract";
 import { z } from "zod";
 import { SchedulerReportRunRequestSchema, SchedulerReportRunResponseSchema } from "./run.js";
 import { SchedulerMisfirePolicySchema, SchedulerTaskScheduleSchema } from "./schedule.js";
 
 /**
- * kagami-scheduler 进程的对外契约（单一事实源，issue #428）。调度器是通用薄时钟：使用方经 SDK
+ * sparkle-scheduler 进程的对外契约（单一事实源，issue #428）。调度器是通用薄时钟：使用方经 SDK
  * 注册"名字 + 周期 + 补偿策略"，调度器到点通过 SSE（见 event.ts，非 JSON 路由）推一个 tick 回去，
  * 业务逻辑全在使用方。这里只有两条 JSON 路由：注册（幂等 replace-all）与状态查询（tick 侧）。
  *

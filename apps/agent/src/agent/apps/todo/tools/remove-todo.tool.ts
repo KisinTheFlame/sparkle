@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@kagami/agent-runtime";
+import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@sparkle/agent-runtime";
 import type { TodoService } from "../../../capabilities/todo/application/todo.service.js";
 
 const REMOVE_TODO_TOOL_NAME = "remove_todo";

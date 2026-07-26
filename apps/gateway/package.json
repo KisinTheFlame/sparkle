@@ -1,5 +1,5 @@
 {
-  "name": "@kagami/gateway",
+  "name": "@sparkle/gateway",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -12,8 +12,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@kagami/config": "workspace:*",
-    "@kagami/http": "workspace:*",
+    "@sparkle/config": "workspace:*",
+    "@sparkle/http": "workspace:*",
     "yaml": "^2.8.2"
   },
   "devDependencies": {

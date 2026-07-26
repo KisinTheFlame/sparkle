@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Config } from "@kagami/kernel/config/config.loader";
+import type { Config } from "@sparkle/kernel/config/config.loader";
 import type { EmbeddingCacheDao } from "../src/embedding/cache.dao.js";
 import { createEmbeddingClient } from "../src/embedding/client.js";
 import type { EmbeddingProvider } from "../src/embedding/provider.js";

@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
-import { registerJsonRoute } from "@kagami/http/register";
-import { spireApiContract } from "@kagami/spire-api/contract";
+import { registerJsonRoute } from "@sparkle/http/register";
+import { spireApiContract } from "@sparkle/spire-api/contract";
 import type { SpireService } from "../application/spire.service.js";
 import { toScreenView } from "../application/state-view.js";
 import { lookupReference } from "../application/reference.js";
@@ -8,7 +8,7 @@ import { lookupReference } from "../application/reference.js";
 // === 尖塔 HTTP 路由 ===
 //
 // 返回结构化「屏幕视图」（ScreenView），agent 侧据此渲染文字屏幕（渲染逻辑放 agent 侧，
-// 服务保持纯游戏后端，issue #234 分工原则）。路由全量走 @kagami/spire-api 契约（issue #230）：
+// 服务保持纯游戏后端，issue #234 分工原则）。路由全量走 @sparkle/spire-api 契约（issue #230）：
 // execute 返回类型由契约 output 反推，改 toScreenView 的形状这里会编译报错。
 
 export class SpireHandler {

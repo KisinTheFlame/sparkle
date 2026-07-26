@@ -1,9 +1,9 @@
 import {
   type NapcatEventListQuery,
   type NapcatEventListResponse,
-} from "@kagami/console-api/napcat-event";
-import type { JsonClient } from "@kagami/rpc-client/client";
-import type { napcatApiContract } from "@kagami/napcat-api/contract";
+} from "@sparkle/console-api/napcat-event";
+import type { JsonClient } from "@sparkle/rpc-client/client";
+import type { napcatApiContract } from "@sparkle/napcat-api/contract";
 import { mapNapcatEventList } from "../mappers/napcat-event.mapper.js";
 import type { NapcatEventQueryService } from "./napcat-event-query.service.js";
 

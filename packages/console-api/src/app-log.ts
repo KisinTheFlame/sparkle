@@ -4,7 +4,7 @@ import {
   JsonRecordSchema,
   PaginationQuerySchema,
   parseOptionalStringInput,
-} from "@kagami/http/wire";
+} from "@sparkle/http/wire";
 
 export const AppLogLevelSchema = z.enum(["debug", "info", "warn", "error", "fatal"]);
 

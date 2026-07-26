@@ -1,6 +1,6 @@
-import { createClient, type JsonClient } from "@kagami/rpc-client/client";
-import { llmApiContract } from "@kagami/llm-api/contract";
-import { llmUpstreamCallFailedError } from "@kagami/llm-client";
+import { createClient, type JsonClient } from "@sparkle/rpc-client/client";
+import { llmApiContract } from "@sparkle/llm-api/contract";
+import { llmUpstreamCallFailedError } from "@sparkle/llm-client";
 import type {
   LlmClient,
   LlmChatOptions,
@@ -9,8 +9,8 @@ import type {
   LlmChatRequest,
   LlmChatResponsePayload,
   LlmListAvailableProvidersOptions,
-} from "@kagami/llm-client";
-import type { LlmProviderOption } from "@kagami/llm-api/llm-chat";
+} from "@sparkle/llm-client";
+import type { LlmProviderOption } from "@sparkle/llm-api/llm-chat";
 
 // createClient 的默认超时（服务真挂/半开兜底）。chat/chat-direct 各自的 600s、providers 的 30s
 // 都由 llmApiContract 的 timeoutMs 逐路由覆盖，此默认只在契约未指定时兜底。
@@ -19,11 +19,11 @@ const DEFAULT_CLIENT_TIMEOUT_MS = 30_000;
 type FetchLike = typeof fetch;
 
 /**
- * 把 LLM 调用经 HTTP 打到独立的 kagami-llm 进程。实现 @kagami/llm-client 的 LlmClient 接口，
+ * 把 LLM 调用经 HTTP 打到独立的 sparkle-llm 进程。实现 @sparkle/llm-client 的 LlmClient 接口，
  * 因此 agent-runtime.factory 及所有下游消费者只把构造点从 createLlmClient 换成 new
  * HttpLlmClient，其余零改动。
  *
- * 三条路由（chat / chat-direct / providers）全走 @kagami/llm-api 契约驱动的 createClient：wire 序列化、
+ * 三条路由（chat / chat-direct / providers）全走 @sparkle/llm-api 契约驱动的 createClient：wire 序列化、
  * 超时、错误通道（BizError 富信封重建 + 不可达归一为 LLM_UNREACHABLE_MESSAGE）统一在 rpc-client。
  * chat/chat-direct 是信封级（契约 output `z.unknown()`，复杂 union 不逐字段校验），故对返回值按 LlmClient
  * 接口类型断言；providers 是全类型化路由，返回类型由契约 output 反推、与服务端 handler 同源。

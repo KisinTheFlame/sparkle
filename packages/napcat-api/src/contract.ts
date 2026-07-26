@@ -1,4 +1,4 @@
-import { defineJsonRoute } from "@kagami/http/contract";
+import { defineJsonRoute } from "@sparkle/http/contract";
 import {
   NapcatEmptyResponseSchema,
   NapcatFriendListResponseSchema,
@@ -31,7 +31,7 @@ import {
 import { z } from "zod";
 
 /**
- * kagami-napcat 进程的对外契约（单一事实源，issue #347 / 沿用 #230 方向）。三组消费者：
+ * sparkle-napcat 进程的对外契约（单一事实源，issue #347 / 沿用 #230 方向）。三组消费者：
  *
  * - **agent**（出站 RPC + 入站 SSE）：13 个网关方法逐一成 JSON 路由；入站事件走 SSE，不在此
  *   JSON 契约里建模（见 event.ts 的 `NAPCAT_EVENTS_SSE_PATH` / `NapcatOutboxEventSchema`）。

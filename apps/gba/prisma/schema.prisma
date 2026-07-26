@@ -9,7 +9,7 @@ datasource db {
   provider = "sqlite"
 }
 
-// kagami-gba 独占的 SQLite 库（ROM 元数据 + 电池存档 + 无感重启现场；ROM 字节在 OSS）。
+// sparkle-gba 独占的 SQLite 库（ROM 元数据 + 电池存档 + 无感重启现场；ROM 字节在 OSS）。
 // 时间戳列为 Unix ms（Int，SQLite INTEGER 承 64 位）。
 // FK 级联/置空靠 DB 强制（onDelete + configureSqlite 的 PRAGMA foreign_keys = ON）。
 // run_state / resume_state 是单行表（id 恒为 1），单行不变量由 store 侧 upsert(where id=1) 维护。

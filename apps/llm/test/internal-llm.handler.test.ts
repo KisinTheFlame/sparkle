@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { isBizErrorWire } from "@kagami/kernel/errors/biz-error-wire";
-import type { LlmClient } from "@kagami/llm-client";
-import type { EmbeddingClient } from "@kagami/llm-client/embedding";
-import type { ImageClient } from "@kagami/llm-client/image";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { isBizErrorWire } from "@sparkle/kernel/errors/biz-error-wire";
+import type { LlmClient } from "@sparkle/llm-client";
+import type { EmbeddingClient } from "@sparkle/llm-client/embedding";
+import type { ImageClient } from "@sparkle/llm-client/image";
 import { createLlmServiceApp } from "../src/app/llm-service-runtime.js";
 import { InternalLlmHandler } from "../src/http/internal-llm.handler.js";
 

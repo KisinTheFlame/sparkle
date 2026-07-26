@@ -1,4 +1,4 @@
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import {
   ActionResponseSchema,
   PostTypeEventSchema,

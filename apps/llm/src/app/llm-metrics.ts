@@ -2,10 +2,10 @@ import {
   LLM_PROVIDER_UNAVAILABLE_MESSAGE,
   type LlmChatCallErrorObservation,
   type LlmChatCallObservation,
-} from "@kagami/llm-client";
-import type { MetricClient } from "@kagami/metric-client/client";
+} from "@sparkle/llm-client";
+import type { MetricClient } from "@sparkle/metric-client/client";
 
-// LLM 调用打点（fire-and-forget）：在 kagami-llm 的观测点把每次 attempt 记成 metric，喂给独占 DuckDB
+// LLM 调用打点（fire-and-forget）：在 sparkle-llm 的观测点把每次 attempt 记成 metric，喂给独占 DuckDB
 // 的查询/派生层（P1-P4）。三个 metric（tags 均带 usage[KV 缓存身份] + scene[调用归因] 双维度）：
 // - llm.call        计数（provider/model/status/usage/scene，失败带 error 粗分类）→ 调用量 / 成功率
 // - llm.call.latency 延迟毫秒（同上 tags）→ p50/p95/p99（秒是展示层的事，前端 ÷1000 换算）

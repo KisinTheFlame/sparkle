@@ -1,23 +1,23 @@
 {
-  "name": "@kagami/console",
+  "name": "@sparkle/console",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "pretest": "pnpm --filter \"@kagami/console^...\" build",
+    "pretest": "pnpm --filter \"@sparkle/console^...\" build",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@kagami/agent-api": "workspace:*",
-    "@kagami/console-api": "workspace:*",
-    "@kagami/llm-api": "workspace:*",
-    "@kagami/napcat-api": "workspace:*",
-    "@kagami/http": "workspace:*",
-    "@kagami/kernel": "workspace:*",
-    "@kagami/rpc-client": "workspace:*",
+    "@sparkle/agent-api": "workspace:*",
+    "@sparkle/console-api": "workspace:*",
+    "@sparkle/llm-api": "workspace:*",
+    "@sparkle/napcat-api": "workspace:*",
+    "@sparkle/http": "workspace:*",
+    "@sparkle/kernel": "workspace:*",
+    "@sparkle/rpc-client": "workspace:*",
     "fastify": "^5.6.2",
     "zod": "^3.24.4"
   },

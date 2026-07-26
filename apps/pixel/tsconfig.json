@@ -8,7 +8,7 @@
     "strict": true,
     "noEmit": true,
     "paths": {
-      "@kagami/pixel-api/*": ["./../../packages/pixel-api/src/*"]
+      "@sparkle/pixel-api/*": ["./../../packages/pixel-api/src/*"]
     }
   },
   "include": ["src", "test"]

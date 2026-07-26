@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import {
   NonEmptyStringSchema,
   NonNegativeIntSchema,

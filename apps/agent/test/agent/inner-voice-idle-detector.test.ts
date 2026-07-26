@@ -8,7 +8,7 @@ import {
 } from "../../src/agent/capabilities/inner-voice/domain/idle-detector.js";
 import { InnerVoiceIdleTracker } from "../../src/agent/capabilities/inner-voice/domain/idle-tracker.js";
 import { collectInnerVoiceIdleSignals } from "../../src/agent/capabilities/inner-voice/domain/ledger-idle-signals.js";
-import type { LlmMessage } from "@kagami/llm-client";
+import type { LlmMessage } from "@sparkle/llm-client";
 
 // 北京时间 = UTC+8：Beijing 14:00 → UTC 06:00（非静默窗、正常触发时段）。
 const NOW = new Date("2026-07-02T06:00:00Z");

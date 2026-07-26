@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { AppManager, InMemoryQueue, type App } from "@kagami/agent-runtime";
+import { AppManager, InMemoryQueue, type App } from "@sparkle/agent-runtime";
 import { DefaultAgentContext } from "../../src/agent/runtime/context/default-agent-context.js";
 import { RootAgentSession } from "../../src/agent/runtime/root-agent/session/root-agent-session.js";
 import {
@@ -7,7 +7,7 @@ import {
   type ForegroundInput,
 } from "../../src/agent/runtime/root-agent/foreground-input.js";
 import type { Event } from "../../src/agent/runtime/event/event.js";
-import type { RecordMetricInput } from "@kagami/metric-client/client";
+import type { RecordMetricInput } from "@sparkle/metric-client/client";
 import { initTestLoggerRuntime } from "../helpers/logger.js";
 
 initTestLoggerRuntime();

@@ -1,7 +1,7 @@
 import { z } from "zod";
-import type { ConfigManager } from "@kagami/kernel/config/config.manager";
-import type { Config } from "@kagami/kernel/config/config.loader";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import type { ConfigManager } from "@sparkle/kernel/config/config.manager";
+import type { Config } from "@sparkle/kernel/config/config.loader";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import { type NapcatGatewayPersistenceWriter } from "./napcat-gateway/event-persistence-writer.js";
 import { NapcatForwardMessageReader } from "./napcat-gateway/forward-message-reader.js";
 import { NapcatFriendListManager } from "./napcat-gateway/friend-list-manager.js";

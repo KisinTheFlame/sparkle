@@ -1,7 +1,7 @@
-import { runService } from "@kagami/kernel/http/service-runner";
+import { runService } from "@sparkle/kernel/http/service-runner";
 import { buildGbaServiceRuntime } from "./app/gba-service-runtime.js";
 
-// kagami-gba 进程：日志只走 stdout（同 spire/pixel 卫星进程），由 PM2 的 gba-out.log 承载。
+// sparkle-gba 进程：日志只走 stdout（同 spire/pixel 卫星进程），由 PM2 的 gba-out.log 承载。
 runService({
   name: "gba_service",
   source: "gba-service-bootstrap",

@@ -1,4 +1,7 @@
-import type { SchedulerMisfirePolicy, SchedulerTaskSchedule } from "@kagami/scheduler-api/schedule";
+import type {
+  SchedulerMisfirePolicy,
+  SchedulerTaskSchedule,
+} from "@sparkle/scheduler-api/schedule";
 import type { TaskRunMetadata } from "./task-run.js";
 
 /**

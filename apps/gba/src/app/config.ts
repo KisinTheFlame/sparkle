@@ -1,4 +1,4 @@
-import { loadStaticConfig } from "@kagami/kernel/config/config.loader";
+import { loadStaticConfig } from "@sparkle/kernel/config/config.loader";
 import { MAX_ROM_BYTES } from "../application/rom-library.js";
 
 export type GbaServiceConfig = {
@@ -13,7 +13,7 @@ export type GbaServiceConfig = {
 };
 
 /**
- * kagami-gba 进程配置。端口取 `services.gba.port`；元数据 sqlite 落仓库根 data/gba（由
+ * sparkle-gba 进程配置。端口取 `services.gba.port`；元数据 sqlite 落仓库根 data/gba（由
  * `services.gba.databaseUrl` 指定）——进程 cwd 固定仓库根（见 ecosystem.config.cjs），
  * ROM 库与电池存档跨重启留存。
  */

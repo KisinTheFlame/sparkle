@@ -1,7 +1,7 @@
 import path from "node:path";
-import { ConfigError } from "@kagami/config/errors";
-import { loadMergedRawConfig } from "@kagami/config/source";
-import { LLM_PROVIDER_IDS, type LlmProviderId } from "@kagami/llm";
+import { ConfigError } from "@sparkle/config/errors";
+import { loadMergedRawConfig } from "@sparkle/config/source";
+import { LLM_PROVIDER_IDS, type LlmProviderId } from "@sparkle/llm";
 import { z } from "zod";
 import type { LlmUsageId } from "../contracts/llm.js";
 
@@ -19,9 +19,9 @@ const DEFAULT_AGENT_MESSAGING_AI_TONE_BLOCK_THRESHOLD = 0.6;
 // 4 MiB 贴合 QQ 图片实际体量，也避免把巨型资源灌进上下文或 napcat WS。
 const DEFAULT_AGENT_RESOURCE_MAX_BYTES = 4 * 1024 * 1024;
 // 文件桥（download_resource / upload_resource / 群文件）落盘 / 读盘 / 传输的沙箱根与字节上限。
-// fileRoot 默认 ~/kagami，与 terminal initialCwd 默认值重合，落盘后 terminal ls 天然可见。
+// fileRoot 默认 ~/sparkle，与 terminal initialCwd 默认值重合，落盘后 terminal ls 天然可见。
 // fileMaxBytes 32 MiB 独立于上下文 cap（4 MiB）——文件不进上下文，可更大，但压在 OSS 50MB 请求上限下。
-const DEFAULT_AGENT_RESOURCE_FILE_ROOT = "~/kagami";
+const DEFAULT_AGENT_RESOURCE_FILE_ROOT = "~/sparkle";
 const DEFAULT_AGENT_RESOURCE_FILE_MAX_BYTES = 32 * 1024 * 1024;
 // scheduler 历史 GC 保留窗口（#493 P2）：每 (owner, task) 分组保留最近 N 条，且删除早于 M 天的行。
 const DEFAULT_SCHEDULER_HISTORY_RETENTION_COUNT = 200;
@@ -423,7 +423,7 @@ const ConfigSchema = z.object({
             // 关掉即回退全 base64（rollback 无需回滚代码）。依赖 OAuth scope 含 user:file_upload。
             useFileApi: z.boolean().default(true),
             // File API 缓存的按最近使用时间 GC（#433）。File 文件 persist-until-deleted，不清理会撞组织存储配额。
-            // kill-switch：false 则 kagami-llm 不注册每日 GC task（急停用，不影响上传/推理主路径）。
+            // kill-switch：false 则 sparkle-llm 不注册每日 GC task（急停用，不影响上传/推理主路径）。
             fileCacheGcEnabled: z.boolean().default(true),
             // 连续多少天未被使用即回收（idle）。取保守值避 KV 红线：只删早已出活上下文的图。
             fileCacheGcMaxIdleDays: PositiveIntSchema.default(3),
@@ -438,7 +438,7 @@ const ConfigSchema = z.object({
       // usage = KV 缓存身份，只有 agent / vision 两个。fork 型 task agent
       // （contextSummarizer / todoSuggestionAgent / innerVoice）复用主 Agent 前缀命中
       // prompt cache，直接用 usage=agent 走同一份配置，不单独配置。调用归因走 scene
-      // 字段（见 @kagami/kernel/contracts/llm 与 issue #555）。
+      // 字段（见 @sparkle/kernel/contracts/llm 与 issue #555）。
       usages: z
         .object({
           agent: LlmUsageConfigSchema,
@@ -454,7 +454,7 @@ const ConfigSchema = z.object({
       }),
     }),
     /**
-     * 自建对象存储（@kagami/oss）的启用开关。地址不在这里——统一来自顶层 `services.oss`，
+     * 自建对象存储（@sparkle/oss）的启用开关。地址不在这里——统一来自顶层 `services.oss`，
      * agent 把 QQ 图片原图 PUT 进去用。整段可省略（=禁用，resid 恒为 null，只走 vision
      * 文字描述，优雅降级）；写出该块即启用，`enabled: false` 可显式关闭。
      */
@@ -508,7 +508,7 @@ export async function loadStaticConfig(options: LoadStaticConfigOptions = {}): P
     configPath: options.configPath,
     anchorUrl: import.meta.url,
     // secret（config.secret.yaml）可覆盖任意字段——单人项目，不再维护隐私路径白名单。
-    // 凭据仍只放 gitignored 的 config.secret.yaml；原型污染由 @kagami/config 的深合并兜底。
+    // 凭据仍只放 gitignored 的 config.secret.yaml；原型污染由 @sparkle/config 的深合并兜底。
     secret: { required: true },
   });
 

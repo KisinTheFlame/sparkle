@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
-import { registerJsonRoute } from "@kagami/http/register";
-import { napcatApiContract } from "@kagami/napcat-api/contract";
-import type { NapcatEventWireItem, NapcatQqMessageWireItem } from "@kagami/napcat-api/query";
+import { registerJsonRoute } from "@sparkle/http/register";
+import { napcatApiContract } from "@sparkle/napcat-api/contract";
+import type { NapcatEventWireItem, NapcatQqMessageWireItem } from "@sparkle/napcat-api/query";
 import type { NapcatEventDao, NapcatEventItem } from "../infra/napcat-event.dao.js";
 import type { NapcatQqMessageDao, NapcatQqMessageItem } from "../infra/napcat-group-message.dao.js";
 

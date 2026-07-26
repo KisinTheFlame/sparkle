@@ -10,8 +10,8 @@ import {
   isAuthProvider,
 } from "@/pages/auth/auth-format";
 import { buildTrendChartData, getTrendWindowLabel } from "@/pages/auth/trend-chart-data";
-import type { AuthStatusResponse } from "@kagami/llm-api/auth";
-import type { MetricPointsQueryResponse } from "@kagami/metric-api/points";
+import type { AuthStatusResponse } from "@sparkle/llm-api/auth";
+import type { MetricPointsQueryResponse } from "@sparkle/metric-api/points";
 
 function statusResponse(input: {
   status: AuthStatusResponse["status"];

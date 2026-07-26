@@ -1,4 +1,4 @@
-import { type TodoItem, type TodoItemStatus } from "@kagami/console-api/todo";
+import { type TodoItem, type TodoItemStatus } from "@sparkle/console-api/todo";
 import { type FormEvent, useMemo } from "react";
 import { HistoryListPageLayout } from "@/components/layout/HistoryListPageLayout";
 import { Badge } from "@/components/ui/badge";

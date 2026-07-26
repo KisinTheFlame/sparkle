@@ -1,4 +1,4 @@
-import type { LlmMessage } from "@kagami/llm-client";
+import type { LlmMessage } from "@sparkle/llm-client";
 
 /**
  * 线性消息账本（physical table `ledger`）：root agent 每条进上下文的消息按序追加，

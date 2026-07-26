@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import type { NapcatGatewayActionResponseData } from "./shared.js";
 
 /**

@@ -1,4 +1,4 @@
-import type { LlmProviderId } from "@kagami/llm";
+import type { LlmProviderId } from "@sparkle/llm";
 
 export type LlmChatCallStatus = "success" | "failed";
 

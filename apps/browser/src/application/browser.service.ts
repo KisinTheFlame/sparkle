@@ -4,7 +4,7 @@ import {
   type LaunchPersistentContextOptions,
 } from "cloakbrowser";
 import type { BrowserContext, Page } from "playwright-core";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import { BrowserError } from "../domain/errors.js";
 
 const logger = new AppLogger({ source: "agent.browser-service" });
@@ -31,7 +31,7 @@ const MAX_WAIT_MS = 30_000;
 const ACTION_TIMEOUT_MS = 10_000;
 const SCREENSHOT_JPEG_QUALITY = 85;
 
-/** Kagami 看到的 observe 结果：带 epoch 的语义树文本。 */
+/** Sparkle 看到的 observe 结果：带 epoch 的语义树文本。 */
 export type ObserveResult = {
   epoch: number;
   url: string;
@@ -214,7 +214,7 @@ export class BrowserService {
     }
     this.observeEpoch += 1;
     const epoch = this.observeEpoch;
-    // 把 [ref=eN] 改写成 [ref=<epoch>:eN]，让 Kagami 拿到带 epoch 的 ref。
+    // 把 [ref=eN] 改写成 [ref=<epoch>:eN]，让 Sparkle 拿到带 epoch 的 ref。
     const snapshot = raw.replace(/\[ref=(e\d+)\]/g, `[ref=${epoch}:$1]`);
     this.lastUrl = page.url();
     this.lastTitle = await page.title().catch(() => "");
@@ -355,7 +355,7 @@ export class BrowserService {
   // —— 内部 ——
 
   /**
-   * 把 Kagami 给的 target 解析成 Playwright locator。
+   * 把 Sparkle 给的 target 解析成 Playwright locator。
    * - 形如 `<epoch>:eN` → aria-ref（校验 epoch，过期即拒）。
    * - 其他 → 当文本，getByText 取首个匹配。
    */

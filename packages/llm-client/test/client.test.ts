@@ -1,8 +1,8 @@
 import { describe, expect, it, vi, type Mock } from "vitest";
-import type { Config } from "@kagami/kernel/config/config.loader";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import type { Config } from "@sparkle/kernel/config/config.loader";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 
-// llm-client 对 @kagami/persistence 零依赖，测试也不例外：这里只按 recordSuccess/recordError
+// llm-client 对 @sparkle/persistence 零依赖，测试也不例外：这里只按 recordSuccess/recordError
 // 的调用面定义一个本地 mock DAO 类型，避免把 persistence 拖进本包的测试图。
 type LlmChatCallDaoMock = {
   countByQuery: Mock;
@@ -17,8 +17,8 @@ import {
   type LlmProvider,
   type LlmProviderChatResult,
 } from "../src/provider.js";
-import type { LlmProviderId } from "@kagami/llm";
-import type { LlmUsageId } from "@kagami/kernel/contracts/llm";
+import type { LlmProviderId } from "@sparkle/llm";
+import type { LlmUsageId } from "@sparkle/kernel/contracts/llm";
 import type { LlmChatResponsePayload } from "../src/types.js";
 
 type LlmProviderConfig = {

@@ -1,8 +1,8 @@
 import Fastify, { type FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { toHttpErrorResponse } from "@kagami/kernel/errors/http-error";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { toHttpErrorResponse } from "@sparkle/kernel/errors/http-error";
 import type { MetricDao } from "../../src/metric/infra/metric.dao.js";
 import { DefaultMetricRecordService } from "../../src/metric/application/metric-record.impl.service.js";
 import { MetricRecordHandler } from "../../src/metric/http/metric-record.handler.js";

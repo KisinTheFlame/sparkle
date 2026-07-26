@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import { ZodToolComponent } from "@kagami/agent-runtime";
+import { ZodToolComponent } from "@sparkle/agent-runtime";
 import { serializeBrowserError } from "../domain/errors.js";
 
 /**

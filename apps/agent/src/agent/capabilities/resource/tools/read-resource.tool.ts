@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@kagami/agent-runtime";
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
-import { normalizeImageForLlm } from "@kagami/image/normalize";
+import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@sparkle/agent-runtime";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
+import { normalizeImageForLlm } from "@sparkle/image/normalize";
 import type { RootAgentEffect } from "../../../runtime/effect/root-agent-effect.js";
 import type { ResourceService } from "../application/resource.service.js";
 

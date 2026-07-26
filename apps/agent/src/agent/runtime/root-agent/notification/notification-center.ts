@@ -1,4 +1,4 @@
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type { NotificationDraft } from "./notification-draft.js";
 import { type NotificationScheduler, RealNotificationScheduler } from "./notification-scheduler.js";
 

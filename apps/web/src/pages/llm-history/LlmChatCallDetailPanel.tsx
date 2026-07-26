@@ -2,12 +2,12 @@ import {
   type LlmChatCallItem,
   type LlmChatCallStatus,
   type LlmChatCallSummary,
-} from "@kagami/console-api/llm-chat-call";
+} from "@sparkle/console-api/llm-chat-call";
 import {
   type LlmRequestMessage,
   type LlmRequestUserContentPart,
   type LlmThinkingBlockPayload,
-} from "@kagami/llm-api/llm-chat";
+} from "@sparkle/llm-api/llm-chat";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { getApiErrorMessage } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";

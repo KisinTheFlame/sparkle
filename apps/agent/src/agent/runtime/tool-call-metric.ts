@@ -1,4 +1,4 @@
-import type { MetricClient } from "@kagami/metric-client/client";
+import type { MetricClient } from "@sparkle/metric-client/client";
 
 export function resolveToolMetricName(input: {
   toolName: string;

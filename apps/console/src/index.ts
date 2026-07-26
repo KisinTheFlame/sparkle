@@ -1,4 +1,4 @@
-import { runService } from "@kagami/kernel/http/service-runner";
+import { runService } from "@sparkle/kernel/http/service-runner";
 import { buildConsoleRuntime } from "./app/console-runtime.js";
 
 // console 是只读查询聚合进程（#539 起零 DB 依赖）：日志只走 stdout（不写 app_log），

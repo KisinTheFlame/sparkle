@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
-import { createHealthResponse, HealthQuerySchema, HealthResponseSchema } from "@kagami/http/wire";
-import { registerQueryRoute } from "@kagami/http/route";
+import { createHealthResponse, HealthQuerySchema, HealthResponseSchema } from "@sparkle/http/wire";
+import { registerQueryRoute } from "@sparkle/http/route";
 
 /**
  * 全服务统一的 `GET /health`（`{ status: "ok", timestamp }`，shared 的 HealthResponseSchema）。

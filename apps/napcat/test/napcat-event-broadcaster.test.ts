@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { NapcatAgentEvent, NapcatOutboxEvent } from "@kagami/napcat-api/event";
-import { initLoggerRuntime } from "@kagami/kernel/logger/runtime";
+import type { NapcatAgentEvent, NapcatOutboxEvent } from "@sparkle/napcat-api/event";
+import { initLoggerRuntime } from "@sparkle/kernel/logger/runtime";
 import {
   NapcatEventBroadcaster,
   type NapcatEventSubscriber,

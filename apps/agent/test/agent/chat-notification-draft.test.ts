@@ -5,8 +5,8 @@ import {
   ChatNotificationDraft,
   detectBotMentioned,
 } from "../../src/agent/capabilities/messaging/chat-notification-draft.js";
-import type { NapcatGroupMessageData } from "@kagami/napcat-api/message";
-import type { NapcatReceiveMessageSegment } from "@kagami/napcat-api/segment";
+import type { NapcatGroupMessageData } from "@sparkle/napcat-api/message";
+import type { NapcatReceiveMessageSegment } from "@sparkle/napcat-api/segment";
 
 function groupMessage(text: string, nickname = "群友"): NapcatGroupMessageData {
   return {

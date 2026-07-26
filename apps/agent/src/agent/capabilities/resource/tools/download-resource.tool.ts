@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@kagami/agent-runtime";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@sparkle/agent-runtime";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import type { ResourceFileService } from "../application/resource-file.service.js";
 
 const DOWNLOAD_RESOURCE_TOOL_NAME = "download_resource";
@@ -13,14 +13,14 @@ const DownloadResourceArgumentsSchema = z.object({
 
 /**
  * 把一个 OSS 资源（res-N）落地成本地文件，交给 terminal 等能力处理。文件名由你给出，
- * 落进资源根目录（默认 ~/kagami，与 terminal 工作目录重合，落好后能直接 ls 到）。
+ * 落进资源根目录（默认 ~/sparkle，与 terminal 工作目录重合，落好后能直接 ls 到）。
  *
  * **全局工具**：和 read_resource / upload_resource 同级。结果只回尾部，KV 友好。
  */
 export class DownloadResourceTool extends ZodToolComponent<typeof DownloadResourceArgumentsSchema> {
   public readonly name = DOWNLOAD_RESOURCE_TOOL_NAME;
   public readonly description =
-    "把一个 OSS 资源（resid，形如 res-N）下载成本地文件，落进资源根目录（默认 ~/kagami，" +
+    "把一个 OSS 资源（resid，形如 res-N）下载成本地文件，落进资源根目录（默认 ~/sparkle，" +
     "与 terminal 工作目录重合）。filename 由你指定；dir 可选（根目录下的相对子目录）。" +
     "目标已存在会报错（不覆盖），换个名字再来。落好后可在 terminal 里直接操作该文件。";
   public readonly parameters = {

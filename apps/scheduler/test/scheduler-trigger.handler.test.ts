@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { initLoggerRuntime } from "@kagami/kernel/logger/runtime";
-import { createServiceApp } from "@kagami/kernel/http/service-app";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { initLoggerRuntime } from "@sparkle/kernel/logger/runtime";
+import { createServiceApp } from "@sparkle/kernel/http/service-app";
 import type { FastifyInstance } from "fastify";
 import { SchedulerEngine } from "../src/application/scheduler-engine.js";
 import { TickBroadcaster } from "../src/application/tick-broadcaster.js";

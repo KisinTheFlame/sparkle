@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@kagami/agent-runtime";
-import { detectMime } from "@kagami/kernel/utils/detect-mime";
+import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@sparkle/agent-runtime";
+import { detectMime } from "@sparkle/kernel/utils/detect-mime";
 import type { OssClient } from "../../../../acl/oss-client.js";
-import type { NapcatChatTarget } from "@kagami/napcat-api/message";
+import type { NapcatChatTarget } from "@sparkle/napcat-api/message";
 import type { NapcatClient } from "../../../../acl/napcat-client.js";
 import {
   downloadBytesWithCap,

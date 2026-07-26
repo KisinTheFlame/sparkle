@@ -1,4 +1,4 @@
-import { type TodoListQuery, type TodoListResponse } from "@kagami/console-api/todo";
+import { type TodoListQuery, type TodoListResponse } from "@sparkle/console-api/todo";
 import type { TodoQueryService } from "./todo-query.service.js";
 import { mapTodoList } from "../mappers/todo.mapper.js";
 import type { AgentOpsQueryClient } from "./app-log-query.impl.service.js";

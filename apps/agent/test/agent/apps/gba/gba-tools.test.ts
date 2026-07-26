@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ToolContext } from "@kagami/agent-runtime";
+import type { ToolContext } from "@sparkle/agent-runtime";
 import { GbaListGamesTool } from "../../../../src/agent/capabilities/gba/tools/list-games.tool.js";
 import { GbaLoadGameTool } from "../../../../src/agent/capabilities/gba/tools/load-game.tool.js";
 import { GbaPressTool } from "../../../../src/agent/capabilities/gba/tools/press.tool.js";

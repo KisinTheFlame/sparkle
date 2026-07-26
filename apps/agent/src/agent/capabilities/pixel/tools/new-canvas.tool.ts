@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { ToolKind } from "@kagami/agent-runtime";
-import { MAX_CANVAS_SIZE } from "@kagami/pixel-api/contract";
+import type { ToolKind } from "@sparkle/agent-runtime";
+import { MAX_CANVAS_SIZE } from "@sparkle/pixel-api/contract";
 import { PixelToolComponent } from "./pixel-tool-component.js";
 import { renderDrawResponse } from "../render/pixel-screen.js";
 import type { PixelClient } from "../../../../acl/pixel-client.js";

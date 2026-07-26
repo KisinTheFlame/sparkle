@@ -1,4 +1,4 @@
-import { type NapcatQqMessageListQuery } from "@kagami/console-api/napcat-group-message";
+import { type NapcatQqMessageListQuery } from "@sparkle/console-api/napcat-group-message";
 import { useQuery } from "@tanstack/react-query";
 import { createHistoryListQueryOptions, queryKeys } from "@/lib/query";
 import { consoleClient } from "@/lib/rpc";
