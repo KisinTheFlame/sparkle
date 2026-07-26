@@ -5,7 +5,7 @@ import {
   type TerminateEffect,
   type ToolExecutionResult,
   type ToolKind,
-} from "@kagami/agent-runtime";
+} from "@sparkle/agent-runtime";
 
 export const EMIT_INNER_THOUGHT_TOOL_NAME = "emit_inner_thought";
 

@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { resolveConfigPath } from "@kagami/config/source";
+import { resolveConfigPath } from "@sparkle/config/source";
 import { parse } from "yaml";
 
 export interface GatewayConfig {
@@ -9,7 +9,7 @@ export interface GatewayConfig {
   agentTarget: URL;
   /** console 上游基址（原 CONSOLE_TARGET），由 services.console.host/port 拼出。 */
   consoleTarget: URL;
-  /** kagami-llm 上游基址（LLM 网关 + OAuth 凭据中心），由 services.llm.host/port 拼出。 */
+  /** sparkle-llm 上游基址（LLM 网关 + OAuth 凭据中心），由 services.llm.host/port 拼出。 */
   llmTarget: URL;
   /** metric 上游基址，由 services.metric.host/port 拼出（metric-chart 查询走它）。 */
   metricTarget: URL;
@@ -52,7 +52,7 @@ function resolveEndpoint(endpoint: RawServiceEndpoint | undefined, name: string)
 }
 
 export function loadGatewayConfig(): GatewayConfig {
-  // 定位逻辑收敛到 @kagami/config；gateway 只读非隐私的 services 块，不触 config.secret.yaml。
+  // 定位逻辑收敛到 @sparkle/config；gateway 只读非隐私的 services 块，不触 config.secret.yaml。
   const configPath = resolveConfigPath(import.meta.url);
   const raw = parse(readFileSync(configPath, "utf8")) as RawConfig;
   const services = raw.services;

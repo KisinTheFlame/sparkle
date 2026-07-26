@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { JsonRecordSchema, JsonValueSchema } from "@kagami/http/wire";
+import { JsonRecordSchema, JsonValueSchema } from "@sparkle/http/wire";
 
 /**
  * console 只读查询的 wire schema（epic #539 子 issue 2：console 脱库，napcat 数据经本契约查询）。
  *
- * 形状与 @kagami/console-api 的对应 response item 逐字段对齐（ISO 字符串时间、payload 为
+ * 形状与 @sparkle/console-api 的对应 response item 逐字段对齐（ISO 字符串时间、payload 为
  * JSON record），让 console 侧成为纯转发聚合层：DB Date → ISO 的序列化归 napcat handler。
  * 与 console-api 的 query schema 不同，这里是服务间 POST JSON，page/pageSize 是真数字，
  * 不需要 querystring 的 preprocess 强转。
@@ -12,7 +12,7 @@ import { JsonRecordSchema, JsonValueSchema } from "@kagami/http/wire";
 
 const QueryPaginationSchema = {
   page: z.number().int().min(1),
-  // 上限与 console-api（@kagami/http/wire 的 PaginationQuerySchema）一致取 100，
+  // 上限与 console-api（@sparkle/http/wire 的 PaginationQuerySchema）一致取 100，
   // 两级边界不允许静默分叉。
   pageSize: z.number().int().min(1).max(100),
 };

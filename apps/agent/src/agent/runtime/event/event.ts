@@ -1,4 +1,4 @@
-import type { AsyncTaskCompletion } from "@kagami/agent-runtime";
+import type { AsyncTaskCompletion } from "@sparkle/agent-runtime";
 
 /**
  * 聚合后的通知事件，由 NotificationCenter 在窗口 flush 时塞进事件队列（手机 OS

@@ -1,6 +1,6 @@
-import { type AuthUsageLimitsResponse } from "@kagami/llm-api/auth";
-import { type ClaudeCodeUsageLimits } from "@kagami/llm-api/claude-code-auth";
-import { type CodexUsageLimits } from "@kagami/llm-api/codex-auth";
+import { type AuthUsageLimitsResponse } from "@sparkle/llm-api/auth";
+import { type ClaudeCodeUsageLimits } from "@sparkle/llm-api/claude-code-auth";
+import { type CodexUsageLimits } from "@sparkle/llm-api/codex-auth";
 import { type ReactElement, useEffect, useState } from "react";
 import {
   buildUsageDetailText,

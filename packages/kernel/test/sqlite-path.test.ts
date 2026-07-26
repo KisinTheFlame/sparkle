@@ -11,13 +11,13 @@ describe("sqliteFilePathFromUrl", () => {
   });
 
   it("file: + 绝对路径直接剥掉 scheme", () => {
-    expect(sqliteFilePathFromUrl("file:/abs/dir/kagami.db")).toBe("/abs/dir/kagami.db");
+    expect(sqliteFilePathFromUrl("file:/abs/dir/sparkle.db")).toBe("/abs/dir/sparkle.db");
   });
 
   it("file:// 三斜杠形态剥 scheme 后已是绝对路径,原样返回(POSIX 多斜杠等价)", () => {
-    expect(sqliteFilePathFromUrl("file:///abs/dir/kagami.db")).toBe("///abs/dir/kagami.db");
-    expect(path.resolve(sqliteFilePathFromUrl("file:///abs/dir/kagami.db"))).toBe(
-      "/abs/dir/kagami.db",
+    expect(sqliteFilePathFromUrl("file:///abs/dir/sparkle.db")).toBe("///abs/dir/sparkle.db");
+    expect(path.resolve(sqliteFilePathFromUrl("file:///abs/dir/sparkle.db"))).toBe(
+      "/abs/dir/sparkle.db",
     );
   });
 

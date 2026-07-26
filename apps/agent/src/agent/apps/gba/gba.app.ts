@@ -1,6 +1,6 @@
-import type { App } from "@kagami/agent-runtime";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import type { App } from "@sparkle/agent-runtime";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import { GbaListGamesTool } from "../../capabilities/gba/tools/list-games.tool.js";
 import { GbaLoadGameTool } from "../../capabilities/gba/tools/load-game.tool.js";
 import { GbaPressTool } from "../../capabilities/gba/tools/press.tool.js";
@@ -16,14 +16,14 @@ const GBA_APP_ID = "gba";
 const logger = new AppLogger({ source: "agent.gba.app" });
 
 type GbaAppDeps = {
-  /** 游玩动作客户端：打到独立的 kagami-gba 进程（issue #541）。 */
+  /** 游玩动作客户端：打到独立的 sparkle-gba 进程（issue #541）。 */
   gbaClient: GbaClient;
   /** 截图叠加落 OSS 用；缺省（OSS 关闭）时图仍入上下文，只是没有 resid。 */
   ossClient?: OssClient;
 };
 
 /**
- * GBA 掌机 App：把 GBA 模拟器的 6 个工具包成 Kagami 桌面上的一个能力单元。结构照抄 SpireApp。
+ * GBA 掌机 App：把 GBA 模拟器的 6 个工具包成 Sparkle 桌面上的一个能力单元。结构照抄 SpireApp。
  *
  * 运行模型（issue #541 硬约束）：**进入本 App = 拿起掌机**——onFocus 通知服务转前台,模拟器
  * 以真机速率实时运行;**离开 = 放下**——onBlur 通知转后台,整体冻结（先 flush 电池存档）。
@@ -33,7 +33,7 @@ type GbaAppDeps = {
  *
  * - 工具：list_games / load_game / press / press_sequence / screenshot / import_rom。
  * - canInvoke 恒 true（粗门控）：按键是否合法（前后台 / 帧预算 / 并发）由掌机服务权威裁定。
- * - 无状态持久化：模拟器状态 + 电池存档归 kagami-gba 进程独占,本 App 无 exportState。
+ * - 无状态持久化：模拟器状态 + 电池存档归 sparkle-gba 进程独占,本 App 无 exportState。
  */
 export class GbaApp implements App {
   public readonly id = GBA_APP_ID;

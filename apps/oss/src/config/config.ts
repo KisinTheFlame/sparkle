@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { resolveConfigPath } from "@kagami/config/source";
+import { resolveConfigPath } from "@sparkle/config/source";
 import { parse } from "yaml";
 
 export interface OssConfig {
@@ -27,7 +27,7 @@ interface RawConfig {
 }
 
 export function loadOssConfig(): OssConfig {
-  // 定位逻辑收敛到 @kagami/config；oss 只读非隐私的 services.oss，不触 config.secret.yaml。
+  // 定位逻辑收敛到 @sparkle/config；oss 只读非隐私的 services.oss，不触 config.secret.yaml。
   const configPath = resolveConfigPath(import.meta.url);
   const repoRoot = path.dirname(configPath);
   const raw = parse(readFileSync(configPath, "utf8")) as RawConfig;

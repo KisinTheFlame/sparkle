@@ -1,4 +1,4 @@
-import { AppManager, type App, type AppStartupContext } from "@kagami/agent-runtime";
+import { AppManager, type App, type AppStartupContext } from "@sparkle/agent-runtime";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 

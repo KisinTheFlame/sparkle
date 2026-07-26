@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@kagami/agent-runtime";
+import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@sparkle/agent-runtime";
 import { TODO_LIST_RENDER_LIMIT } from "../../../capabilities/todo/application/todo.constants.js";
 import type { TodoService } from "../../../capabilities/todo/application/todo.service.js";
 import { renderTodoListContent } from "../render-todo-list.js";

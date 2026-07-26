@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AppManager, type App } from "@kagami/agent-runtime";
+import { AppManager, type App } from "@sparkle/agent-runtime";
 import { DefaultAgentContext } from "../../src/agent/runtime/context/default-agent-context.js";
 import { RootAgentSession } from "../../src/agent/runtime/root-agent/session/root-agent-session.js";
 import { initTestLoggerRuntime } from "../helpers/logger.js";

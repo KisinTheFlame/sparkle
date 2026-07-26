@@ -1,9 +1,9 @@
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { createBinaryClient, type BinaryClient } from "@kagami/rpc-client/binary-client";
-import { ossApiContract } from "@kagami/oss-api/contract";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { createBinaryClient, type BinaryClient } from "@sparkle/rpc-client/binary-client";
+import { ossApiContract } from "@sparkle/oss-api/contract";
 
 /**
- * 自建对象存储（@kagami/oss）的最小 HTTP client：把「bytes + content-type」PUT 进去，拿对外
+ * 自建对象存储（@sparkle/oss）的最小 HTTP client：把「bytes + content-type」PUT 进去，拿对外
  * key（resid）。napcat 进程用它给入站图片存档原图（vision 描述 + resid 一起随事件送回 agent）。
  *
  * 与 agent 侧的 acl/oss-client 同构（都是 oss-api 契约驱动的薄封装，只依赖共享包）；napcat 拆成

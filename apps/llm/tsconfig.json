@@ -8,8 +8,8 @@
     "strict": true,
     "noEmit": true,
     "paths": {
-      "@kagami/http/*": ["./../../packages/http/src/*"],
-      "@kagami/llm-api/*": ["./../../packages/llm-api/src/*"]
+      "@sparkle/http/*": ["./../../packages/http/src/*"],
+      "@sparkle/llm-api/*": ["./../../packages/llm-api/src/*"]
     }
   },
   "include": ["src", "test"]

@@ -1,4 +1,4 @@
-import { type NapcatQqMessageItem } from "@kagami/console-api/napcat-group-message";
+import { type NapcatQqMessageItem } from "@sparkle/console-api/napcat-group-message";
 import { formatOptionalDateTime } from "@/lib/format";
 import { safeStringify } from "./message-render";
 

@@ -2,8 +2,8 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, realpath, rename, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { detectMime } from "@kagami/kernel/utils/detect-mime";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { detectMime } from "@sparkle/kernel/utils/detect-mime";
 import type { OssClient } from "../../../../acl/oss-client.js";
 
 /** download_resource 的结果：落地的绝对路径 + 写入字节数。 */
@@ -13,7 +13,7 @@ export type UploadFromFileResult = { resId: string; mimeType: string; size: numb
 
 /**
  * 资源与本地文件之间的桥：download_resource（OSS res → 本地文件）与 upload_resource
- * （本地文件 → OSS res）共用。一切落盘 / 读盘都锚定在 `fileRoot` 沙箱内（默认 ~/kagami，
+ * （本地文件 → OSS res）共用。一切落盘 / 读盘都锚定在 `fileRoot` 沙箱内（默认 ~/sparkle，
  * 与 terminal initialCwd 重合，落盘后 terminal ls 天然可见）。
  *
  * 安全边界：

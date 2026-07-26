@@ -1,4 +1,4 @@
-import { NoopEffectInterpreter, ReActKernel, ToolCatalog } from "@kagami/agent-runtime";
+import { NoopEffectInterpreter, ReActKernel, ToolCatalog } from "@sparkle/agent-runtime";
 import { describe, expect, it, vi } from "vitest";
 import {
   LoopLlmRetryExtension,
@@ -9,7 +9,7 @@ import {
   llmUpstreamCallFailedError,
   type LlmChatResponsePayload,
   type LlmMessage,
-} from "@kagami/llm-client";
+} from "@sparkle/llm-client";
 
 describe("LoopLlmRetryExtension", () => {
   it("increments retry attempts and resets backoff after a successful model call", async () => {

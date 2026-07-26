@@ -1,10 +1,10 @@
 import type { FastifyInstance } from "fastify";
-import { registerJsonRoute } from "@kagami/http/register";
+import { registerJsonRoute } from "@sparkle/http/register";
 import {
   schedulerTriggerCallbackContract,
   type SchedulerTriggerCallbackResponse,
-} from "@kagami/scheduler-api/trigger";
-import type { SchedulerClient } from "@kagami/scheduler-client/scheduler-client";
+} from "@sparkle/scheduler-api/trigger";
+import type { SchedulerClient } from "@sparkle/scheduler-client/scheduler-client";
 
 type SchedulerTriggerCallbackHandlerDeps = {
   schedulerClient: SchedulerClient;

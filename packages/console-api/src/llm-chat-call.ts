@@ -4,7 +4,7 @@ import {
   JsonRecordSchema,
   PaginationQuerySchema,
   parseOptionalStringInput,
-} from "@kagami/http/wire";
+} from "@sparkle/http/wire";
 
 // === llm_chat_call 历史查询的 wire schema（console 服务产出，web 管理台消费） ===
 //

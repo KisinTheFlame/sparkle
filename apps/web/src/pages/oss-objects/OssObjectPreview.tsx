@@ -1,9 +1,9 @@
-import { interpolatePath } from "@kagami/http/url";
-import { getOssObjectContent } from "@kagami/oss-api/contract";
+import { interpolatePath } from "@sparkle/http/url";
+import { getOssObjectContent } from "@sparkle/oss-api/contract";
 import { buildApiUrl } from "@/lib/api";
 
 /**
- * 拼出对象字节透传 URL（经 gateway `/api/oss-object/:key/content` → kagami-oss）。路径取自契约
+ * 拼出对象字节透传 URL（经 gateway `/api/oss-object/:key/content` → sparkle-oss）。路径取自契约
  * （interpolatePath 单一事实源），再由 buildApiUrl 加 `/api` 基址。响应带 nosniff + attachment，
  * `<img>` 子资源加载不受 attachment 影响、正常渲染；顶层导航才触发下载，杜绝存储型 XSS 内联执行。
  */

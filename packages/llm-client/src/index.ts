@@ -18,7 +18,7 @@ import {
   type LlmProviderChatResult,
   type LlmProviderFailureContext,
 } from "./provider.js";
-import type { LlmProviderId } from "@kagami/llm";
+import type { LlmProviderId } from "@sparkle/llm";
 import type {
   JsonSchema,
   LlmContentPart,

@@ -2,8 +2,8 @@ import type {
   ReActKernelExtension,
   ReActKernelRunRoundInput,
   ToolSetExecutionResult,
-} from "@kagami/agent-runtime";
-import type { LlmMessage } from "@kagami/llm-client";
+} from "@sparkle/agent-runtime";
+import type { LlmMessage } from "@sparkle/llm-client";
 import type { RootAgentCompletion, RootAgentToolExecutionData } from "../root-agent-runtime.js";
 import type { RootAgentExtensionHost } from "./extension-host.js";
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AsyncTaskManager } from "@kagami/agent-runtime";
+import type { AsyncTaskManager } from "@sparkle/agent-runtime";
 import { AtelierApp } from "../../../../src/agent/apps/atelier/atelier.app.js";
 import type { ImageClient } from "../../../../src/acl/image-client.js";
 import type { RootAgentEffect } from "../../../../src/agent/runtime/effect/root-agent-effect.js";

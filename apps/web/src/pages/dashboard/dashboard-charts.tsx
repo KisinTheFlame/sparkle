@@ -4,7 +4,7 @@ import type {
   MetricChartQueryResponse,
   MetricChartQueryRequest,
   MetricChartTagFilters,
-} from "@kagami/metric-api/chart";
+} from "@sparkle/metric-api/chart";
 import { useMemo } from "react";
 import {
   MetricChartView,

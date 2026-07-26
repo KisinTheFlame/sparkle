@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { MetricClient } from "@kagami/metric-client/client";
+import type { MetricClient } from "@sparkle/metric-client/client";
 import {
   recordToolCallMetric,
   resolveToolMetricName,

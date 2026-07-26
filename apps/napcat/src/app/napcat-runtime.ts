@@ -1,10 +1,10 @@
 import type { FastifyInstance } from "fastify";
-import { DefaultConfigManager } from "@kagami/kernel/config/config.impl.manager";
-import { loadStaticConfig } from "@kagami/kernel/config/config.loader";
+import { DefaultConfigManager } from "@sparkle/kernel/config/config.impl.manager";
+import { loadStaticConfig } from "@sparkle/kernel/config/config.loader";
 import { configureSqlite, createDbClient, type Database } from "../infra/db/client.js";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { createServiceApp } from "@kagami/kernel/http/service-app";
-import { HealthHandler } from "@kagami/kernel/http/health.handler";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { createServiceApp } from "@sparkle/kernel/http/service-app";
+import { HealthHandler } from "@sparkle/kernel/http/health.handler";
 import { HttpLlmClient } from "../acl/http-llm-client.js";
 import { PrismaNapcatEventDao } from "../infra/impl/napcat-event.impl.dao.js";
 import { PrismaNapcatQqMessageDao } from "../infra/impl/napcat-group-message.impl.dao.js";
@@ -20,7 +20,7 @@ import { PrismaNapcatEventOutboxDao } from "../infra/impl/napcat-event-outbox.im
 import { NapcatHandler } from "../http/napcat.handler.js";
 import { NapcatEventsHandler } from "../http/napcat-events.handler.js";
 import { NapcatQueryHandler } from "../http/napcat-query.handler.js";
-import type { NapcatAgentEvent } from "@kagami/napcat-api/event";
+import type { NapcatAgentEvent } from "@sparkle/napcat-api/event";
 import type { NapcatEventOutboxDao } from "../infra/napcat-event-outbox.dao.js";
 
 const logger = new AppLogger({ source: "napcat-bootstrap" });
@@ -88,9 +88,9 @@ export type NapcatRuntime = {
 };
 
 /**
- * kagami-napcat 进程运行时装配（issue #347）。独立 PM2 进程持有到 NapCat 的 WS 长连接，agent
+ * sparkle-napcat 进程运行时装配（issue #347）。独立 PM2 进程持有到 NapCat 的 WS 长连接，agent
  * 重启不打断它。入站事件（vision 描述 + resid 已在本进程算好）先落 outbox 拿 seq 再经 SSE 广播给
- * agent；出站 RPC 经 napcat-api 契约暴露。vision 拨 kagami-llm、存图拨 kagami-oss。
+ * agent；出站 RPC 经 napcat-api 契约暴露。vision 拨 sparkle-llm、存图拨 sparkle-oss。
  */
 export async function buildNapcatRuntime(): Promise<NapcatRuntime> {
   const loadedConfig = await loadStaticConfig();
@@ -107,7 +107,7 @@ export async function buildNapcatRuntime(): Promise<NapcatRuntime> {
   const imageAssetDao = new PrismaImageAssetDao({ database });
   const outboxDao = new PrismaNapcatEventOutboxDao({ database });
 
-  // vision 拨独立 kagami-llm 进程；存图拨独立 kagami-oss 进程（server.oss 未启用则不存档，resid 恒 null）。
+  // vision 拨独立 sparkle-llm 进程；存图拨独立 sparkle-oss 进程（server.oss 未启用则不存档，resid 恒 null）。
   const llmClient = new HttpLlmClient({
     baseUrl: `http://${config.services.llm.host}:${config.services.llm.port}`,
   });

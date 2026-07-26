@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { type ToolExecutionResult, type ToolKind } from "@kagami/agent-runtime";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import { type ToolExecutionResult, type ToolKind } from "@sparkle/agent-runtime";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import { BrowserToolComponent } from "./browser-tool-component.js";
 import type { BrowserClient } from "../../../../acl/browser-client.js";
 import type { RootAgentEffect } from "../../../runtime/effect/root-agent-effect.js";

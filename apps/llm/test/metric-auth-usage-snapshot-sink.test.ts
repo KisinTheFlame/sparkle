@@ -1,4 +1,4 @@
-import type { MetricClient, RecordMetricInput } from "@kagami/metric-client/client";
+import type { MetricClient, RecordMetricInput } from "@sparkle/metric-client/client";
 import { describe, expect, it } from "vitest";
 import {
   MetricAuthUsageSnapshotSink,

@@ -1,12 +1,12 @@
-// kagami-gateway：浏览器的唯一前门。自 #578 起是**纯反向代理**——`/api/*` 按前缀分流到各后端
-// 进程，其余（前端页面与静态资源）原样转给 kagami-web。网关自身不再托管任何文件：前端产物由
+// sparkle-gateway：浏览器的唯一前门。自 #578 起是**纯反向代理**——`/api/*` 按前缀分流到各后端
+// 进程，其余（前端页面与静态资源）原样转给 sparkle-web。网关自身不再托管任何文件：前端产物由
 // web 进程自持，两个 app 之间只剩一条 HTTP 边界，不再有构建期的 dist 装配耦合（原 #496 方案）。
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import type { ReadableStream as NodeWebReadableStream } from "node:stream/web";
-import { createHealthResponse } from "@kagami/http/wire";
+import { createHealthResponse } from "@sparkle/http/wire";
 import { loadGatewayConfig } from "./config.js";
 import { selectFrontDoor, selectUpstreamKey, type UpstreamKey } from "./routing.js";
 
@@ -64,7 +64,7 @@ const server = createServer(async (req, res) => {
         return;
       }
       case "web": {
-        // 前端页面与静态资源：路径原样透传给 kagami-web（含 query），由它做 SPA 回退与缓存头。
+        // 前端页面与静态资源：路径原样透传给 sparkle-web（含 query），由它做 SPA 回退与缓存头。
         await proxyRequest(
           req,
           res,
@@ -81,7 +81,7 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(port, "0.0.0.0", () => {
-  process.stdout.write(`[kagami-gateway] listening on http://0.0.0.0:${port}\n`);
+  process.stdout.write(`[sparkle-gateway] listening on http://0.0.0.0:${port}\n`);
 });
 
 let shuttingDown = false;
@@ -90,7 +90,7 @@ function shutdown(signal: NodeJS.Signals): void {
     return;
   }
   shuttingDown = true;
-  process.stdout.write(`[kagami-gateway] ${signal} received, shutting down\n`);
+  process.stdout.write(`[sparkle-gateway] ${signal} received, shutting down\n`);
   const finish = (): void => {
     process.exit(0);
   };
@@ -110,7 +110,7 @@ process.on("SIGINT", () => {
 // 交给 PM2 干净重启，而不是让进程带着损坏状态硬崩、丢掉崩溃原因。
 process.on("uncaughtException", error => {
   process.stderr.write(
-    `[kagami-gateway] uncaughtException, exiting: ${
+    `[sparkle-gateway] uncaughtException, exiting: ${
       error instanceof Error ? (error.stack ?? error.message) : String(error)
     }\n`,
   );
@@ -118,7 +118,7 @@ process.on("uncaughtException", error => {
 });
 process.on("unhandledRejection", reason => {
   process.stderr.write(
-    `[kagami-gateway] unhandledRejection, exiting: ${
+    `[sparkle-gateway] unhandledRejection, exiting: ${
       reason instanceof Error ? (reason.stack ?? reason.message) : String(reason)
     }\n`,
   );
@@ -141,7 +141,7 @@ function buildUpstreamUrl(target: URL, pathname: string, search: string): URL {
 
 /**
  * 把一条请求整体转发到指定上游并回灌响应。上游是谁由调用方决定（`/api` 分流的后端，或
- * kagami-web），本函数只管转发语义：逐跳头剥离、超时、流式回灌、错误映射。
+ * sparkle-web），本函数只管转发语义：逐跳头剥离、超时、流式回灌、错误映射。
  */
 async function proxyRequest(
   req: IncomingMessage,
@@ -219,7 +219,7 @@ async function proxyRequest(
   } catch (error) {
     // 响应头已发，无法改状态码；销毁 socket 断开，让 body 被 destroy。
     process.stderr.write(
-      `[kagami-gateway] proxy stream failed for ${upstreamUrl.pathname}: ${
+      `[sparkle-gateway] proxy stream failed for ${upstreamUrl.pathname}: ${
         error instanceof Error ? error.message : String(error)
       }\n`,
     );

@@ -5,7 +5,7 @@ import {
   type TerminateEffect,
   type ToolExecutionResult,
   type ToolKind,
-} from "@kagami/agent-runtime";
+} from "@sparkle/agent-runtime";
 
 export const FINALIZE_SUMMARY_TOOL_NAME = "finalize_summary";
 

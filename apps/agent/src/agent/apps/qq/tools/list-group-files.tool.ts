@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@kagami/agent-runtime";
-import type { NapcatChatTarget } from "@kagami/napcat-api/message";
+import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@sparkle/agent-runtime";
+import type { NapcatChatTarget } from "@sparkle/napcat-api/message";
 import type { NapcatClient } from "../../../../acl/napcat-client.js";
 import { errorNote, errorReason, resolveGroupChatId } from "./group-file-support.js";
 

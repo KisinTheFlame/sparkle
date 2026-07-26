@@ -1,12 +1,12 @@
 import type { FastifyInstance } from "fastify";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { registerJsonRoute } from "@kagami/http/register";
-import { createClient } from "@kagami/rpc-client/client";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { registerJsonRoute } from "@sparkle/http/register";
+import { createClient } from "@sparkle/rpc-client/client";
 import {
   schedulerTriggerContract,
   schedulerTriggerCallbackContract,
   type SchedulerTriggerResponse,
-} from "@kagami/scheduler-api/trigger";
+} from "@sparkle/scheduler-api/trigger";
 import type { SchedulerEngine } from "../application/scheduler-engine.js";
 
 const logger = new AppLogger({ source: "scheduler.trigger" });

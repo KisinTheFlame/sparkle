@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MetricDeriveRequestSchema } from "@kagami/metric-api/derive";
+import { MetricDeriveRequestSchema } from "@sparkle/metric-api/derive";
 
 // 派生查询的硬边界 guard 全落在这份 wire schema 上（#475 P3）：显式范围必填、禁 rangePreset、
 // 算子只 ratio/diff、范围/点数上限复用 chart 的常量。

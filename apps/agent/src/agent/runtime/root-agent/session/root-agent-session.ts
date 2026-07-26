@@ -1,7 +1,7 @@
-import type { AppId, AppManager } from "@kagami/agent-runtime";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import type { AppId, AppManager } from "@sparkle/agent-runtime";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type { AgentContext } from "../../context/agent-context.js";
-import type { LlmMessage } from "@kagami/llm-client";
+import type { LlmMessage } from "@sparkle/llm-client";
 import {
   createAsyncToolResultMessage,
   createForegroundInputMessage,
@@ -16,7 +16,7 @@ import {
   isForegroundInputSource,
   type ForegroundInput,
 } from "../foreground-input.js";
-import { NOOP_METRIC_CLIENT, type MetricClient } from "@kagami/metric-client/client";
+import { NOOP_METRIC_CLIENT, type MetricClient } from "@sparkle/metric-client/client";
 
 const logger = new AppLogger({ source: "agent.root-session" });
 

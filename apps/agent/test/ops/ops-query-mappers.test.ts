@@ -4,7 +4,7 @@ import {
   mapInnerThoughtItem,
   mapTodoItem,
 } from "../../src/ops/http/ops-query.handler.js";
-import type { TodoItemRow } from "@kagami/persistence/dao/todo-item.dao";
+import type { TodoItemRow } from "@sparkle/persistence/dao/todo-item.dao";
 
 // 序列化/归一是 console 脱库（#539 子 issue 4）后从 console mapper 迁来的纯逻辑，
 // 原 console 侧单测随迁于此。归一守卫（repeatEveryMs<=0 → null）是防「一条 legacy 坏行

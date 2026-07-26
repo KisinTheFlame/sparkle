@@ -1,4 +1,4 @@
-import { type AuthProvider } from "@kagami/llm-api/auth";
+import { type AuthProvider } from "@sparkle/llm-api/auth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, KeyRound, LogOut, RefreshCcw, ShieldCheck, ShieldX } from "lucide-react";
 import { useMemo, useState } from "react";

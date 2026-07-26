@@ -1,5 +1,5 @@
-import type { App, JsonValue } from "@kagami/agent-runtime";
-import { truncateWithEllipsis } from "@kagami/kernel/utils/text";
+import type { App, JsonValue } from "@sparkle/agent-runtime";
+import { truncateWithEllipsis } from "@sparkle/kernel/utils/text";
 import {
   renderGroupMessagePlainText,
   renderGroupNoticePlainText,
@@ -11,14 +11,14 @@ import type {
   ForegroundInput,
   ForegroundInputSource,
 } from "../../runtime/root-agent/foreground-input.js";
-import type { NapcatAgentEvent, NapcatGroupBanData } from "@kagami/napcat-api/event";
+import type { NapcatAgentEvent, NapcatGroupBanData } from "@sparkle/napcat-api/event";
 import type {
   NapcatChatTarget,
   NapcatForwardMessagePage,
   NapcatFriendInfo,
   NapcatGroupMessageData,
   NapcatPrivateMessageData,
-} from "@kagami/napcat-api/message";
+} from "@sparkle/napcat-api/message";
 import type { NapcatClient } from "../../../acl/napcat-client.js";
 import {
   buildChatNotificationPreview,
@@ -39,13 +39,13 @@ import {
   createPrivateConversationId,
   isConversationId,
 } from "../../capabilities/messaging/conversation-id.js";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import { OpenConversationTool } from "./tools/open-conversation.tool.js";
 import { ListConversationsTool } from "./tools/list-conversations.tool.js";
 import { ViewForwardTool } from "./tools/view-forward.tool.js";
 import { ListFacesTool } from "./tools/list-faces.tool.js";
-import type { ToolComponent } from "@kagami/agent-runtime";
+import type { ToolComponent } from "@sparkle/agent-runtime";
 
 const logger = new AppLogger({ source: "agent.qq-app" });
 
@@ -196,7 +196,7 @@ export class QqApp implements App, ForegroundInputSource {
   }
 
   public async onStartup(): Promise<void> {
-    // napcat 拆成独立进程（issue #347）：WS 连接归 kagami-napcat，agent 经 HttpNapcatClient 出站、
+    // napcat 拆成独立进程（issue #347）：WS 连接归 sparkle-napcat，agent 经 HttpNapcatClient 出站、
     // NapcatEventSubscriber 订阅入站。这里只做启动上下文加载（拉群信息 / 恢复全员禁言态）。
     // 拉群信息（显示名）。私聊会话由 friend_list 事件 upsert。
     // 黑名单模式下群会话懒创建：启动时 conversations 里的群均来自 restore（重启前可见的群），

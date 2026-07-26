@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ToolKind } from "@kagami/agent-runtime";
+import type { ToolKind } from "@sparkle/agent-runtime";
 import { GbaToolComponent } from "./gba-tool-component.js";
 import { GbaError } from "../domain/errors.js";
 import type { GbaClient } from "../../../../acl/gba-client.js";

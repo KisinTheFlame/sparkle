@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import { DownloadResourceTool } from "../../src/agent/capabilities/resource/tools/download-resource.tool.js";
 import { UploadResourceTool } from "../../src/agent/capabilities/resource/tools/upload-resource.tool.js";
 import type { ResourceFileService } from "../../src/agent/capabilities/resource/application/resource-file.service.js";
@@ -11,7 +11,7 @@ function parse(content: string): Record<string, unknown> {
 describe("download_resource / upload_resource tools", () => {
   it("download_resource 成功回 path（resid/size 不进上下文）", async () => {
     const resourceFileService = {
-      downloadToFile: vi.fn().mockResolvedValue({ absolutePath: "/home/k/kagami/a.txt", size: 5 }),
+      downloadToFile: vi.fn().mockResolvedValue({ absolutePath: "/home/k/sparkle/a.txt", size: 5 }),
       uploadFromFile: vi.fn(),
     } as unknown as ResourceFileService;
     const tool = new DownloadResourceTool({ resourceFileService });
@@ -19,7 +19,7 @@ describe("download_resource / upload_resource tools", () => {
     const result = await tool.execute({ resid: "res-7", filename: "a.txt" }, {});
     const body = parse(result.content);
 
-    expect(body).toMatchObject({ ok: true, path: "/home/k/kagami/a.txt" });
+    expect(body).toMatchObject({ ok: true, path: "/home/k/sparkle/a.txt" });
     expect(body.resid).toBeUndefined();
     expect(body.size).toBeUndefined();
     expect(resourceFileService.downloadToFile).toHaveBeenCalledWith({

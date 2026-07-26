@@ -3,7 +3,7 @@ const path = require("node:path");
 module.exports = {
   apps: [
     {
-      name: "kagami-agent",
+      name: "sparkle-agent",
       cwd: path.join(__dirname, "apps/agent"),
       script: "dist/index.js",
       interpreter: "node",
@@ -18,7 +18,7 @@ module.exports = {
       },
     },
     {
-      name: "kagami-console",
+      name: "sparkle-console",
       cwd: path.join(__dirname, "apps/console"),
       script: "dist/index.js",
       interpreter: "node",
@@ -29,9 +29,9 @@ module.exports = {
       },
     },
     {
-      // 前门网关：纯反向代理——/api 按前缀分流到各后端，其余转给 kagami-web（#578）。监听端口
+      // 前门网关：纯反向代理——/api 按前缀分流到各后端，其余转给 sparkle-web（#578）。监听端口
       // 与上游地址全部自读 config.yaml 的 services 块，ecosystem 不再持有任何端口/地址（见 issue #162）。
-      name: "kagami-gateway",
+      name: "sparkle-gateway",
       cwd: path.join(__dirname, "apps/gateway"),
       script: "dist/index.js",
       interpreter: "node",
@@ -44,7 +44,7 @@ module.exports = {
     {
       // 管理台前端进程：自持静态托管（dist/server 发 dist/client），只绑回环、只由 gateway 反代。
       // 与 gateway 拆开后两者生命周期独立：重载前端不动网关，反之亦然（#578）。
-      name: "kagami-web",
+      name: "sparkle-web",
       cwd: path.join(__dirname, "apps/web"),
       script: "dist/server/index.js",
       interpreter: "node",
@@ -55,7 +55,7 @@ module.exports = {
       },
     },
     {
-      name: "kagami-oss",
+      name: "sparkle-oss",
       cwd: path.join(__dirname, "apps/oss"),
       script: "dist/index.js",
       interpreter: "node",
@@ -68,7 +68,7 @@ module.exports = {
     {
       // metric 领域进程：独立 PM2 生命周期，一手包办 metric 摄取（agent HTTP 上报）+ metric-chart
       // 查询。监听端口自读 config.yaml 的 services.metric（默认 20010，仅 localhost）。
-      name: "kagami-metric",
+      name: "sparkle-metric",
       cwd: path.join(__dirname, "apps/metric"),
       script: "dist/index.js",
       interpreter: "node",
@@ -81,7 +81,7 @@ module.exports = {
     {
       // 浏览器进程：独立 PM2 生命周期，agent 重启不杀它（issue #173）。cwd 固定为仓库根，
       // 让 userDataDir(data/browser/default) 落在仓库根 data/ 下，登录态跨 agent 重启留存。
-      name: "kagami-browser",
+      name: "sparkle-browser",
       cwd: __dirname,
       script: "apps/browser/dist/index.js",
       interpreter: "node",
@@ -95,7 +95,7 @@ module.exports = {
       // LLM 网关 + OAuth 凭据中心：独立 PM2 生命周期，agent 重启不打断它与登录态。持有全部
       // provider + OAuth callback server（绑 1455/54545），未来多个 Agent 进程共享它。cwd 固定
       // 仓库根，让任何相对数据路径（DB / secret store）落在仓库根 data/ 下。
-      name: "kagami-llm",
+      name: "sparkle-llm",
       cwd: __dirname,
       script: "apps/llm/dist/index.js",
       interpreter: "node",
@@ -108,7 +108,7 @@ module.exports = {
     {
       // 尖塔卡牌游戏引擎：独立 PM2 生命周期，agent 重启不打断进行中的对局。cwd 固定仓库根，
       // 让存档 data/spire/ 落在仓库根 data/ 下，对局跨 agent / 本进程重启留存。
-      name: "kagami-spire",
+      name: "sparkle-spire",
       cwd: __dirname,
       script: "apps/spire/dist/index.js",
       interpreter: "node",
@@ -121,7 +121,7 @@ module.exports = {
     {
       // NapCat 接入：独立 PM2 生命周期，agent 重启不打断到 NapCat 的 WS 长连接（issue #347）。
       // 持有出站 RPC + 入站 SSE + vision/OSS/落库；cwd 固定仓库根，读同一 config.yaml / SQLite。
-      name: "kagami-napcat",
+      name: "sparkle-napcat",
       cwd: __dirname,
       script: "apps/napcat/dist/index.js",
       interpreter: "node",
@@ -134,7 +134,7 @@ module.exports = {
     {
       // 像素画服务：独立 PM2 生命周期，agent 重启不丢画布。cwd 固定仓库根，
       // 让存档 data/pixel/ 落在仓库根 data/ 下，画布跨 agent / 本进程重启留存。
-      name: "kagami-pixel",
+      name: "sparkle-pixel",
       cwd: __dirname,
       script: "apps/pixel/dist/index.js",
       interpreter: "node",
@@ -147,7 +147,7 @@ module.exports = {
     {
       // GBA 模拟器服务：独立 PM2 生命周期，agent 重启不丢模拟器热状态（issue #541）。内嵌 mGBA
       // WASM 核心；cwd 固定仓库根，让元数据库 data/gba/（ROM 库 + 电池存档）跨重启留存。
-      name: "kagami-gba",
+      name: "sparkle-gba",
       cwd: __dirname,
       script: "apps/gba/dist/index.js",
       interpreter: "node",
@@ -161,7 +161,7 @@ module.exports = {
       // 通用定时调度服务：独立 PM2 生命周期，agent 重启不打断计时节奏（issue #428）。通用薄时钟，
       // 无 DB、无业务语义——使用方（agent）经 SchedulerClient 注册任务、经 SSE 收 tick，业务逻辑全在
       // 使用方。cwd 固定仓库根，读同一 config.yaml（services.scheduler 端口）。
-      name: "kagami-scheduler",
+      name: "sparkle-scheduler",
       cwd: __dirname,
       script: "apps/scheduler/dist/index.js",
       interpreter: "node",

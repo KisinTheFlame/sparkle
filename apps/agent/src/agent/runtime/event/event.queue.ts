@@ -1,4 +1,4 @@
-import type { Queue } from "@kagami/agent-runtime";
+import type { Queue } from "@sparkle/agent-runtime";
 import type { Event } from "./event.js";
 
 /**

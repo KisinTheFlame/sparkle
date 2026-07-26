@@ -1,4 +1,4 @@
-import { runService } from "@kagami/kernel/http/service-runner";
+import { runService } from "@sparkle/kernel/http/service-runner";
 import { buildMetricRuntime } from "./app/metric-runtime.js";
 
 // metric 是独立的 metric 领域进程：日志只走 stdout（不写 app_log；自身有独占 DuckDB 库，不碰共享 DB），

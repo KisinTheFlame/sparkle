@@ -3,8 +3,8 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { mkdir, stat } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { truncateWithEllipsis } from "@kagami/kernel/utils/text";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { truncateWithEllipsis } from "@sparkle/kernel/utils/text";
 import { TERMINAL_ERROR, type TerminalErrorCode } from "../domain/errors.js";
 import type { TerminalStateDao } from "./terminal-state.dao.js";
 import type { TerminalOutputDao } from "./terminal-output.dao.js";
@@ -12,7 +12,7 @@ import type { TerminalOutputDao } from "./terminal-output.dao.js";
 const logger = new AppLogger({ source: "agent.terminal" });
 
 export type TerminalServiceConfig = {
-  /** 解析后的初始 cwd 绝对路径（例如 /Users/kisin/kagami） */
+  /** 解析后的初始 cwd 绝对路径（例如 /Users/kisin/sparkle） */
   initialCwd: string;
   commandTimeoutMs: number;
   previewBytes: number;
@@ -625,7 +625,7 @@ export function resolveTerminalInitialCwd(input: { initialCwd?: string }): strin
   if (input.initialCwd && input.initialCwd.trim().length > 0) {
     return expandHome(input.initialCwd.trim());
   }
-  return path.join(os.homedir(), "kagami");
+  return path.join(os.homedir(), "sparkle");
 }
 
 function expandHome(p: string): string {

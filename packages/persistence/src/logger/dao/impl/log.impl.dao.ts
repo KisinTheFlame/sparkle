@@ -7,7 +7,7 @@ import type {
   LogDao,
   QueryAppLogListFilterInput,
   QueryAppLogListPageInput,
-} from "@kagami/kernel/logger/dao/log.dao";
+} from "@sparkle/kernel/logger/dao/log.dao";
 
 type PrismaLogDaoDeps = {
   database: Database;

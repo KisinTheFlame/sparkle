@@ -1,5 +1,5 @@
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { NAPCAT_SSE_HEARTBEAT_MS, type NapcatOutboxEvent } from "@kagami/napcat-api/event";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { NAPCAT_SSE_HEARTBEAT_MS, type NapcatOutboxEvent } from "@sparkle/napcat-api/event";
 
 const logger = new AppLogger({ source: "napcat.event-broadcaster" });
 

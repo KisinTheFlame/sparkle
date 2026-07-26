@@ -1,4 +1,4 @@
-import type { GbaButton } from "@kagami/gba-api/contract";
+import type { GbaButton } from "@sparkle/gba-api/contract";
 
 /** 一帧画面（RGBA，240×160 原始分辨率）。 */
 export type GbaFrameRgba = {

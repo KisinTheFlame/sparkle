@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { SchedulerTriggerResponse } from "@kagami/scheduler-api/trigger";
+import type { SchedulerTriggerResponse } from "@sparkle/scheduler-api/trigger";
 import { createSchemaQueryOptions } from "@/lib/query";
 import { schedulerTasksClient, schedulerTriggerClient } from "@/lib/rpc";
 

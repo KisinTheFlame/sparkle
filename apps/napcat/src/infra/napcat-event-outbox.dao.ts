@@ -1,4 +1,4 @@
-import type { NapcatAgentEvent, NapcatOutboxEvent } from "@kagami/napcat-api/event";
+import type { NapcatAgentEvent, NapcatOutboxEvent } from "@sparkle/napcat-api/event";
 
 /**
  * agent-facing 事件 outbox（issue #347）：napcat 每产生一个渲染好的 NapcatAgentEvent，先事务

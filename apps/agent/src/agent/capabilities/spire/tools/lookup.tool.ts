@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ToolKind } from "@kagami/agent-runtime";
+import type { ToolKind } from "@sparkle/agent-runtime";
 import { SpireToolComponent } from "./spire-tool-component.js";
 import { renderSpireReference } from "../render/spire-screen.js";
 import type { SpireClient } from "../../../../acl/spire-client.js";

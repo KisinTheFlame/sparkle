@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isRecord } from "@kagami/kernel/json/is-record";
+import { isRecord } from "@sparkle/kernel/json/is-record";
 import {
   type NapcatSendAtSegment,
   type NapcatSendFaceSegment,
@@ -20,7 +20,7 @@ import {
   normalizeFaceText,
   resolveFaceId,
   FORWARD_ID_DISPLAY_PREFIX,
-} from "@kagami/napcat-api/rendering";
+} from "@sparkle/napcat-api/rendering";
 
 export type { NapcatReceiveAtSegment, NapcatReceiveMessageSegment };
 
@@ -214,7 +214,7 @@ export function renderSupportedMessageSegments(
 }
 
 /**
- * 合并转发段：只渲染成带 res_id 的占位符,不内联展开内容。Kagami 想看靠 QQ App 的
+ * 合并转发段：只渲染成带 res_id 的占位符,不内联展开内容。Sparkle 想看靠 QQ App 的
  * view_forward(forward_id) 工具按需拉取——大段聊天记录绝不直接进主上下文（KV 缓存优先）。
  */
 function formatForwardSegment(segment: NapcatReceiveForwardSegment): string {

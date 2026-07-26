@@ -1,4 +1,4 @@
-import { defineJsonRoute } from "@kagami/http/contract";
+import { defineJsonRoute } from "@sparkle/http/contract";
 import { z } from "zod";
 import { SchedulerRunStatusSchema, SchedulerRunTriggerSchema } from "./run.js";
 import { SchedulerTaskScheduleSchema } from "./schedule.js";

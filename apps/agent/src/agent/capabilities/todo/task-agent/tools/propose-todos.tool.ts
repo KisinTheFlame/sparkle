@@ -5,7 +5,7 @@ import {
   type TerminateEffect,
   type ToolExecutionResult,
   type ToolKind,
-} from "@kagami/agent-runtime";
+} from "@sparkle/agent-runtime";
 
 export const PROPOSE_TODOS_TOOL_NAME = "propose_todos";
 

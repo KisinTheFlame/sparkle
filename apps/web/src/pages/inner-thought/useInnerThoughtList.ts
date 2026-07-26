@@ -1,4 +1,4 @@
-import { type InnerThoughtOutcome } from "@kagami/console-api/inner-thought";
+import { type InnerThoughtOutcome } from "@sparkle/console-api/inner-thought";
 import { useQuery } from "@tanstack/react-query";
 import { createHistoryListQueryOptions, queryKeys } from "@/lib/query";
 import { consoleClient } from "@/lib/rpc";

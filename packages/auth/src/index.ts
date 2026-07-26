@@ -1,6 +1,6 @@
-import { type AuthUsageLimitsResponse } from "@kagami/llm-api/auth";
+import { type AuthUsageLimitsResponse } from "@sparkle/llm-api/auth";
 import { SharedOAuthCallbackServer } from "./shared/callback-server.js";
-import type { ConfigManager } from "@kagami/kernel/config/config.manager";
+import type { ConfigManager } from "@sparkle/kernel/config/config.manager";
 import type { OAuthDatabase } from "./infra/prisma-oauth.dao.js";
 import { AuthUsageCacheManager } from "./application/auth-usage-cache.impl.service.js";
 import type {

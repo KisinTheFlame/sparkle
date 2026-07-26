@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { type ClaudeCodeUsageLimitsResponse } from "@kagami/llm-api/claude-code-auth";
-import { type CodexUsageLimitsResponse } from "@kagami/llm-api/codex-auth";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import { type ClaudeCodeUsageLimitsResponse } from "@sparkle/llm-api/claude-code-auth";
+import { type CodexUsageLimitsResponse } from "@sparkle/llm-api/codex-auth";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import {
   AuthUsageCacheManager,
   EMPTY_CLAUDE_CODE_USAGE_LIMITS,

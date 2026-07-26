@@ -11,7 +11,7 @@ import {
   TaskAgentMaxRoundsExceededError,
   type ToolExecutor,
   type ToolSetExecutionResult,
-} from "@kagami/agent-runtime";
+} from "@sparkle/agent-runtime";
 import type {
   AgentContext,
   AgentContextDashboardSummary,
@@ -27,10 +27,10 @@ import {
   createContextCompactionSlice,
 } from "../context/context-compaction.js";
 import type { AgentEventQueue } from "../event/event.queue.js";
-import { isRetryableLlmFailure, type LlmClient } from "@kagami/llm-client";
-import type { LlmMessage } from "@kagami/llm-client";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { NOOP_METRIC_CLIENT, type MetricClient } from "@kagami/metric-client/client";
+import { isRetryableLlmFailure, type LlmClient } from "@sparkle/llm-client";
+import type { LlmMessage } from "@sparkle/llm-client";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { NOOP_METRIC_CLIENT, type MetricClient } from "@sparkle/metric-client/client";
 import {
   DEFAULT_LLM_RETRY_BACKOFF_MS,
   FixedRetryBackoffPolicy,

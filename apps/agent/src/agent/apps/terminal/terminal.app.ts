@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { App, AppStartupContext } from "@kagami/agent-runtime";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import type { App, AppStartupContext } from "@sparkle/agent-runtime";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import {
   resolveTerminalInitialCwd,
   TerminalService,
@@ -26,7 +26,7 @@ const NonEmptyString = z.string().min(1);
  * TerminalApp 的配置 schema。原本散在 server.agent.terminal.* 下的字段全部
  * 搬到这里，由 AppManager.startupAll 时按 `server.apps.terminal` 切片解析。
  *
- * initialCwd 可选：未填则 onStartup 时回退到 ~/kagami（由 resolveTerminalInitialCwd 决定）。
+ * initialCwd 可选：未填则 onStartup 时回退到 ~/sparkle（由 resolveTerminalInitialCwd 决定）。
  */
 const TerminalConfigSchema = z
   .object({
@@ -49,7 +49,7 @@ type TerminalAppDeps = {
 
 /**
  * 终端 App。把 capabilities/terminal/ 里的 TerminalService + 两个工具包装成
- * Kagami 桌面上的一个能力单元。
+ * Sparkle 桌面上的一个能力单元。
  *
  * - 工具：bash(command)、read_bash_output(output_id, ...)
  * - 自管 TerminalService：onStartup 时按 configSchema 解析后的 config 实例化并

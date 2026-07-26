@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { initLoggerRuntime } from "@kagami/kernel/logger/runtime";
-import type { LogEvent, LogSink } from "@kagami/kernel/logger/types";
+import { initLoggerRuntime } from "@sparkle/kernel/logger/runtime";
+import type { LogEvent, LogSink } from "@sparkle/kernel/logger/types";
 import {
   normalizeInputJsonValue,
   toInputJsonObject,

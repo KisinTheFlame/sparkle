@@ -1,5 +1,5 @@
 {
-  "name": "@kagami/llm-api",
+  "name": "@sparkle/llm-api",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -14,8 +14,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@kagami/http": "workspace:*",
-    "@kagami/llm": "workspace:*",
+    "@sparkle/http": "workspace:*",
+    "@sparkle/llm": "workspace:*",
     "zod": "^3.24.4"
   },
   "devDependencies": {

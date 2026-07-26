@@ -2,7 +2,7 @@ import { describe, expect, it, vi, type Mock } from "vitest";
 import { ListGroupFilesTool } from "../../../../src/agent/apps/qq/tools/list-group-files.tool.js";
 import { DownloadGroupFileTool } from "../../../../src/agent/apps/qq/tools/download-group-file.tool.js";
 import { UploadGroupFileTool } from "../../../../src/agent/apps/qq/tools/upload-group-file.tool.js";
-import type { NapcatChatTarget } from "@kagami/napcat-api/message";
+import type { NapcatChatTarget } from "@sparkle/napcat-api/message";
 import type { NapcatClient } from "../../../../src/acl/napcat-client.js";
 import type { OssClient } from "../../../../src/acl/oss-client.js";
 import { initTestLogger } from "../../../helpers/logger.js";

@@ -1,10 +1,10 @@
 # 配置与数据库
 
-Kagami 的配置读取、配置分区、SQLite 存储布局与 Prisma 迁移流程。面向 LLM agent 的最高优先级规则见 [AGENTS.md](../AGENTS.md)，代码组织见 [ARCHITECTURE.md](../ARCHITECTURE.md)。
+Sparkle 的配置读取、配置分区、SQLite 存储布局与 Prisma 迁移流程。面向 LLM agent 的最高优先级规则见 [AGENTS.md](../AGENTS.md)，代码组织见 [ARCHITECTURE.md](../ARCHITECTURE.md)。
 
 ## 配置文件
 
-配置拆成两份，启动时由 `@kagami/config` 定位仓库根、深合并两者，再交 `packages/kernel/src/config/config.loader.ts` 的 `ConfigSchema` 校验：
+配置拆成两份，启动时由 `@sparkle/config` 定位仓库根、深合并两者，再交 `packages/kernel/src/config/config.loader.ts` 的 `ConfigSchema` 校验：
 
 - `config.yaml` — 非隐私，纳入版本控制，直接改。
 - `config.secret.yaml` — 隐私（密钥 / PII），gitignore，从 `config.secret.yaml.example` 复制填写。
@@ -12,8 +12,8 @@ Kagami 的配置读取、配置分区、SQLite 存储布局与 Prisma 迁移流�
 约定：
 
 - `config.secret.yaml` 可覆盖任意字段（无隐私路径白名单），但**约定上只放凭据 / PII**（apiKey、bot、`napcat.blockedGroupIds`、高德 key 等）。拓扑（`services.*`、`server.databaseUrl`）留在 `config.yaml`。
-- 原型污染由 `@kagami/config` 深合并的 `DANGEROUS_KEYS` 兜底丢弃。
-- 配置读取（repo-root 定位 + 两文件合并）统一由零依赖叶子包 `@kagami/config` 承载；kernel / gateway / web / oss / `scripts/read-config.mjs` 都复用它。gateway / web / oss 只读非隐私的 `services.*`，不需要 `config.secret.yaml`。
+- 原型污染由 `@sparkle/config` 深合并的 `DANGEROUS_KEYS` 兜底丢弃。
+- 配置读取（repo-root 定位 + 两文件合并）统一由零依赖叶子包 `@sparkle/config` 承载；kernel / gateway / web / oss / `scripts/read-config.mjs` 都复用它。gateway / web / oss 只读非隐私的 `services.*`，不需要 `config.secret.yaml`。
 
 > **改配置 schema 是硬约束**：必须同步 `config.loader.ts`、`config.yaml`、`config.secret.yaml.example` 三处（详见 AGENTS.md「硬约束」）。
 
@@ -56,18 +56,18 @@ pnpm db:migrate:resolve -- --applied <migration_id> # 标记迁移已应用
 3. 提交 schema 变更和 `packages/persistence/prisma/migrations/*`。
 4. 在目标环境执行 `pnpm db:migrate:deploy`，或通过 `pnpm app:deploy` 一并完成。
 
-独立库服务（scheduler / napcat / llm / oss / gba）的迁移走各自包内的同名脚本（同一 `scripts/prisma.sh` 参数化复用），如 `pnpm --filter @kagami/napcat db:migrate:dev -- --name <name>`；`pnpm app:deploy` 的 Step 2b–2f 会分别应用，且各只停对应单进程。
+独立库服务（scheduler / napcat / llm / oss / gba）的迁移走各自包内的同名脚本（同一 `scripts/prisma.sh` 参数化复用），如 `pnpm --filter @sparkle/napcat db:migrate:dev -- --name <name>`；`pnpm app:deploy` 的 Step 2b–2f 会分别应用，且各只停对应单进程。
 
 已有数据库接入 Prisma Migrate（基线）：
 
-1. 若数据库结构已与当前 schema 对齐，先 `pnpm --filter @kagami/<svc> db:migrate:resolve -- --applied <baseline_migration_id>`（主库省略 `--filter`）。
+1. 若数据库结构已与当前 schema 对齐，先 `pnpm --filter @sparkle/<svc> db:migrate:resolve -- --applied <baseline_migration_id>`（主库省略 `--filter`）。
 2. 后续按标准流程使用 `db:migrate:dev` 和 `db:migrate:deploy`。
 
 > **oss / gba 首次 prisma 化的一次性基线**：这两个库此前是裸 better-sqlite3（启动时 `CREATE TABLE IF NOT EXISTS`），生产库已有表但无 `_prisma_migrations`。首次带本次改动部署**前**，须各跑一次基线，否则 `migrate deploy` 会因 `CREATE TABLE` 撞已存在的表而失败：
 >
 > ```bash
-> pnpm --filter @kagami/oss db:migrate:resolve -- --applied 20260725000000_init
-> pnpm --filter @kagami/gba-service db:migrate:resolve -- --applied 20260725000000_init
+> pnpm --filter @sparkle/oss db:migrate:resolve -- --applied 20260725000000_init
+> pnpm --filter @sparkle/gba-service db:migrate:resolve -- --applied 20260725000000_init
 > ```
 >
 > 基线后 `db:migrate:status` 即报「up to date」，`pnpm app:deploy` 的 Step 2e/2f 正常跳过。库文件路径与表结构不变，无数据搬迁。
@@ -76,4 +76,4 @@ pnpm db:migrate:resolve -- --applied <migration_id> # 标记迁移已应用
 
 ## 维护
 
-- **主库 VACUUM**（一次性/低频）：DROP 大表后物理空间不会自动回收（页只进 freelist）。VACUUM 需要对库独占且不能在事务内，操作序：`pm2 stop kagami-agent` → `sqlite3 data/agent/agent.db "VACUUM;"` → `pm2 start kagami-agent`。#539 收尾 DROP 九张旧表后已执行过一次。
+- **主库 VACUUM**（一次性/低频）：DROP 大表后物理空间不会自动回收（页只进 freelist）。VACUUM 需要对库独占且不能在事务内，操作序：`pm2 stop sparkle-agent` → `sqlite3 data/agent/agent.db "VACUUM;"` → `pm2 start sparkle-agent`。#539 收尾 DROP 九张旧表后已执行过一次。

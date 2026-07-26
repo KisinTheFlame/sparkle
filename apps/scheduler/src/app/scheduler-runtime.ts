@@ -1,9 +1,9 @@
 import type { FastifyInstance } from "fastify";
-import { DefaultConfigManager } from "@kagami/kernel/config/config.impl.manager";
-import { loadStaticConfig } from "@kagami/kernel/config/config.loader";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { createServiceApp } from "@kagami/kernel/http/service-app";
-import { HealthHandler } from "@kagami/kernel/http/health.handler";
+import { DefaultConfigManager } from "@sparkle/kernel/config/config.impl.manager";
+import { loadStaticConfig } from "@sparkle/kernel/config/config.loader";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { createServiceApp } from "@sparkle/kernel/http/service-app";
+import { HealthHandler } from "@sparkle/kernel/http/health.handler";
 import { SchedulerEngine } from "../application/scheduler-engine.js";
 import { TickBroadcaster } from "../application/tick-broadcaster.js";
 import { SchedulerRegisterHandler } from "../http/scheduler-register.handler.js";
@@ -29,7 +29,7 @@ export type SchedulerRuntime = {
 };
 
 /**
- * kagami-scheduler 进程运行时装配（issue #428）。通用薄时钟：无业务语义。持有 driver 注册表
+ * sparkle-scheduler 进程运行时装配（issue #428）。通用薄时钟：无业务语义。持有 driver 注册表
  * （引擎）+ SSE tick 广播器；使用方经 register 注册、经 SSE 收 tick。agent 频繁重启不打断本进程的
  * 计时节奏（虽然对调度态无持久化的调度器收益薄，但作为通用能力独立成服务）。
  *

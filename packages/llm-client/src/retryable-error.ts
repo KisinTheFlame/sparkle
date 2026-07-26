@@ -1,4 +1,4 @@
-import { BizError, type BizErrorMeta } from "@kagami/kernel/errors/biz-error";
+import { BizError, type BizErrorMeta } from "@sparkle/kernel/errors/biz-error";
 
 /**
  * LLM 可重试性标记。
@@ -9,7 +9,7 @@ import { BizError, type BizErrorMeta } from "@kagami/kernel/errors/biz-error";
  * 退化。现在把判据下沉为本包的结构化 `meta.retryable` 布尔位，内生于错误构造工厂。
  *
  * 判据落在 `meta` 而非 message 或 error 子类，是被 wire 边界决定的：错误经
- * `toBizErrorWire → bizErrorFromWire`（见 `@kagami/kernel/errors/biz-error-wire`）跨进程往返
+ * `toBizErrorWire → bizErrorFromWire`（见 `@sparkle/kernel/errors/biz-error-wire`）跨进程往返
  * 时只重建基类 `BizError`，`instanceof 子类` 过不去，但 `meta` 会被忠实携带还原。见 issue #435。
  */
 

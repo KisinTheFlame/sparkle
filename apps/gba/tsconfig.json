@@ -8,8 +8,8 @@
     "strict": true,
     "noEmit": true,
     "paths": {
-      "@kagami/gba-api/*": ["./../../packages/gba-api/src/*"],
-      "@kagami/oss-api/*": ["./../../packages/oss-api/src/*"]
+      "@sparkle/gba-api/*": ["./../../packages/gba-api/src/*"],
+      "@sparkle/oss-api/*": ["./../../packages/oss-api/src/*"]
     }
   },
   "include": ["src", "test"]

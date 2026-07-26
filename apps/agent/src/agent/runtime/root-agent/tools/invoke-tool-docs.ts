@@ -1,5 +1,5 @@
-import type { Tool } from "@kagami/agent-runtime";
-import { isRecord } from "@kagami/kernel/json/is-record";
+import type { Tool } from "@sparkle/agent-runtime";
+import { isRecord } from "@sparkle/kernel/json/is-record";
 
 export function renderInvokeToolGuide(tools: readonly Tool[]): string {
   return tools

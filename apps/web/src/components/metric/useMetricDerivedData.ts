@@ -1,4 +1,4 @@
-import { type MetricDeriveRequest } from "@kagami/metric-api/derive";
+import { type MetricDeriveRequest } from "@sparkle/metric-api/derive";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query";
 import { metricClient } from "@/lib/rpc";

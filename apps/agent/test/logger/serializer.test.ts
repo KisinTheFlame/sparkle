@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { serializeError } from "@kagami/kernel/logger/serializer";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { serializeError } from "@sparkle/kernel/logger/serializer";
 
 describe("serializeError", () => {
   it("should include biz error metadata, status code, and nested causes", () => {

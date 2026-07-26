@@ -3,7 +3,7 @@ import {
   ClaudeCodeAuthRefreshResponseSchema,
   ClaudeCodeAuthStatusResponseSchema,
   ClaudeCodeUsageLimitsResponseSchema,
-} from "@kagami/llm-api/claude-code-auth";
+} from "@sparkle/llm-api/claude-code-auth";
 import { describe, expect, it } from "vitest";
 
 describe("claude code auth schemas", () => {

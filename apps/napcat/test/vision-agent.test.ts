@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { LlmClient } from "@kagami/llm-client";
+import type { LlmClient } from "@sparkle/llm-client";
 import { VisionAgent } from "../src/vision/application/vision-agent.js";
 
 function createLlmClientMock(): LlmClient {

@@ -1,5 +1,5 @@
 {
-  "name": "@kagami/agent-api",
+  "name": "@sparkle/agent-api",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@kagami/http": "workspace:*",
+    "@sparkle/http": "workspace:*",
     "zod": "^3.24.4"
   },
   "devDependencies": {

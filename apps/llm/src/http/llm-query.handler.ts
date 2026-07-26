@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
-import { registerJsonRoute } from "@kagami/http/register";
-import { llmApiContract } from "@kagami/llm-api/contract";
-import type { LlmChatCallWireDetail, LlmChatCallWireSummary } from "@kagami/llm-api/query";
+import { registerJsonRoute } from "@sparkle/http/register";
+import { llmApiContract } from "@sparkle/llm-api/contract";
+import type { LlmChatCallWireDetail, LlmChatCallWireSummary } from "@sparkle/llm-api/query";
 import type {
   LlmChatCallDao,
   LlmChatCallItem,

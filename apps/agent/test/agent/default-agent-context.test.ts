@@ -4,7 +4,7 @@ import {
   createConversationSummaryMessage,
   createWakeReminderMessage,
 } from "../../src/agent/runtime/context/context-message-factory.js";
-import type { LlmMessage } from "@kagami/llm-client";
+import type { LlmMessage } from "@sparkle/llm-client";
 
 describe("DefaultAgentContext", () => {
   it("bumps revision on mutations and leaves it unchanged on reads", async () => {

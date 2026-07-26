@@ -1,4 +1,4 @@
-import { type TodoItem } from "@kagami/console-api/todo";
+import { type TodoItem } from "@sparkle/console-api/todo";
 import { Badge } from "@/components/ui/badge";
 import { formatOptionalDateTime } from "@/lib/format";
 import { formatRepeatEvery, toStatusBadgeVariant, toStatusLabel } from "./todo-status";

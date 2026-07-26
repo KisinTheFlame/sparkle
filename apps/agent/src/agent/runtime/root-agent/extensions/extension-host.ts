@@ -1,4 +1,4 @@
-import type { LlmMessage } from "@kagami/llm-client";
+import type { LlmMessage } from "@sparkle/llm-client";
 import type { AgentContextSnapshot } from "../../context/agent-context.js";
 
 /**

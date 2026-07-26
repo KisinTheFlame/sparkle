@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SpireReferenceSchema, SpireScreenSchema } from "@kagami/spire-api/contract";
+import { SpireReferenceSchema, SpireScreenSchema } from "@sparkle/spire-api/contract";
 import { newRun, applyAction } from "@kisinwen/sts-engine/engine/engine";
 import { GreedyPolicy } from "@kisinwen/sts-engine/sim/policy";
 import { toScreenView } from "../src/application/state-view.js";

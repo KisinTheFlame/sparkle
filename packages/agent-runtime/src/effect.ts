@@ -1,4 +1,4 @@
-import type { LlmMessage } from "@kagami/llm";
+import type { LlmMessage } from "@sparkle/llm";
 
 /**
  * Effect 是描述 "Agent 状态变更动作" 的结构化数据。

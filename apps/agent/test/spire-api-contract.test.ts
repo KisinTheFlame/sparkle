@@ -1,5 +1,5 @@
-import { createClient } from "@kagami/rpc-client/client";
-import { spireApiContract, type SpireScreenSchema } from "@kagami/spire-api/contract";
+import { createClient } from "@sparkle/rpc-client/client";
+import { spireApiContract, type SpireScreenSchema } from "@sparkle/spire-api/contract";
 import type { z } from "zod";
 import { describe, expect, it } from "vitest";
 
@@ -7,7 +7,7 @@ type SpireScreen = z.infer<typeof SpireScreenSchema>;
 
 /**
  * 契约编译期强制的「试金石」（issue #230 / #274）。这些断言主要靠 `tsc --noEmit`（agent
- * typecheck，经 tsconfig paths 对 @kagami/spire-api **源码**解析）把关：改 spireApiContract
+ * typecheck，经 tsconfig paths 对 @sparkle/spire-api **源码**解析）把关：改 spireApiContract
  * 的 output，下面的类型断言与 @ts-expect-error 会立即失败——证明「上游改契约、下游编译报错」。
  * vitest 只跑运行时那一行 expect，类型块用 `void (async …)` 包住不执行。
  */

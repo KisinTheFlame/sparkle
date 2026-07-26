@@ -1,7 +1,7 @@
 import { BizError, type BizErrorMeta } from "./biz-error.js";
 
 /**
- * BizError 的 HTTP 线格式。用于把 BizError 跨进程（如 agent → kagami-llm 服务）忠实往返：
+ * BizError 的 HTTP 线格式。用于把 BizError 跨进程（如 agent → sparkle-llm 服务）忠实往返：
  * 服务侧 `toBizErrorWire` 序列化进错误信封，客户端侧 `bizErrorFromWire` 重建等价 BizError。
  *
  * 注意：这是**内部 RPC 专用**的富错误信封，与面向前端的 `toHttpErrorResponse`（只回

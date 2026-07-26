@@ -1,5 +1,5 @@
-import type { LlmClient, LlmContentPart } from "@kagami/llm-client";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+import type { LlmClient, LlmContentPart } from "@sparkle/llm-client";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import { createVisionSystemPrompt, createVisionTileNote } from "./system-prompt.js";
 
 type VisionAgentDeps = {
@@ -13,7 +13,7 @@ type AnalyzeImagePart = {
 };
 
 /**
- * images 支持多张：极端长图经 @kagami/image 切片后按序传入（#556），一次调用让 vision
+ * images 支持多张：极端长图经 @sparkle/image 切片后按序传入（#556），一次调用让 vision
  * 看到全部分片。单图场景传单元素数组。
  */
 export type AnalyzeImageInput = {

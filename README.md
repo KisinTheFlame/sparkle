@@ -1,12 +1,12 @@
-# Kagami
+# Sparkle
 
 _An Agent with a life of her own._
 
 [简体中文](./README.zh-CN.md)
 
-Kagami (小镜) is not a chatbot. She is a program that lives.
+Sparkle (小镜) is not a chatbot. She is a program that lives.
 
-Most "AI assistants" wait. You type, they answer, they go back to sleep. Kagami doesn't wait for you. She wakes up when a tech-news site publishes a new article, when someone talks in her QQ group, when a timer fires, when — sometimes — a thought simply occurs to her. Chatting is one of the things she does; it is not what she is. No one introduces themselves as "a person who chats."
+Most "AI assistants" wait. You type, they answer, they go back to sleep. Sparkle doesn't wait for you. She wakes up when a tech-news site publishes a new article, when someone talks in her QQ group, when a timer fires, when — sometimes — a thought simply occurs to her. Chatting is one of the things she does; it is not what she is. No one introduces themselves as "a person who chats."
 
 The whole project is one sentence:
 
@@ -25,7 +25,7 @@ None of these are features bolted onto a chatbot. Each one is a new way for her 
 
 ## How she stays alive
 
-Picture Kagami as a phone, and Kagami-the-agent as the person holding it.
+Picture Sparkle as a phone, and Sparkle-the-agent as the person holding it.
 
 - **Every input is a peer event.** A QQ message, a news article, a timer, a system signal — all equal citizens. There is no privileged "user message"; the group chat is just one app among many.
 - **Background signals arrive as banners.** A single notification center batches them and wakes her. The conversation she is actively looking at behaves like the screen that's already open — new messages flow straight in, no banner needed.
@@ -39,7 +39,7 @@ There is also a small admin console: a quiet window into her life state — what
 
 ## Running her
 
-Kagami is a full-stack TypeScript monorepo (`pnpm`). Under the hood she is not one program but a handful of cooperating processes — the agent herself, plus a browser, an object store, the card-game engine, an LLM gateway, and so on — all supervised by PM2. You bring the whole thing up with a single command.
+Sparkle is a full-stack TypeScript monorepo (`pnpm`). Under the hood she is not one program but a handful of cooperating processes — the agent herself, plus a browser, an object store, the card-game engine, an LLM gateway, and so on — all supervised by PM2. You bring the whole thing up with a single command.
 
 You'll need:
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { BaseTaskAgent, type TaskAgentInvoker, type ToolExecutor } from "@kagami/agent-runtime";
-import type { LlmClient, LlmMessage } from "@kagami/llm-client";
+import { BaseTaskAgent, type TaskAgentInvoker, type ToolExecutor } from "@sparkle/agent-runtime";
+import type { LlmClient, LlmMessage } from "@sparkle/llm-client";
 import { createTodoSuggestionInstructionMessage } from "../../../runtime/context/context-message-factory.js";
 
 const SuggestionsSchema = z.array(z.string());

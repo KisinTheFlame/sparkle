@@ -1,5 +1,5 @@
 import { PNG } from "pngjs";
-import { rgbaByGlyph } from "@kagami/pixel-api/palette";
+import { rgbaByGlyph } from "@sparkle/pixel-api/palette";
 import type { CanvasSnapshot } from "./canvas.js";
 
 // === 画布 → PNG（pngjs，最近邻整数放大）===

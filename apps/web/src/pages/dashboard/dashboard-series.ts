@@ -1,4 +1,4 @@
-import type { MetricChartQueryResponse } from "@kagami/metric-api/chart";
+import type { MetricChartQueryResponse } from "@sparkle/metric-api/chart";
 
 // 大盘把「两条各自过滤的单序列查询」（Wait 工具计数 / 所有工具计数）叠成一张两序列图。两条查询共享
 // 同一显式 range + bucket，故桶轴一致；某条无数据时沿另一条的桶轴补 0（大盘只用 count，缺桶即 0）。

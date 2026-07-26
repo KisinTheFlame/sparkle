@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { createBackpressureAwareWrite } from "@kagami/http/sse";
-import { NAPCAT_EVENTS_SSE_PATH, type NapcatOutboxEvent } from "@kagami/napcat-api/event";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { createBackpressureAwareWrite } from "@sparkle/http/sse";
+import { NAPCAT_EVENTS_SSE_PATH, type NapcatOutboxEvent } from "@sparkle/napcat-api/event";
 import {
   serializeEventFrame,
   type NapcatEventBroadcaster,

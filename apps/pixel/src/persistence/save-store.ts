@@ -1,6 +1,6 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { MAX_CANVAS_SIZE } from "@kagami/pixel-api/contract";
+import { MAX_CANVAS_SIZE } from "@sparkle/pixel-api/contract";
 import type { CanvasSnapshot } from "../domain/canvas.js";
 
 // === 画布持久化（issue #365）===

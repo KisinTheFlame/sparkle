@@ -1,4 +1,4 @@
-import { type LlmChatCallListQuery } from "@kagami/console-api/llm-chat-call";
+import { type LlmChatCallListQuery } from "@sparkle/console-api/llm-chat-call";
 import { useQuery } from "@tanstack/react-query";
 import { createHistoryListQueryOptions, queryKeys } from "@/lib/query";
 import { consoleClient } from "@/lib/rpc";

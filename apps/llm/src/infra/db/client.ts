@@ -1,5 +1,5 @@
 import { mkdirSync } from "node:fs";
-import { sqliteFilePathFromUrl } from "@kagami/kernel/utils/sqlite-path";
+import { sqliteFilePathFromUrl } from "@sparkle/kernel/utils/sqlite-path";
 import path from "node:path";
 import {
   getPrismaClientClass,
@@ -8,7 +8,7 @@ import {
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 
 // llm 独占的 SQLite 库（epic #539 子 issue 3，与主库 kagami.db 物理分离）。镜像
-// @kagami/persistence 的 db client：better-sqlite3 adapter + busy_timeout + WAL + 建父目录。
+// @sparkle/persistence 的 db client：better-sqlite3 adapter + busy_timeout + WAL + 建父目录。
 // llm 独占本库，WAL 非必需，但与持久化包范式保持一致。
 
 // 锁等待超时：并发写同一 SQLite 文件时，等待持锁方释放的毫秒数，超时才抛 SQLITE_BUSY。

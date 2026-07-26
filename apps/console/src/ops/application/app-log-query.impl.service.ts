@@ -1,6 +1,6 @@
-import { type AppLogListQuery, type AppLogListResponse } from "@kagami/console-api/app-log";
-import type { JsonClient } from "@kagami/rpc-client/client";
-import type { agentApiContract } from "@kagami/agent-api/contract";
+import { type AppLogListQuery, type AppLogListResponse } from "@sparkle/console-api/app-log";
+import type { JsonClient } from "@sparkle/rpc-client/client";
+import type { agentApiContract } from "@sparkle/agent-api/contract";
 import type { AppLogQueryService } from "./app-log-query.service.js";
 import { mapAppLogList } from "../mappers/app-log.mapper.js";
 

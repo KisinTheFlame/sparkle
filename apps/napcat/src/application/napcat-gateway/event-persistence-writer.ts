@@ -1,6 +1,6 @@
 import type { NapcatEventDao } from "../../infra/napcat-event.dao.js";
 import type { NapcatQqMessageDao } from "../../infra/napcat-group-message.dao.js";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type { NapcatPersistableQqMessage } from "../napcat-gateway.service.js";
 import {
   BLOCKED_NAPCAT_EVENT_POST_TYPES,

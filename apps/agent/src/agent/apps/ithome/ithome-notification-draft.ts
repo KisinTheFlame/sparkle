@@ -1,4 +1,4 @@
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import type { NotificationDraft } from "../../runtime/root-agent/notification/notification-draft.js";
 import { ITHOME_APP_ID } from "./ithome.app.js";
 

@@ -1,4 +1,4 @@
-import type { Config } from "@kagami/kernel/config/config.loader";
+import type { Config } from "@sparkle/kernel/config/config.loader";
 import type { PkcePair } from "../shared/pkce.js";
 import { invalidOAuthTicketError, postOAuthTokenRequest } from "../shared/oauth-token-request.js";
 import type { ClaudeCodeTokenResponse } from "./types.js";

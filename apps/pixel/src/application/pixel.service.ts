@@ -1,4 +1,4 @@
-import type { CanvasState } from "@kagami/pixel-api/contract";
+import type { CanvasState } from "@sparkle/pixel-api/contract";
 import { PixelCanvas, type PixelInput } from "../domain/canvas.js";
 import { CanvasRejectError } from "../domain/errors.js";
 import { renderCanvasPng } from "../domain/png.js";

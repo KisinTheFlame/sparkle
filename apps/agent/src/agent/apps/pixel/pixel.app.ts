@@ -1,6 +1,6 @@
-import type { App } from "@kagami/agent-runtime";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
-import { PALETTE_NAMES } from "@kagami/pixel-api/palette";
+import type { App } from "@sparkle/agent-runtime";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
+import { PALETTE_NAMES } from "@sparkle/pixel-api/palette";
 import { PixelNewCanvasTool } from "../../capabilities/pixel/tools/new-canvas.tool.js";
 import { PixelSetPixelsTool } from "../../capabilities/pixel/tools/set-pixels.tool.js";
 import { PixelFillTool } from "../../capabilities/pixel/tools/fill.tool.js";
@@ -18,16 +18,16 @@ import type { PixelClient } from "../../../acl/pixel-client.js";
 const PIXEL_APP_ID = "pixel";
 
 type PixelAppDeps = {
-  /** 绘图动作客户端：打到独立的 kagami-pixel 进程（issue #365）。 */
+  /** 绘图动作客户端：打到独立的 sparkle-pixel 进程（issue #365）。 */
   pixelClient: PixelClient;
   /** 渲染图叠加落 OSS 用；缺省（OSS 关闭）时图仍入上下文，只是没有 resid。 */
   ossClient?: OssClient;
 };
 
 /**
- * 像素画 App：把画布的 9 个工具包成 Kagami 桌面上的一个能力单元。结构照抄 SpireApp / BrowserApp。
+ * 像素画 App：把画布的 9 个工具包成 Sparkle 桌面上的一个能力单元。结构照抄 SpireApp / BrowserApp。
  *
- * 拆进程（issue #365）：本 App 不持有画布，只持有一个打到独立 kagami-pixel 进程的 HttpPixelClient。
+ * 拆进程（issue #365）：本 App 不持有画布，只持有一个打到独立 sparkle-pixel 进程的 HttpPixelClient。
  * 画布状态归游戏进程独占并落 JSON 存档，agent 重启不丢画布。
  *
  * - 工具：new_canvas / set_pixels / fill / line / rect / circle / ellipse / clear / render。

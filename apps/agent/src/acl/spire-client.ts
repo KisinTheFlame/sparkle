@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import { createClient, notReadyFallbackMapper, type JsonClient } from "@kagami/rpc-client/client";
+import { createClient, notReadyFallbackMapper, type JsonClient } from "@sparkle/rpc-client/client";
 import {
   spireApiContract,
   SpireActionSchema,
@@ -14,16 +14,16 @@ import {
   SpireReferenceSchema,
   SpireRelicViewSchema,
   SpireScreenSchema,
-} from "@kagami/spire-api/contract";
+} from "@sparkle/spire-api/contract";
 import { SpireError } from "../agent/capabilities/spire/domain/errors.js";
 
-// === 尖塔客户端：把游戏动作经 HTTP 打到独立的 kagami-spire 进程 ===
+// === 尖塔客户端：把游戏动作经 HTTP 打到独立的 sparkle-spire 进程 ===
 //
 // 服务返回结构化 ScreenView（渲染成文字屏幕的活在 agent 侧 render/）。客户端缓存 lastVersion，
 // 每个动作自动带 expectedVersion——HTTP 超时后主 Agent 重发同一动作时服务判为重放、不重复出牌
 // （issue #234 B 幂等）。连接失败/超时/坏响应统一映射 SPIRE_NOT_READY。
 //
-// wire 层走 @kagami/spire-api 契约驱动的 createClient（issue #230）：请求/响应形状与服务端
+// wire 层走 @sparkle/spire-api 契约驱动的 createClient（issue #230）：请求/响应形状与服务端
 // handler 共享同一份 Zod schema，改契约两端同时编译报错。此前这里手写 fetch + 独立重定义
 // ScreenView 各类型 + `as` 断言，HTTP 这一跳是类型空洞。
 

@@ -1,4 +1,4 @@
-import { type MetricChartQueryResponse, type MetricChartSeries } from "@kagami/metric-api/chart";
+import { type MetricChartQueryResponse, type MetricChartSeries } from "@sparkle/metric-api/chart";
 import { useMemo } from "react";
 import {
   Area,

@@ -1,4 +1,4 @@
-import type { MetricChartQueryResponse } from "@kagami/metric-api/chart";
+import type { MetricChartQueryResponse } from "@sparkle/metric-api/chart";
 import { formatBucketLabel } from "@/components/metric/metric-format";
 
 // 缓存图把「总输入 token（绝对量）」与「缓存命中率（派生比率）」两条各自查询按桶对齐成一行行，供双 Y

@@ -1,4 +1,4 @@
-import { type JsonValue } from "@kagami/http/wire";
+import { type JsonValue } from "@sparkle/http/wire";
 
 export type InsertNapcatQqMessageItem = {
   messageType: "group" | "private";

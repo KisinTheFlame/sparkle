@@ -1,4 +1,4 @@
-import { type LlmChatCallItem } from "@kagami/console-api/llm-chat-call";
+import { type LlmChatCallItem } from "@sparkle/console-api/llm-chat-call";
 import {
   LlmChatErrorPayloadSchema,
   LlmChatRequestPayloadSchema,
@@ -6,7 +6,7 @@ import {
   type LlmChatErrorPayload,
   type LlmChatRequestPayload,
   type LlmChatResponsePayload,
-} from "@kagami/llm-api/llm-chat";
+} from "@sparkle/llm-api/llm-chat";
 
 export type LlmChatCallDetailParseResult = {
   request: LlmChatRequestPayload | null;

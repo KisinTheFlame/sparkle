@@ -1,4 +1,4 @@
-import type { SchedulerTaskRegistration } from "@kagami/scheduler-client/types";
+import type { SchedulerTaskRegistration } from "@sparkle/scheduler-client/types";
 import { DAILY_DIGEST_CRON, REMINDER_TICK_MS } from "./todo.constants.js";
 import type { TodoReminderPoller } from "./todo-reminder-poller.js";
 

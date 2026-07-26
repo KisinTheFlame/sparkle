@@ -2,7 +2,7 @@ import {
   defineBinaryEnvelopeRoute,
   defineBinaryRawRoute,
   defineJsonRoute,
-} from "@kagami/http/contract";
+} from "@sparkle/http/contract";
 import { z } from "zod";
 
 // 游玩路由多为「按住 N 帧实速推进」的同步等待：单请求帧预算 ≤300 帧（~5s，服务端校验），
@@ -96,7 +96,7 @@ export const GbaDeleteResultSchema = z.discriminatedUnion("ok", [
 ]);
 
 /**
- * kagami-gba 进程对 agent 暴露的游玩 RPC 契约（单一事实源，issue #541）。agent 经 HttpGbaClient
+ * sparkle-gba 进程对 agent 暴露的游玩 RPC 契约（单一事实源，issue #541）。agent 经 HttpGbaClient
  * 直连（不过 gateway，不受其 30s 响应头超时约束）。运行模型：前台=真机速率（59.7275fps）实时
  * 运行、后台=冻结；帧推进权唯一归属服务端帧循环，press 只登记按键计划。
  */

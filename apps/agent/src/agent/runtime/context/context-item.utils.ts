@@ -1,4 +1,4 @@
-import type { LlmMessage } from "@kagami/llm-client";
+import type { LlmMessage } from "@sparkle/llm-client";
 import type { ContextItem } from "./agent-context.js";
 
 export function createContextItemFromMessage(message: LlmMessage): ContextItem {

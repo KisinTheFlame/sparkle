@@ -1,4 +1,4 @@
-import type { LlmMessage } from "@kagami/llm-client";
+import type { LlmMessage } from "@sparkle/llm-client";
 import type { PersistedAgentContextSnapshot } from "../root-agent/persistence/root-agent-runtime-snapshot.js";
 
 export type AssistantMessage = Extract<LlmMessage, { role: "assistant" }>;

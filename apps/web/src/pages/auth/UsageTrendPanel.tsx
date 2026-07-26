@@ -1,5 +1,5 @@
-import { type AuthProvider } from "@kagami/llm-api/auth";
-import { type MetricPointsQueryResponse } from "@kagami/metric-api/points";
+import { type AuthProvider } from "@sparkle/llm-api/auth";
+import { type MetricPointsQueryResponse } from "@sparkle/metric-api/points";
 import { useMemo } from "react";
 import {
   ChartContainer,

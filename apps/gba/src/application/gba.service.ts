@@ -8,8 +8,8 @@ import type {
   GbaRunStateSchema,
   GbaScreenResultSchema,
   GbaUploadResultSchema,
-} from "@kagami/gba-api/contract";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+} from "@sparkle/gba-api/contract";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type { EmulatorCore, EmulatorCoreFactory } from "../emulator/emulator-core.js";
 import { encodeFramePng } from "../emulator/frame-png.js";
 import type { OssClient } from "../acl/oss-client.js";
@@ -53,7 +53,7 @@ type GbaServiceDeps = {
 };
 
 /**
- * kagami-gba 的领域服务：模拟器会话状态机。运行模型（issue #541 硬约束）——
+ * sparkle-gba 的领域服务：模拟器会话状态机。运行模型（issue #541 硬约束）——
  *
  * - 前台 = 实时运行：内部帧循环以核心标称速率（59.7275fps）推进，漂移校正但**绝不快进**
  *   （落后先限量追帧、超阈值直接丢帧对齐）。后台 = 冻结（循环停止，先 flush 电池存档）。

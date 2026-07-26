@@ -1,10 +1,10 @@
-import { initLoggerRuntime } from "@kagami/kernel/logger/runtime";
-import { closeDb, type Database } from "@kagami/persistence/db/client";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { StdoutLogSink } from "@kagami/kernel/logger/sinks/stdout-sink";
+import { initLoggerRuntime } from "@sparkle/kernel/logger/runtime";
+import { closeDb, type Database } from "@sparkle/persistence/db/client";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { StdoutLogSink } from "@sparkle/kernel/logger/sinks/stdout-sink";
 import { buildServerRuntime } from "./app/server-runtime.js";
 import type { FastifyInstance } from "fastify";
-import type { SchedulerClient } from "@kagami/scheduler-client/scheduler-client";
+import type { SchedulerClient } from "@sparkle/scheduler-client/scheduler-client";
 import { shutdownServerResources, type AgentRuntimeController } from "./app/server-shutdown.js";
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
@@ -128,7 +128,7 @@ try {
   runtime.schedulerClient.start();
   isServerStarted = true;
 
-  // provider 列表现在经 HTTP 问 kagami-llm 服务，纯启动诊断用途。best-effort：服务此刻若还没起
+  // provider 列表现在经 HTTP 问 sparkle-llm 服务，纯启动诊断用途。best-effort：服务此刻若还没起
   // （fresh deploy 时 PM2 可能先拉 agent），不能因此拖垮 agent 启动——真正的 LLM 调用在事件循环里
   // 发生、且走带退避的 LLM retry。这里失败只降级成空列表 + 一条 warn。
   const providers = await runtime.listAvailableAgentProviders().catch((error: unknown) => {

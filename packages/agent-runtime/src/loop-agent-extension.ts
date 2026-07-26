@@ -1,4 +1,4 @@
-import type { LlmMessage } from "@kagami/llm";
+import type { LlmMessage } from "@sparkle/llm";
 import type {
   AssistantLikeMessage,
   ReActCommittedRoundResult,

@@ -1088,7 +1088,7 @@ describe("DefaultNapcatGatewayService", () => {
               ],
               time: 1710000001,
               sender: {
-                card: "Kagami",
+                card: "Sparkle",
               },
             },
             {
@@ -1163,7 +1163,7 @@ describe("DefaultNapcatGatewayService", () => {
       {
         groupId: "987654",
         userId: "654321",
-        nickname: "Kagami",
+        nickname: "Sparkle",
         rawMessage: "bot reply",
         messageSegments: [
           {
@@ -1243,7 +1243,7 @@ describe("DefaultNapcatGatewayService", () => {
               ],
               time: 1710000001,
               sender: {
-                nickname: "Kagami",
+                nickname: "Sparkle",
               },
             },
             {
@@ -1286,7 +1286,7 @@ describe("DefaultNapcatGatewayService", () => {
         subType: "friend",
         groupId: null,
         userId: "123456",
-        nickname: "Kagami",
+        nickname: "Sparkle",
         messageId: 1002,
         rawMessage: "bot reply",
       }),

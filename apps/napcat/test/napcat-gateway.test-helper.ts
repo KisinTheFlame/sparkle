@@ -1,10 +1,10 @@
 import { vi } from "vitest";
-import type { ConfigManager } from "@kagami/kernel/config/config.manager";
-import type { Config } from "@kagami/kernel/config/config.loader";
+import type { ConfigManager } from "@sparkle/kernel/config/config.manager";
+import type { Config } from "@sparkle/kernel/config/config.loader";
 import type { NapcatEventDao } from "../src/infra/napcat-event.dao.js";
 import type { NapcatQqMessageDao } from "../src/infra/napcat-group-message.dao.js";
-import { initLoggerRuntime } from "@kagami/kernel/logger/runtime";
-import type { LogEvent, LogSink } from "@kagami/kernel/logger/types";
+import { initLoggerRuntime } from "@sparkle/kernel/logger/runtime";
+import type { LogEvent, LogSink } from "@sparkle/kernel/logger/types";
 
 export class FakeWebSocket {
   public readyState = 0;
@@ -134,7 +134,7 @@ export function createConfigManager(): ConfigManager {
         },
         resource: {
           maxBytes: 4 * 1024 * 1024,
-          fileRoot: "~/kagami",
+          fileRoot: "~/sparkle",
           fileMaxBytes: 32 * 1024 * 1024,
         },
       },

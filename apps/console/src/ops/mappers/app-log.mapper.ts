@@ -1,5 +1,5 @@
-import { type AppLogListResponse } from "@kagami/console-api/app-log";
-import type { AgentAppLogWireItem } from "@kagami/agent-api/ops-query";
+import { type AppLogListResponse } from "@sparkle/console-api/app-log";
+import type { AgentAppLogWireItem } from "@sparkle/agent-api/ops-query";
 
 type MapAppLogListInput = {
   page: number;

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { AgentTodoWireItem } from "@kagami/agent-api/ops-query";
+import type { AgentTodoWireItem } from "@sparkle/agent-api/ops-query";
 import { DefaultTodoQueryService } from "../../src/ops/application/todo-query.impl.service.js";
 import type { AgentOpsQueryClient } from "../../src/ops/application/app-log-query.impl.service.js";
 

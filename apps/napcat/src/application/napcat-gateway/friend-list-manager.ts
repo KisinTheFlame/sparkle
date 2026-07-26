@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import { NonEmptyStringSchema, PositiveIntSchema, parseOrThrow } from "./wire-schemas.js";
 import type { NapcatGatewayTransport } from "./transport.js";
 import type { NapcatAgentEvent, NapcatFriendInfo } from "../napcat-gateway.service.js";

@@ -1,6 +1,6 @@
-import { BaseTaskAgent, type TaskAgentInvoker, type ToolExecutor } from "@kagami/agent-runtime";
-import type { LlmClient, LlmMessage } from "@kagami/llm-client";
-import { truncateWithEllipsis } from "@kagami/kernel/utils/text";
+import { BaseTaskAgent, type TaskAgentInvoker, type ToolExecutor } from "@sparkle/agent-runtime";
+import type { LlmClient, LlmMessage } from "@sparkle/llm-client";
+import { truncateWithEllipsis } from "@sparkle/kernel/utils/text";
 import { INNER_THOUGHT_DELIMITER } from "../tools/emit-inner-thought.tool.js";
 import { createInnerVoiceInstructionMessage } from "../../../runtime/context/context-message-factory.js";
 

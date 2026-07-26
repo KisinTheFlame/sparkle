@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { createBackpressureAwareWrite } from "@kagami/http/sse";
-import { SCHEDULER_TICKS_SSE_PATH } from "@kagami/scheduler-api/event";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { createBackpressureAwareWrite } from "@sparkle/http/sse";
+import { SCHEDULER_TICKS_SSE_PATH } from "@sparkle/scheduler-api/event";
 import type { SchedulerEngine } from "../application/scheduler-engine.js";
 import type { TickBroadcaster, TickSubscriber } from "../application/tick-broadcaster.js";
 

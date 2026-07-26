@@ -1,5 +1,5 @@
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { SCHEDULER_SSE_HEARTBEAT_MS, type SchedulerTickEvent } from "@kagami/scheduler-api/event";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { SCHEDULER_SSE_HEARTBEAT_MS, type SchedulerTickEvent } from "@sparkle/scheduler-api/event";
 
 const logger = new AppLogger({ source: "scheduler.tick-broadcaster" });
 

@@ -3,9 +3,9 @@ import {
   createPaginatedResponseSchema,
   PaginationQuerySchema,
   parseOptionalStringInput,
-} from "@kagami/http/wire";
+} from "@sparkle/http/wire";
 
-// === kagami-oss 的控制台只读面 wire schema（对象浏览 + 存储统计） ===
+// === sparkle-oss 的控制台只读面 wire schema（对象浏览 + 存储统计） ===
 //
 // OSS 是数据 owner，自己出这份只读 JSON 契约给管理台（web 经 gateway `/oss-object` 前缀消费），
 // Console 不代读 OSS 的私有 better-sqlite3 库。写操作（put/delete）仍只在二进制契约 ossApiContract

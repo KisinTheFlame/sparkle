@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MetricChartQueryRequestSchema } from "@kagami/metric-api/chart";
+import { MetricChartQueryRequestSchema } from "@sparkle/metric-api/chart";
 
 // 图表定义迁回代码后，/metric/query 的硬边界 guard 全落在这份 wire schema 上（#444）。
 // 后端 handler 用 bare Fastify 无统一错误处理，400 语义在 schema 层测最准。

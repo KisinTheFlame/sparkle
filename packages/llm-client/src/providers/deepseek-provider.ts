@@ -1,4 +1,4 @@
-import type { Config } from "@kagami/kernel/config/config.loader";
+import type { Config } from "@sparkle/kernel/config/config.loader";
 import type { LlmProvider } from "../provider.js";
 import { createOpenAiCompatibleProvider } from "./openai-compatible-provider.js";
 

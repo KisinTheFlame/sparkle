@@ -4,7 +4,7 @@ import type {
   NapcatGetGroupInfoResponse as NapcatGetGroupInfoResult,
   NapcatGroupMessageData,
   NapcatPrivateMessageData,
-} from "@kagami/napcat-api/message";
+} from "@sparkle/napcat-api/message";
 import {
   type ConversationId,
   createGroupConversationId,

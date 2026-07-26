@@ -2,8 +2,8 @@ import type {
   AssistantLikeMessage,
   ReActKernelExtension,
   ReActKernelRunRoundInput,
-} from "@kagami/agent-runtime";
-import { isRetryableLlmFailure, type LlmMessage } from "@kagami/llm-client";
+} from "@sparkle/agent-runtime";
+import { isRetryableLlmFailure, type LlmMessage } from "@sparkle/llm-client";
 
 export const DEFAULT_LLM_RETRY_BACKOFF_MS = 30_000;
 

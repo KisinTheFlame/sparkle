@@ -780,7 +780,7 @@ describe("NapcatGroupMessageProcessor", () => {
           },
         ],
         sender: {
-          card: "Kagami",
+          card: "Sparkle",
         },
       },
     ]);
@@ -789,7 +789,7 @@ describe("NapcatGroupMessageProcessor", () => {
       {
         groupId: "987654",
         userId: "123456",
-        nickname: "Kagami",
+        nickname: "Sparkle",
         rawMessage: "bot reply",
         messageSegments: [
           {

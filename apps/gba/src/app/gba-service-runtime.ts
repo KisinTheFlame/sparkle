@@ -1,8 +1,8 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { createServiceApp, type ServiceErrorHandler } from "@kagami/kernel/http/service-app";
-import { HealthHandler } from "@kagami/kernel/http/health.handler";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { createServiceApp, type ServiceErrorHandler } from "@sparkle/kernel/http/service-app";
+import { HealthHandler } from "@sparkle/kernel/http/health.handler";
 import { HttpOssClient } from "../acl/oss-client.js";
 import { GbaService } from "../application/gba.service.js";
 import { RetroemuCore } from "../emulator/retroemu-core.js";
@@ -21,7 +21,7 @@ export type GbaServiceRuntime = {
 };
 
 /**
- * kagami-gba 进程运行时装配。独立 PM2 进程：内嵌 mGBA WASM 核心（retroemu）+ 自有 sqlite
+ * sparkle-gba 进程运行时装配。独立 PM2 进程：内嵌 mGBA WASM 核心（retroemu）+ 自有 sqlite
  * 元数据库（data/gba）+ OSS 存 ROM 字节。与 agent 完全隔离，agent 经 HttpGbaClient 直连。
  */
 export async function buildGbaServiceRuntime(): Promise<GbaServiceRuntime> {
@@ -73,7 +73,7 @@ export async function buildGbaServiceRuntime(): Promise<GbaServiceRuntime> {
     errorHandler,
     configure: fastify => {
       // 只给 octet-stream 注册透传 parser：uploadRom 的裸字节流走它，JSON 路由不受影响
-      // （全局 useRawBodyPassthrough 会弄坏同实例的 JSON body 解析，见 @kagami/http register.ts）。
+      // （全局 useRawBodyPassthrough 会弄坏同实例的 JSON body 解析，见 @sparkle/http register.ts）。
       fastify.addContentTypeParser("application/octet-stream", (_request, payload, done) => {
         done(null, payload);
       });

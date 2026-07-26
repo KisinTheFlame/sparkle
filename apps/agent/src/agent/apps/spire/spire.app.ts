@@ -1,5 +1,5 @@
-import type { App } from "@kagami/agent-runtime";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import type { App } from "@sparkle/agent-runtime";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import { SpireStartRunTool } from "../../capabilities/spire/tools/start-run.tool.js";
 import { SpirePlayCardTool } from "../../capabilities/spire/tools/play-card.tool.js";
 import { SpireEndTurnTool } from "../../capabilities/spire/tools/end-turn.tool.js";
@@ -14,14 +14,14 @@ import type { SpireClient } from "../../../acl/spire-client.js";
 const SPIRE_APP_ID = "sts";
 
 type SpireAppDeps = {
-  /** 游戏动作客户端：打到独立的 kagami-spire 进程（issue #234）。 */
+  /** 游戏动作客户端：打到独立的 sparkle-spire 进程（issue #234）。 */
   spireClient: SpireClient;
 };
 
 /**
- * 尖塔 App：把杀戮尖塔式卡牌游戏的 7 个工具包成 Kagami 桌面上的一个能力单元。结构照抄 BrowserApp。
+ * 尖塔 App：把杀戮尖塔式卡牌游戏的 7 个工具包成 Sparkle 桌面上的一个能力单元。结构照抄 BrowserApp。
  *
- * 拆进程：本 App 不持有游戏引擎，只持有一个打到独立 kagami-spire 进程的 HttpSpireClient。
+ * 拆进程：本 App 不持有游戏引擎，只持有一个打到独立 sparkle-spire 进程的 HttpSpireClient。
  * 游戏进程有自己的 PM2 生命周期与存档，agent 重启不影响进行中的对局。
  *
  * - 工具：start_run / play_card / end_turn / choose / use_potion / look / lookup。

@@ -2,8 +2,8 @@ import type {
   ReActKernelExtension,
   ReActKernelRunRoundInput,
   ToolSetExecutionResult,
-} from "@kagami/agent-runtime";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+} from "@sparkle/agent-runtime";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type { RootAgentCompletion, RootAgentToolExecutionData } from "../root-agent-runtime.js";
 
 const logger = new AppLogger({ source: "agent.root-agent-runtime" });

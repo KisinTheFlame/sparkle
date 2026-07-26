@@ -1,11 +1,11 @@
-import { createClient } from "@kagami/rpc-client/client";
-import { llmApiContract } from "@kagami/llm-api/contract";
-import type { LlmProviderOption } from "@kagami/llm-api/llm-chat";
+import { createClient } from "@sparkle/rpc-client/client";
+import { llmApiContract } from "@sparkle/llm-api/contract";
+import type { LlmProviderOption } from "@sparkle/llm-api/llm-chat";
 import { describe, expect, it } from "vitest";
 
 /**
  * 契约编译期强制的「试金石」（issue #230）。这些断言主要靠 `tsc --noEmit`（agent typecheck，经
- * tsconfig paths 对 @kagami/llm-api **源码**解析）把关：改 llmApiContract.listProviders 的 output，
+ * tsconfig paths 对 @sparkle/llm-api **源码**解析）把关：改 llmApiContract.listProviders 的 output，
  * 下面的类型断言与 @ts-expect-error 会立即失败 —— 证明「上游改契约、下游编译报错」。
  * vitest 只跑运行时那一行 expect，类型块用 `void (async …)` 包住不执行。
  */

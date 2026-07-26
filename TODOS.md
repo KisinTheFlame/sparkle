@@ -26,12 +26,12 @@
 
 ## architecture
 
-### usage→provider 策略下沉到 agent，kagami-llm 只留 provider/凭据/机械执行
+### usage→provider 策略下沉到 agent，sparkle-llm 只留 provider/凭据/机械执行
 
 - **Priority:** P2
 - **Status:** open
-- **Context:** usage→(provider, model, attempts) 的解析 + 多 attempt 重试循环整个跑在 **kagami-llm 内部**的 `@kagami/llm-client`（`client.ts:137` `requireUsageConfig`），`usages.{...}` 还是 config 里逐字段硬编码的对象。抽象泄漏：号称"通用 LLM + OAuth 网关"的服务替调用方保管 provider 策略。**原先记录的具体代价已被 #555 消解**：当时 `innerVoice` / `contextSummarizer` / `todoSuggestionAgent` 各占一个私有 usage，新增一个就得连带重启 kagami-llm（否则报 `LlmClient usage is not configured`）；#555 后 fork 型 task agent 一律复用 `usage: "agent"`（这也是命中 prompt cache 的硬要求），调用归因改走 `scene` 自由字段，usage 集合收敛为 `agent` / `vision` 两个稳定值，那条 bug 路径已不复存在。**剩下的仍是边界问题**：这两个 usage 名依旧是 agent 的词汇，多 Agent 未来网关会重新堆积各家私有 usage。优先级因此从"踩过坑"降为"纯架构整洁"。
-- **Notes:** 正确边界 = kagami-llm 拥有 provider 凭据/OAuth + "拿 provider X + model Y 打这一发"的机械执行 + 落库 observation（词汇是 provider/model，通用稳定）；agent 拥有 usage→provider 策略表 + attempt 重试循环。**机制已现成**：`chatDirect(providerId, model)` 就是"caller 定 provider、网关只执行"（`@kagami/llm-client` 已暴露该原语）。重构 = 把 `usages` 配置从共享 llm 段（`config.loader.ts:365`）挪到 agent 段、把 attempt-loop 从 `@kagami/llm-client` 搬到 agent 侧解析器、重写 `HttpLlmClient.chat`（`http-llm-client.ts:47`）为"本地解析 usage→provider→chatDirect"。收益：加 usage 永不碰/不重启 llm，那个 failed bug 结构性消失，边界对上"通用网关"定位。走 spec 流水线单开 issue，别 inline。
+- **Context:** usage→(provider, model, attempts) 的解析 + 多 attempt 重试循环整个跑在 **sparkle-llm 内部**的 `@sparkle/llm-client`（`client.ts:137` `requireUsageConfig`），`usages.{...}` 还是 config 里逐字段硬编码的对象。抽象泄漏：号称"通用 LLM + OAuth 网关"的服务替调用方保管 provider 策略。**原先记录的具体代价已被 #555 消解**：当时 `innerVoice` / `contextSummarizer` / `todoSuggestionAgent` 各占一个私有 usage，新增一个就得连带重启 sparkle-llm（否则报 `LlmClient usage is not configured`）；#555 后 fork 型 task agent 一律复用 `usage: "agent"`（这也是命中 prompt cache 的硬要求），调用归因改走 `scene` 自由字段，usage 集合收敛为 `agent` / `vision` 两个稳定值，那条 bug 路径已不复存在。**剩下的仍是边界问题**：这两个 usage 名依旧是 agent 的词汇，多 Agent 未来网关会重新堆积各家私有 usage。优先级因此从"踩过坑"降为"纯架构整洁"。
+- **Notes:** 正确边界 = sparkle-llm 拥有 provider 凭据/OAuth + "拿 provider X + model Y 打这一发"的机械执行 + 落库 observation（词汇是 provider/model，通用稳定）；agent 拥有 usage→provider 策略表 + attempt 重试循环。**机制已现成**：`chatDirect(providerId, model)` 就是"caller 定 provider、网关只执行"（`@sparkle/llm-client` 已暴露该原语）。重构 = 把 `usages` 配置从共享 llm 段（`config.loader.ts:365`）挪到 agent 段、把 attempt-loop 从 `@sparkle/llm-client` 搬到 agent 侧解析器、重写 `HttpLlmClient.chat`（`http-llm-client.ts:47`）为"本地解析 usage→provider→chatDirect"。收益：加 usage 永不碰/不重启 llm，那个 failed bug 结构性消失，边界对上"通用网关"定位。走 spec 流水线单开 issue，别 inline。
 
 ### 治理对外部时间/外部条件的直接依赖，核心逻辑改为可注入的状态机
 
@@ -127,7 +127,7 @@
 
 - **Priority:** P3
 - **Status:** open（**「独立进程」这半已由 #578 落地，剩下的只是 SSR 本身**）
-- **Context:** 原始想法含两件事：①前端成为独立服务进程；②服务端渲染。**①已完成**（#578）：`apps/web` 自持轻量静态服务器成为 `kagami-web` 进程，gateway 退化为纯反代，构建期 dist 装配耦合消除。**②SSR 仍未做，且 2026-07-25 复核后仍判定不划算**：管理台是 localhost 单用户、零 SEO、无访问鉴权的内网工具；14 个路由全部 lazy + TanStack Query 客户端取数 + Recharts 必须客户端水合，真 SSR 要重写全部页面数据层，换来的只是骨架屏消失；app-shell SSR 则是「名义 SSR」，Next 迁移与水合面的代价却要全付。
+- **Context:** 原始想法含两件事：①前端成为独立服务进程；②服务端渲染。**①已完成**（#578）：`apps/web` 自持轻量静态服务器成为 `sparkle-web` 进程，gateway 退化为纯反代，构建期 dist 装配耦合消除。**②SSR 仍未做，且 2026-07-25 复核后仍判定不划算**：管理台是 localhost 单用户、零 SEO、无访问鉴权的内网工具；14 个路由全部 lazy + TanStack Query 客户端取数 + Recharts 必须客户端水合，真 SSR 要重写全部页面数据层，换来的只是骨架屏消失；app-shell SSR 则是「名义 SSR」，Next 迁移与水合面的代价却要全付。
 - **Notes:** 若将来仍要上 SSR（如出现对外页面 / SEO / 慢网络场景），起点已经好很多：进程、端口、PM2、部署别名、gateway 反代都就位，只需把 `apps/web` 的框架从 Vite 换成 Next 并保留同一进程形态。届时可一并重估 web 侧契约消费方式。
 
 ---
@@ -139,7 +139,7 @@
 - **Priority:** P2
 - **Status:** open
 - **Context:** 「鲜艳蒙德里安」方向要把 `main-agent-context` landing 做成二维大色块 dashboard（LLM token / 主动发言数 / 高成本 / scheduler pending / context tokens 等填实色块）。但当前 `main-agent-context` 接口只返回 `recentItems`，没有这些聚合统计。要真实呈现需**改后端 + shared schema** 加聚合字段，属跨前后端的新功能。前端这轮只在数据已就绪处上大色块（Auth 额度），landing 暂留 feed + 轮询状态，不硬编假数。
-- **Notes:** 设计样张见 `/private/tmp/kagami-v3-light.html`（二维构图 + 大色块）。后端补聚合后，landing 按该构图实现。
+- **Notes:** 设计样张见 `/private/tmp/sparkle-v3-light.html`（二维构图 + 大色块）。后端补聚合后，landing 按该构图实现。
 
 ### 填实状态色块铺到剩余数据页
 

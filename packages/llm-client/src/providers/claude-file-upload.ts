@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type { LlmChatRequest, LlmImageContentPart } from "../types.js";
 import type { ClaudeFileCacheDao } from "./claude-file-cache.dao.js";
 import { ANTHROPIC_VERSION, CLAUDE_CODE_USER_AGENT } from "./claude-code-constants.js";
@@ -87,7 +87,7 @@ function collectUniqueImageParts(request: LlmChatRequest): Map<string, LlmImageC
  * ——只要该 sha256 有在飞解析，B 直接复用、绝不第二次上传。
  *
  * settle 后即从表移除：失败不缓存 → 下轮重试；成功后再来的走 findByHash 命中、不再进单飞。
- * 进程级 Map，正是我们要的合并粒度（kagami-llm 单进程、所有上传都过这里）。
+ * 进程级 Map，正是我们要的合并粒度（sparkle-llm 单进程、所有上传都过这里）。
  */
 const inFlightResolutions = new Map<string, Promise<string>>();
 

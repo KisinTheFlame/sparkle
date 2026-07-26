@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ZodToolComponent, type JsonSchema, type ToolKind } from "@kagami/agent-runtime";
+import { ZodToolComponent, type JsonSchema, type ToolKind } from "@sparkle/agent-runtime";
 
 const CALCULATE_TOOL_NAME = "calculate";
 
@@ -26,7 +26,7 @@ type CalculateToolDeps = {
  * 二元四则运算工具。Calc App 内唯一的工具。
  *
  * 设计要点：
- * - 单次调用只做一次二元运算。需要复合表达式（如 1+2*3）时，Kagami 自己组合多次调用。
+ * - 单次调用只做一次二元运算。需要复合表达式（如 1+2*3）时，Sparkle 自己组合多次调用。
  * - 严格只接受有限 number；NaN / Infinity 由 zod .finite() 提前挡掉。
  * - 除零返回结构化 error tool_result，不抛异常。
  * - precision 来自 CalcApp 的 config 闭包，undefined 表示不截断。

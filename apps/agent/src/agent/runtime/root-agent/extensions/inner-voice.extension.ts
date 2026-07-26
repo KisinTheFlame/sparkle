@@ -1,5 +1,5 @@
-import type { LoopAgentExtension, ReActRoundResult } from "@kagami/agent-runtime";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import type { LoopAgentExtension, ReActRoundResult } from "@sparkle/agent-runtime";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import { isWaitToolCall } from "../../../capabilities/inner-voice/domain/idle-detector.js";
 import type { InnerVoiceIdleTracker } from "../../../capabilities/inner-voice/domain/idle-tracker.js";
 import type {
@@ -7,11 +7,11 @@ import type {
   InnerVoiceTaskInput,
 } from "../../../capabilities/inner-voice/task-agent/inner-voice-task-agent.js";
 import type { AgentEventQueue } from "../../event/event.queue.js";
-import { NOOP_METRIC_CLIENT, type MetricClient } from "@kagami/metric-client/client";
+import { NOOP_METRIC_CLIENT, type MetricClient } from "@sparkle/metric-client/client";
 import type {
   InnerThoughtDao,
   InnerThoughtOutcome,
-} from "@kagami/persistence/dao/inner-thought.dao";
+} from "@sparkle/persistence/dao/inner-thought.dao";
 import type {
   RootAgentCompletion,
   RootAgentToolExecutionData,

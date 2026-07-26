@@ -5,7 +5,7 @@ import {
   type EffectHandler,
   type EffectHandlerResult,
   type EffectInterpreter,
-} from "@kagami/agent-runtime";
+} from "@sparkle/agent-runtime";
 import type { AgentContext } from "../context/agent-context.js";
 import type { Event } from "../event/event.js";
 import type { AgentEventQueue } from "../event/event.queue.js";

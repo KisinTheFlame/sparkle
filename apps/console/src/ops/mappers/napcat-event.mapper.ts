@@ -1,5 +1,5 @@
-import { type NapcatEventListResponse } from "@kagami/console-api/napcat-event";
-import type { NapcatEventWireItem } from "@kagami/napcat-api/query";
+import { type NapcatEventListResponse } from "@sparkle/console-api/napcat-event";
+import type { NapcatEventWireItem } from "@sparkle/napcat-api/query";
 
 type MapNapcatEventListInput = {
   page: number;

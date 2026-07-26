@@ -6,7 +6,7 @@ import type {
   LlmTextContentPart,
   LlmThinkingBlock,
   LlmToolCall,
-} from "@kagami/llm-client";
+} from "@sparkle/llm-client";
 
 const DateValueSchema = z.coerce.date();
 const JsonRecordSchema = z.record(z.string(), z.unknown());

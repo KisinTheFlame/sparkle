@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import type { z } from "zod";
-import type { GbaDeleteResultSchema, GbaUploadResultSchema } from "@kagami/gba-api/contract";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import type { GbaDeleteResultSchema, GbaUploadResultSchema } from "@sparkle/gba-api/contract";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type { OssClient } from "../acl/oss-client.js";
 import type { GbaStore, RomRow } from "../persistence/gba-store.js";
 

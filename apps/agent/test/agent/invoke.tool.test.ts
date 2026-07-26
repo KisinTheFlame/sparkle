@@ -4,11 +4,11 @@ import {
   type App,
   type ToolComponent,
   type ToolContext,
-} from "@kagami/agent-runtime";
+} from "@sparkle/agent-runtime";
 import { describe, expect, it, vi } from "vitest";
 import { SendMessageTool } from "../../src/agent/capabilities/messaging/tools/send-message.tool.js";
 import { PendingDraftStore } from "../../src/agent/capabilities/messaging/application/pending-draft.store.js";
-import type { NapcatChatTarget } from "@kagami/napcat-api/message";
+import type { NapcatChatTarget } from "@sparkle/napcat-api/message";
 import { InvokeTool } from "../../src/agent/runtime/root-agent/tools/invoke.tool.js";
 
 const TEST_QQ_APP_ID = "qq";
@@ -193,7 +193,7 @@ describe("invoke tool", () => {
 
   it("should bypass state-tree availableTools check for App-owned tools", async () => {
     // 回归测试：之前 InvokeTool 把 App 工具也走状态树 availableTools 检查，
-    // 导致 Kagami 进 calc 后调 calculate 被"Portal 没有 invoke 子工具"挡住。
+    // 导致 Sparkle 进 calc 后调 calculate 被"Portal 没有 invoke 子工具"挡住。
     const { CalcApp } = await import("../../src/agent/apps/calc/calc.app.js");
     const appManager = new AppManager();
     appManager.register(new CalcApp());
@@ -204,7 +204,7 @@ describe("invoke tool", () => {
 
     const result = await tool.execute({ tool: "calculate", a: 6, op: "*", b: 7 }, {
       rootAgentSession: {
-        // Kagami 已经 switch 进了 calc App
+        // Sparkle 已经 switch 进了 calc App
         getCurrentApp: () => "calc",
       },
     } as Parameters<typeof tool.execute>[1]);

@@ -7,34 +7,34 @@
 # host 是「别的服务/网关如何 reach 它」（reachable host），不是绑定地址。绑定地址是各服务
 # 代码里的安全决策：卫星进程一律绑 127.0.0.1，只有 gateway（前门）绑 0.0.0.0（issue #274）。
 services:
-  agent: { host: localhost, port: 20003 } # kagami-agent
-  console: { host: localhost, port: 20006 } # kagami-console（管理台后端，纯 DB 查询）
-  gateway: { host: localhost, port: 20004 } # kagami-gateway（前门：纯反向代理，/api 分流后端 + 其余转 web；#578）
-  web: { host: 127.0.0.1, port: 20016 } # kagami-web（管理台前端，自持静态托管，仅 localhost：只经 gateway 反代；#578。20015 gba 已占）
-  oss: # kagami-oss（自建对象存储，仅 localhost：agent 经 HttpOssClient 存取，gateway 转只读浏览）
+  agent: { host: localhost, port: 20003 } # sparkle-agent
+  console: { host: localhost, port: 20006 } # sparkle-console（管理台后端，纯 DB 查询）
+  gateway: { host: localhost, port: 20004 } # sparkle-gateway（前门：纯反向代理，/api 分流后端 + 其余转 web；#578）
+  web: { host: 127.0.0.1, port: 20016 } # sparkle-web（管理台前端，自持静态托管，仅 localhost：只经 gateway 反代；#578。20015 gba 已占）
+  oss: # sparkle-oss（自建对象存储，仅 localhost：agent 经 HttpOssClient 存取，gateway 转只读浏览）
     host: 127.0.0.1
     port: 20005
     databaseUrl: file:./data/oss/oss.db # oss 独占 SQLite 库（blob / object 对象元数据；字节在 data/oss/blobs）
-  browser: { host: 127.0.0.1, port: 20007 } # kagami-browser（仅 localhost：暴露 type secret / eval / screenshot，绝不对外）
-  llm: # kagami-llm（LLM 网关 + OAuth 凭据中心，仅 localhost：agent 经 HttpLlmClient 直连、gateway 转 /auth）
+  browser: { host: 127.0.0.1, port: 20007 } # sparkle-browser（仅 localhost：暴露 type secret / eval / screenshot，绝不对外）
+  llm: # sparkle-llm（LLM 网关 + OAuth 凭据中心，仅 localhost：agent 经 HttpLlmClient 直连、gateway 转 /auth）
     host: 127.0.0.1
     port: 20009
     databaseUrl: file:./data/llm/llm.db # llm 独占 SQLite 库（llm_chat_call / embedding_cache / claude_file_cache / oauth_*，#539）
-  metric: # kagami-metric（仅 localhost：metric 摄取 + metric-chart 查询；20008 TEI embedding / 20009 kagami-llm 已占）
+  metric: # sparkle-metric（仅 localhost：metric 摄取 + metric-chart 查询；20008 TEI embedding / 20009 sparkle-llm 已占）
     host: 127.0.0.1
     port: 20010
     databaseUrl: file:./data/metric/metric.duckdb # metric 独占 DuckDB 单文件（列式，为 p95/分析聚合而生，#475）；与旧反推路径同址，无需迁移
-  spire: { host: 127.0.0.1, port: 20011 } # kagami-spire（杀塔式卡牌游戏引擎，仅 localhost：agent 经 HttpSpireClient 驱动）
-  napcat: # kagami-napcat（NapCat 接入独立进程，仅 localhost：agent 经 HttpNapcatClient 出站 + SSE 订阅入站；#347。20012 留给像素画 #365）
+  spire: { host: 127.0.0.1, port: 20011 } # sparkle-spire（杀塔式卡牌游戏引擎，仅 localhost：agent 经 HttpSpireClient 驱动）
+  napcat: # sparkle-napcat（NapCat 接入独立进程，仅 localhost：agent 经 HttpNapcatClient 出站 + SSE 订阅入站；#347。20012 留给像素画 #365）
     host: 127.0.0.1
     port: 20013
     databaseUrl: file:./data/napcat/napcat.db # napcat 独占 SQLite 库（napcat_event / napcat_qq_message / outbox / image_asset，#539）
-  pixel: { host: 127.0.0.1, port: 20012 } # kagami-pixel（像素画服务，仅 localhost：agent 经 HttpPixelClient 驱动）
-  gba: # kagami-gba（GBA 模拟器服务，仅 localhost：agent 经 HttpGbaClient 直连游玩面，gateway 只转 /gba/roms 管理面；#541。20014 scheduler 已占）
+  pixel: { host: 127.0.0.1, port: 20012 } # sparkle-pixel（像素画服务，仅 localhost：agent 经 HttpPixelClient 驱动）
+  gba: # sparkle-gba（GBA 模拟器服务，仅 localhost：agent 经 HttpGbaClient 直连游玩面，gateway 只转 /gba/roms 管理面；#541。20014 scheduler 已占）
     host: 127.0.0.1
     port: 20015
     databaseUrl: file:./data/gba/gba.db # gba 独占 SQLite 库（rom / battery_save / run_state / resume_state；ROM 字节在 OSS）
-  scheduler: # kagami-scheduler（通用定时调度服务，仅 localhost：agent 经 SchedulerClient 注册 + SSE 收 tick；#428。20013 napcat / 20012 pixel 已占）
+  scheduler: # sparkle-scheduler（通用定时调度服务，仅 localhost：agent 经 SchedulerClient 注册 + SSE 收 tick；#428。20013 napcat / 20012 pixel 已占）
     host: 127.0.0.1
     port: 20014
     databaseUrl: file:./data/scheduler/scheduler.db # scheduler 独占 SQLite 库（TaskRun 执行历史，#493）
@@ -59,7 +59,7 @@ server:
       maxTaskDurationMs: 600000 # 异步工具任务的 manager 级安全超时；超过则以超时结果回流（底层可能仍在跑）
     resource:
       maxBytes: 4194304 # read_resource 入上下文 / send_resource 发图的字节上限（4 MiB）
-      fileRoot: ~/kagami # download_resource/upload_resource/群文件 落盘/读盘沙箱根（默认与 terminal initialCwd 重合）
+      fileRoot: ~/sparkle # download_resource/upload_resource/群文件 落盘/读盘沙箱根（默认与 terminal initialCwd 重合）
       fileMaxBytes: 33554432 # 文件桥字节上限（32 MiB，独立于 4 MiB 上下文 cap）
   ithome:
     pollIntervalMs: 300000
@@ -131,7 +131,7 @@ server:
         # 依赖 OAuth scope 含 user:file_upload——加此 scope 后须重新登录 claude-code。
         # 关掉即回退全 base64。
         useFileApi: true
-        # File API 缓存按最近使用时间 GC（#433）。kagami-llm 每日 04:00 删连续 N 天未使用的图（远端 + 本地）。
+        # File API 缓存按最近使用时间 GC（#433）。sparkle-llm 每日 04:00 删连续 N 天未使用的图（远端 + 本地）。
         fileCacheGcEnabled: true # kill-switch；false 则不注册 GC task（急停用）
         fileCacheGcMaxIdleDays: 3 # 连续多少天未被使用即回收
         fileCacheGcMaxDeletionsPerRun: 2000 # 单轮删除上限，超出的次日续删
@@ -153,7 +153,7 @@ server:
             model: claude-sonnet-5
             times: 2
   # bot.qq / bot.creator 是密钥 / PII，放 config.secret.yaml
-  # 自建对象存储（@kagami/oss）启用开关。地址不在这里——统一来自顶层 services.oss。
+  # 自建对象存储（@sparkle/oss）启用开关。地址不在这里——统一来自顶层 services.oss。
   # 整段可省略 → 关闭图片存档（resid 恒为 null，只走 vision 文字描述，优雅降级）；
   # 写出该块即启用，enabled: false 可显式关闭。
   oss:
@@ -165,8 +165,8 @@ server:
       # 计算结果保留的小数位数（0–20）。省略 / null 表示不做四舍五入。
       precision: 6
     terminal:
-      # 终端 App。小镜的"家"默认在 ~/kagami/（由 os.homedir() 解析）。
-      # initialCwd: ~/kagami         # 可选；不填则使用 os.homedir() + "/kagami"
+      # 终端 App。小镜的"家"默认在 ~/sparkle/（由 os.homedir() 解析）。
+      # initialCwd: ~/sparkle         # 可选；不填则使用 os.homedir() + "/sparkle"
       commandTimeoutMs: 60000 # 单条命令超时，超时后进程组被强杀，partial 输出仍保留
       previewBytes: 2048 # 工具返回的 stdout/stderr preview 上限，每条独立
       maxOutputBytes: 1048576 # 单条命令完整捕获上限（1 MB），超过后停止接收
@@ -176,7 +176,7 @@ server:
     hn:
       # Hacker News App（只读：逛 / 读讨论 / 搜 / 看用户）。两个 API 都零鉴权公开。
       # 整段可省略，全部字段都有默认值。
-      userAgent: "Mozilla/5.0 ... Kagami/1.0" # 请求 HN 用的 User-Agent
+      userAgent: "Mozilla/5.0 ... Sparkle/1.0" # 请求 HN 用的 User-Agent
       fetchTimeoutMs: 10000 # 单次 HTTP 超时
       fetchMaxAttempts: 3 # 含首次的最大尝试次数（只对 429/408/5xx/网络错误重试）
       fetchBackoffBaseMs: 500 # 指数退避基数
@@ -209,10 +209,10 @@ server:
       staticMapDefaultSize: "600*400" # 静态地图默认尺寸 '宽*高'，单边 ≤1024
       staticMapScale: 2 # 静态地图清晰度倍数（1 普通 / 2 高清）
     browser:
-      # 浏览器行为配置。拆进程后（issue #173）由独立的 kagami-browser 进程消费；整段可省略，全部字段都有默认值。
+      # 浏览器行为配置。拆进程后（issue #173）由独立的 sparkle-browser 进程消费；整段可省略，全部字段都有默认值。
       # 只有这 4 个字段是环境相关的；humanize / viewport / 超时 / 截图尺寸等是代码常量，不在此暴露。
       headless: false # 有头/无头。本机带显示用 false 肉眼盯；无显示服务器需 true + Xvfb
-      userDataDir: data/browser/default # 持久 profile 目录（登录态跨重启）。相对进程 cwd；kagami-browser 的 PM2 cwd 为仓库根 → 落仓库根 data/browser/
+      userDataDir: data/browser/default # 持久 profile 目录（登录态跨重启）。相对进程 cwd；sparkle-browser 的 PM2 cwd 为仓库根 → 落仓库根 data/browser/
       # proxy / licenseKey 是凭据，放 config.secret.yaml（server.apps.browser.proxy / licenseKey）
-      # 网站账号密码不在配置里：存 SQLite 的 browser_credential 表（Kagami 运行期可自管），
+      # 网站账号密码不在配置里：存 SQLite 的 browser_credential 表（Sparkle 运行期可自管），
       # type(secret_handle) 时按 handle 取、明文只在 fill 层停留、永不进上下文。

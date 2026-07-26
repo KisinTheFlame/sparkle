@@ -1,4 +1,4 @@
-import type { MetricClient } from "@kagami/metric-client/client";
+import type { MetricClient } from "@sparkle/metric-client/client";
 
 /**
  * 状态心跳采样的 metric 名。每个采样点 value=1，tags.state = 当前状态桶

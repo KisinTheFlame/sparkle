@@ -1,4 +1,4 @@
-import { type JsonValue } from "@kagami/http/wire";
+import { type JsonValue } from "@sparkle/http/wire";
 
 const SEGMENT_LABELS: Record<string, string> = {
   dice: "[dice]",

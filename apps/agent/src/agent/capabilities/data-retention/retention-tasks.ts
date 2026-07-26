@@ -1,4 +1,4 @@
-import type { Database } from "@kagami/persistence/db/client";
+import type { Database } from "@sparkle/persistence/db/client";
 
 /**
  * `findMany` / `deleteMany` subset of a Prisma delegate that this factory needs.
@@ -43,7 +43,7 @@ export type RetentionSpec = {
  * - `root_agent_runtime_snapshot` — runtime snapshot
  * - `ithome_article` / `ithome_feed_cursor` — RSS articles (see TODOS.md for deferred strategy)
  * - 已随表迁往独立库的清理面（epic #539）：metric（#475，DuckDB 自理）、napcat 两表
- *   （kagami-napcat 的 prune 定时器）、llm 三表 + oauth（kagami-llm 的
+ *   （sparkle-napcat 的 prune 定时器）、llm 三表 + oauth（sparkle-llm 的
  *   data-retention-tasks，字段判据说明见彼处）
  */
 export const RETENTION_TASKS: readonly RetentionSpec[] = [
@@ -55,8 +55,8 @@ export const RETENTION_TASKS: readonly RetentionSpec[] = [
     getDelegate: db => db.appLog,
   },
   // napcat_event / napcat_qq_message 自 epic #539 子 issue 2 起归 napcat 独占库，其保留清理
-  // 随表迁入 kagami-napcat 进程（napcat-runtime 的 prune 定时器）；llm_chat_call /
-  // embedding_cache / oauth_state 自子 issue 3 起归 llm 独占库，清理随表迁入 kagami-llm
+  // 随表迁入 sparkle-napcat 进程（napcat-runtime 的 prune 定时器）；llm_chat_call /
+  // embedding_cache / oauth_state 自子 issue 3 起归 llm 独占库，清理随表迁入 sparkle-llm
   // （data-retention-tasks，窗口不变），均不在此清理面。
   {
     displayName: "terminal_output",

@@ -4,8 +4,8 @@ import type {
   MetricChartQueryResponse,
   MetricChartRangePreset,
   MetricChartSeries,
-} from "@kagami/metric-api/chart";
-import { BizError } from "@kagami/kernel/errors/biz-error";
+} from "@sparkle/metric-api/chart";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
 import type { MetricChartSeriesRow, MetricDao } from "../infra/metric.dao.js";
 import { bucketToMilliseconds, listBucketStarts } from "./bucket-time.js";
 import type { MetricChartService } from "./metric-chart.service.js";

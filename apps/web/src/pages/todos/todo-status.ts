@@ -1,4 +1,4 @@
-import { type TodoItemStatus } from "@kagami/console-api/todo";
+import { type TodoItemStatus } from "@sparkle/console-api/todo";
 
 export const TODO_STATUSES: TodoItemStatus[] = ["pending", "completed", "removed"];
 

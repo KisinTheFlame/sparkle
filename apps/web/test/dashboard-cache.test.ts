@@ -1,4 +1,4 @@
-import type { MetricChartQueryResponse } from "@kagami/metric-api/chart";
+import type { MetricChartQueryResponse } from "@sparkle/metric-api/chart";
 import { describe, expect, it } from "vitest";
 import { buildCacheRows } from "@/pages/dashboard/dashboard-cache";
 

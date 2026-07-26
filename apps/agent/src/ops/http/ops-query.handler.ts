@@ -1,17 +1,17 @@
 import type { FastifyInstance } from "fastify";
-import { registerJsonRoute } from "@kagami/http/register";
-import { agentApiContract } from "@kagami/agent-api/contract";
+import { registerJsonRoute } from "@sparkle/http/register";
+import { agentApiContract } from "@sparkle/agent-api/contract";
 import type {
   AgentAppLogWireItem,
   AgentInnerThoughtWireItem,
   AgentTodoWireItem,
-} from "@kagami/agent-api/ops-query";
-import type { LogDao, AppLogItem } from "@kagami/kernel/logger/dao/log.dao";
+} from "@sparkle/agent-api/ops-query";
+import type { LogDao, AppLogItem } from "@sparkle/kernel/logger/dao/log.dao";
 import type {
   InnerThoughtDao,
   InnerThoughtSummary,
-} from "@kagami/persistence/dao/inner-thought.dao";
-import type { TodoItemQueryDao, TodoItemRow } from "@kagami/persistence/dao/todo-item.dao";
+} from "@sparkle/persistence/dao/inner-thought.dao";
+import type { TodoItemQueryDao, TodoItemRow } from "@sparkle/persistence/dao/todo-item.dao";
 
 type OpsQueryHandlerDeps = {
   logDao: LogDao;

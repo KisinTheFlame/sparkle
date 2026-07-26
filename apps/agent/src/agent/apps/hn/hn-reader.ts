@@ -1,4 +1,4 @@
-import { truncateWithEllipsis } from "@kagami/kernel/utils/text";
+import { truncateWithEllipsis } from "@sparkle/kernel/utils/text";
 import { htmlToPlainText } from "./client/sanitize.js";
 import type { HnFeed, HnFirebaseClient, HnFirebaseItem } from "./client/firebase.js";
 import type {

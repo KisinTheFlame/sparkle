@@ -1,10 +1,10 @@
-import { type LlmChatCallItem } from "@kagami/console-api/llm-chat-call";
+import { type LlmChatCallItem } from "@sparkle/console-api/llm-chat-call";
 import { describe, expect, it } from "vitest";
 import { parseLlmChatCallDetail } from "@/pages/llm-history/llm-chat-call-detail-parser";
 
 // #573 起主 Agent 开了 adaptive thinking，request_payload 里 assistant 消息带 thinkingBlocks、
 // root 带 thinking 档位。契约 schema 是 .strict() 的：一旦哪天有人把这两个字段从
-// @kagami/llm-api/llm-chat 摘掉，前端就会当场退化成「结构化解析失败」红框、整个 LLM
+// @sparkle/llm-api/llm-chat 摘掉，前端就会当场退化成「结构化解析失败」红框、整个 LLM
 // 调用历史对主 Agent 全线失效（issue #577 就是这么炸的）。这两条测试钉住这个回归。
 
 function buildItem(requestPayload: Record<string, unknown>): LlmChatCallItem {

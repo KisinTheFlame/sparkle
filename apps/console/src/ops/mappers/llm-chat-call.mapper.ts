@@ -1,8 +1,8 @@
 import {
   type LlmChatCallDetailResponse,
   type LlmChatCallListResponse,
-} from "@kagami/console-api/llm-chat-call";
-import type { LlmChatCallWireDetail, LlmChatCallWireSummary } from "@kagami/llm-api/query";
+} from "@sparkle/console-api/llm-chat-call";
+import type { LlmChatCallWireDetail, LlmChatCallWireSummary } from "@sparkle/llm-api/query";
 
 type MapLlmChatCallListInput = {
   page: number;

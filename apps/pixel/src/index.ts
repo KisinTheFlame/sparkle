@@ -1,7 +1,7 @@
-import { runService } from "@kagami/kernel/http/service-runner";
+import { runService } from "@sparkle/kernel/http/service-runner";
 import { buildPixelServiceRuntime } from "./app/pixel-service-runtime.js";
 
-// kagami-pixel 进程：日志只走 stdout（同 spire/browser 卫星进程），由 PM2 的 pixel-out.log 承载。
+// sparkle-pixel 进程：日志只走 stdout（同 spire/browser 卫星进程），由 PM2 的 pixel-out.log 承载。
 runService({
   name: "pixel_service",
   source: "pixel-service-bootstrap",

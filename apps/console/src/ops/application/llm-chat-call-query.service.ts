@@ -2,7 +2,7 @@ import {
   type LlmChatCallDetailResponse,
   type LlmChatCallListQuery,
   type LlmChatCallListResponse,
-} from "@kagami/console-api/llm-chat-call";
+} from "@sparkle/console-api/llm-chat-call";
 
 export interface LlmChatCallQueryService {
   queryList(query: LlmChatCallListQuery): Promise<LlmChatCallListResponse>;

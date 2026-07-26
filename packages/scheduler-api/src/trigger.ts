@@ -1,4 +1,4 @@
-import { defineJsonRoute } from "@kagami/http/contract";
+import { defineJsonRoute } from "@sparkle/http/contract";
 import { z } from "zod";
 
 /**

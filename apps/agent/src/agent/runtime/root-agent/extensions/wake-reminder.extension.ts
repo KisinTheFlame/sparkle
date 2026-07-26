@@ -1,4 +1,4 @@
-import type { LoopAgentExtension } from "@kagami/agent-runtime";
+import type { LoopAgentExtension } from "@sparkle/agent-runtime";
 import type {
   RootAgentCompletion,
   RootAgentToolExecutionData,

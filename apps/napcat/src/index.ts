@@ -1,8 +1,8 @@
 import { closeDb } from "./infra/db/client.js";
-import { runService } from "@kagami/kernel/http/service-runner";
+import { runService } from "@sparkle/kernel/http/service-runner";
 import { buildNapcatRuntime } from "./app/napcat-runtime.js";
 
-// napcat 进程（kagami-napcat，issue #347）：独立 PM2 进程持有到 NapCat 的 WS 长连接，agent 重启
+// napcat 进程（sparkle-napcat，issue #347）：独立 PM2 进程持有到 NapCat 的 WS 长连接，agent 重启
 // 不打断它。日志只走 stdout（请求日志由 PM2 的 napcat-out.log 承载）。
 runService({
   name: "napcat",

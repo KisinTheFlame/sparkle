@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { LlmMessage } from "@kagami/llm";
+import type { LlmMessage } from "@sparkle/llm";
 import { BaseLoopAgent } from "../src/base-loop-agent.js";
 import type { LoopAgentExtension } from "../src/loop-agent-extension.js";
 import type {

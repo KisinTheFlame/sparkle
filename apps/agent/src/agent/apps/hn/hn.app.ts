@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { App, AppStartupContext } from "@kagami/agent-runtime";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import type { App, AppStartupContext } from "@sparkle/agent-runtime";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import { HnReader } from "./hn-reader.js";
 import { DefaultHnFirebaseClient } from "./client/firebase.js";
 import { DefaultHnAlgoliaClient } from "./client/algolia.js";
@@ -14,7 +14,7 @@ import { OpenHnUserTool } from "./tools/open-hn-user.tool.js";
 const HN_APP_ID = "hn";
 
 const DEFAULT_USER_AGENT =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Kagami/1.0";
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Sparkle/1.0";
 
 const PositiveInt = z.number().int().positive();
 
@@ -45,7 +45,7 @@ const HnConfigSchema = z
 type HnConfig = z.infer<typeof HnConfigSchema>;
 
 /**
- * Hacker News App。把 HN 的两个只读 API 包装成 Kagami 桌面上的一个能力单元。
+ * Hacker News App。把 HN 的两个只读 API 包装成 Sparkle 桌面上的一个能力单元。
  *
  * - 工具：glance_hn / open_hn_thread / search_hn / open_hn_user（全是 InvokeTool 子工具）。
  * - 自管 HnReader：onStartup 时按 config 实例化两个 client + service；工具通过闭包从 App 拿。

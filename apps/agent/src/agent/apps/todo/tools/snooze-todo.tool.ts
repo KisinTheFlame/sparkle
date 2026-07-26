@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@kagami/agent-runtime";
+import { ZodToolComponent, type ToolExecutionResult, type ToolKind } from "@sparkle/agent-runtime";
 import { InvalidTimeError } from "../../../capabilities/todo/application/parse-reminder-time.js";
 import type { TodoService } from "../../../capabilities/todo/application/todo.service.js";
 

@@ -1,32 +1,32 @@
 import { randomUUID } from "node:crypto";
 import Fastify, { type FastifyInstance } from "fastify";
 import { z } from "zod";
-import { InMemoryQueue } from "@kagami/agent-runtime";
-import { DefaultConfigManager } from "@kagami/kernel/config/config.impl.manager";
-import { loadStaticConfig } from "@kagami/kernel/config/config.loader";
-import { configureSqlite, createDbClient, type Database } from "@kagami/persistence/db/client";
-import { PrismaLogDao } from "@kagami/persistence/logger/dao/impl/log.impl.dao";
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { toHttpErrorResponse } from "@kagami/kernel/errors/http-error";
+import { InMemoryQueue } from "@sparkle/agent-runtime";
+import { DefaultConfigManager } from "@sparkle/kernel/config/config.impl.manager";
+import { loadStaticConfig } from "@sparkle/kernel/config/config.loader";
+import { configureSqlite, createDbClient, type Database } from "@sparkle/persistence/db/client";
+import { PrismaLogDao } from "@sparkle/persistence/logger/dao/impl/log.impl.dao";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { toHttpErrorResponse } from "@sparkle/kernel/errors/http-error";
 import { MainAgentContextHandler } from "../ops/http/main-agent-context.handler.js";
 import { OpsQueryHandler } from "../ops/http/ops-query.handler.js";
-import { PrismaInnerThoughtDao } from "@kagami/persistence/dao/impl/inner-thought.impl.dao";
-import { PrismaTodoItemDao } from "@kagami/persistence/dao/impl/todo-item.impl.dao";
-import { HealthHandler } from "@kagami/kernel/http/health.handler";
+import { PrismaInnerThoughtDao } from "@sparkle/persistence/dao/impl/inner-thought.impl.dao";
+import { PrismaTodoItemDao } from "@sparkle/persistence/dao/impl/todo-item.impl.dao";
+import { HealthHandler } from "@sparkle/kernel/http/health.handler";
 import { HttpLlmClient } from "../acl/http-llm-client.js";
 import { HttpImageClient } from "../acl/image-client.js";
 import { HttpNapcatClient } from "../acl/napcat-client.js";
 import { NapcatEventSubscriber, type NapcatCursorStore } from "../acl/napcat-event-subscriber.js";
 import { PrismaAppStateStore } from "../agent/runtime/app-state/prisma-app-state-store.js";
-import type { LlmProviderOption } from "@kagami/llm-api/llm-chat";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { initLoggerRuntime, withTraceContext } from "@kagami/kernel/logger/runtime";
-import { DbLogSink } from "@kagami/kernel/logger/sinks/db-sink";
-import { StdoutLogSink } from "@kagami/kernel/logger/sinks/stdout-sink";
+import type { LlmProviderOption } from "@sparkle/llm-api/llm-chat";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { initLoggerRuntime, withTraceContext } from "@sparkle/kernel/logger/runtime";
+import { DbLogSink } from "@sparkle/kernel/logger/sinks/db-sink";
+import { StdoutLogSink } from "@sparkle/kernel/logger/sinks/stdout-sink";
 import type { Event } from "../agent/runtime/event/event.js";
 import type { RootLoopAgent } from "../agent/runtime/root-agent/root-agent-runtime.js";
 import { buildIthomeScheduledTasks } from "../agent/capabilities/ithome/application/ithome-scheduled-tasks.js";
-import { SchedulerClient } from "@kagami/scheduler-client/scheduler-client";
+import { SchedulerClient } from "@sparkle/scheduler-client/scheduler-client";
 import { buildDataRetentionTasks } from "../agent/capabilities/data-retention/data-retention-scheduled-tasks.js";
 import { SchedulerTriggerCallbackHandler } from "./scheduler-trigger-callback.handler.js";
 import { AppStateOccurrenceStore } from "./app-state-occurrence-store.js";
@@ -49,10 +49,10 @@ import { buildTodoScheduledTasks } from "../agent/capabilities/todo/application/
 import { TodoReminderDraft } from "../agent/apps/todo/todo-reminder-draft.js";
 import { TodoDigestDraft } from "../agent/apps/todo/todo-digest-draft.js";
 import { NotificationCenter } from "../agent/runtime/root-agent/notification/notification-center.js";
-import { HttpMetricClient, type MetricClient } from "@kagami/metric-client/client";
+import { HttpMetricClient, type MetricClient } from "@sparkle/metric-client/client";
 import { buildAgentRuntime } from "./agent-runtime.factory.js";
 
-const TRACE_ID_HEADER_NAME = "X-Kagami-Trace-Id";
+const TRACE_ID_HEADER_NAME = "X-Sparkle-Trace-Id";
 const logger = new AppLogger({ source: "bootstrap" });
 
 type AppRouteHandler = {
@@ -62,7 +62,7 @@ type AppRouteHandler = {
 export type ServerRuntime = {
   app: FastifyInstance;
   database: Database;
-  /** 停入站 SSE 订阅后反序关停所有 App（napcat WS 生命周期已外移到 kagami-napcat 进程）。 */
+  /** 停入站 SSE 订阅后反序关停所有 App（napcat WS 生命周期已外移到 sparkle-napcat 进程）。 */
   shutdownApps: () => Promise<void>;
   schedulerClient: SchedulerClient;
   rootAgentRuntime: RootLoopAgent;
@@ -89,7 +89,7 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
   await configureSqlite(database);
 
   const logDao = new PrismaLogDao({ database });
-  // metric 打点改走独立 metric 服务（@kagami/metric）的 HTTP 摄取端点；地址取自 services.metric。
+  // metric 打点改走独立 metric 服务（@sparkle/metric）的 HTTP 摄取端点；地址取自 services.metric。
   const metricService = new HttpMetricClient({
     baseUrl: `http://${config.services.metric.host}:${config.services.metric.port}`,
   });
@@ -101,16 +101,16 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
   const ithomeFeedCursorDao = new PrismaIthomeFeedCursorDao({ database });
   const todoDao = new PrismaTodoDao({ database });
 
-  // LLM provider + OAuth 凭据中心已外移到独立 kagami-llm 进程（issue：多 Agent 共享网关）。
+  // LLM provider + OAuth 凭据中心已外移到独立 sparkle-llm 进程（issue：多 Agent 共享网关）。
   // agent 经 HttpLlmClient 直连它（地址从顶层 services.llm 派生），实现现有 LlmClient
   // 接口——下游 root-agent/vision/... 零改动。llm_chat_call 落库、auth callback/刷新全在
   // 服务侧，agent 不再碰。embedding 能力也在服务侧（将来记忆系统接线时按需在 agent 侧新建 client）。
   const llmServiceBaseUrl = `http://${config.services.llm.host}:${config.services.llm.port}`;
   const llmClient = new HttpLlmClient({ baseUrl: llmServiceBaseUrl });
-  // 生图走同一个 kagami-llm 进程的 /internal/generate-image（issue #508）。专用薄 client，不塞进
+  // 生图走同一个 sparkle-llm 进程的 /internal/generate-image（issue #508）。专用薄 client，不塞进
   // chat 语义的 LlmClient。给 atelier App 用。
   const imageClient = new HttpImageClient({ baseUrl: llmServiceBaseUrl });
-  // NapCat 拆成独立 kagami-napcat 进程（issue #347）：agent 经 HttpNapcatClient 出站（发消息 /
+  // NapCat 拆成独立 sparkle-napcat 进程（issue #347）：agent 经 HttpNapcatClient 出站（发消息 /
   // 群文件 / 群信息 / 禁言查询），地址从顶层 services.napcat 派生。入站事件走下面的 SSE 订阅者。
   // vision / OSS 图片存档 / 落库全在 napcat 侧，agent 不再持有。
   const napcatClient = new HttpNapcatClient({
@@ -123,23 +123,23 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
         baseUrl: `http://${config.services.oss.host}:${config.services.oss.port}`,
       })
     : undefined;
-  // 浏览器拆成独立 kagami-browser 进程（issue #173）：agent 经 HTTP client 调它，地址
+  // 浏览器拆成独立 sparkle-browser 进程（issue #173）：agent 经 HTTP client 调它，地址
   // 从顶层 services.browser 派生（host 是 reachable host）。浏览器进程未起时，client
   // 把错误归一成 BROWSER_NOT_READY，工具仍回规整失败结构。
   const browserClient = new HttpBrowserClient({
     baseUrl: `http://${config.services.browser.host}:${config.services.browser.port}`,
   });
-  // 尖塔卡牌游戏拆成独立 kagami-spire 进程（issue #234）：agent 经 HTTP client 调它，地址从
+  // 尖塔卡牌游戏拆成独立 sparkle-spire 进程（issue #234）：agent 经 HTTP client 调它，地址从
   // 顶层 services.spire 派生。游戏进程未起时，client 把错误归一成 SPIRE_NOT_READY，工具仍回规整失败结构。
   const spireClient = new HttpSpireClient({
     baseUrl: `http://${config.services.spire.host}:${config.services.spire.port}`,
   });
-  // 像素画拆成独立 kagami-pixel 进程（issue #365）：agent 经 HTTP client 调它，地址从顶层
+  // 像素画拆成独立 sparkle-pixel 进程（issue #365）：agent 经 HTTP client 调它，地址从顶层
   // services.pixel 派生。服务未起时，client 把错误归一成 PIXEL_NOT_READY，工具仍回规整失败结构。
   const pixelClient = new HttpPixelClient({
     baseUrl: `http://${config.services.pixel.host}:${config.services.pixel.port}`,
   });
-  // GBA 掌机拆成独立 kagami-gba 进程（issue #541）：agent 经 HTTP client 直连游玩面,地址从
+  // GBA 掌机拆成独立 sparkle-gba 进程（issue #541）：agent 经 HTTP client 直连游玩面,地址从
   // 顶层 services.gba 派生。服务未起时,client 把错误归一成 GBA_NOT_READY,工具仍回规整失败结构。
   const gbaClient = new HttpGbaClient({
     baseUrl: `http://${config.services.gba.host}:${config.services.gba.port}`,
@@ -189,7 +189,7 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
     imageClient,
   });
 
-  // 入站事件订阅：长连 kagami-napcat 的 SSE 流，解析事件喂 qqApp.handleNapcatEvent，处理成功后
+  // 入站事件订阅：长连 sparkle-napcat 的 SSE 流，解析事件喂 qqApp.handleNapcatEvent，处理成功后
   // 落持久游标（跨 agent 重启记住已消费到的 seq，重连带 Last-Event-ID 回放缺口）。游标复用
   // app_state 表（appId=napcat.cursor 存 { lastConsumedSeq }）。
   const napcatCursorStore = createNapcatCursorStore(new PrismaAppStateStore({ database }));
@@ -233,9 +233,9 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
     suggestTodos,
   });
 
-  // 定时调度拆成独立 kagami-scheduler 进程（issue #428）：agent 经 SchedulerClient 把任务集
+  // 定时调度拆成独立 sparkle-scheduler 进程（issue #428）：agent 经 SchedulerClient 把任务集
   // （name+schedule+补偿策略）注册给调度器、经 SSE 收 tick，handler（ithome/todo/data-retention 的
-  // 业务）留在本进程。occurrence 去重（digest）落 app_state。auth/usage 刷新此前已随 kagami-llm 外移。
+  // 业务）留在本进程。occurrence 去重（digest）落 app_state。auth/usage 刷新此前已随 sparkle-llm 外移。
   const schedulerClient = new SchedulerClient({
     baseUrl: `http://${config.services.scheduler.host}:${config.services.scheduler.port}`,
     ownerId: "agent",

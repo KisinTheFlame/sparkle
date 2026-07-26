@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
-import { registerJsonRoute } from "@kagami/http/register";
-import { napcatApiContract } from "@kagami/napcat-api/contract";
+import { registerJsonRoute } from "@sparkle/http/register";
+import { napcatApiContract } from "@sparkle/napcat-api/contract";
 import type { NapcatGatewayService } from "../application/napcat-gateway.service.js";
 
 type NapcatHandlerDeps = {
@@ -8,7 +8,7 @@ type NapcatHandlerDeps = {
 };
 
 /**
- * napcat 服务的出站 RPC handler：把 `@kagami/napcat-api` 契约的 12 个网关方法接到 Fastify。
+ * napcat 服务的出站 RPC handler：把 `@sparkle/napcat-api` 契约的 12 个网关方法接到 Fastify。
  * agent 经 HttpNapcatClient 调这些路由。发送类是纯透传——禁言检查目前仍在 agent 侧（发送前
  * 本地 muteStore 检查再调这里），故本层不做 mute 拦截（web 直连 napcat + 禁言态迁移属后续 PR）。
  *

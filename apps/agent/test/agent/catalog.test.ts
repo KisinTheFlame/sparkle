@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { ToolCatalog } from "@kagami/agent-runtime";
-import { type ToolComponent } from "@kagami/agent-runtime";
+import { ToolCatalog } from "@sparkle/agent-runtime";
+import { type ToolComponent } from "@sparkle/agent-runtime";
 
 function createToolComponent(name: string): ToolComponent {
   return {

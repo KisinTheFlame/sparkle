@@ -4,8 +4,8 @@ import type { InternalAuthProvider } from "../domain/auth-provider.js";
 
 /**
  * auth 对宿主数据库的最小结构端口（epic #539 子 issue 3）：只要求 oauth 两表的 Prisma
- * delegate 形状，不绑定任何具体 generated client——oauth 表归宿主（kagami-llm）的独占库，
- * 由宿主注入自己的 Prisma client 即可满足，auth 包对 @kagami/persistence 零依赖。
+ * delegate 形状，不绑定任何具体 generated client——oauth 表归宿主（sparkle-llm）的独占库，
+ * 由宿主注入自己的 Prisma client 即可满足，auth 包对 @sparkle/persistence 零依赖。
  */
 export type OAuthDatabase = {
   // 方法简写声明：TS 对 method 参数做双变检查，具体 Prisma delegate（参数为各自 Args 类型）

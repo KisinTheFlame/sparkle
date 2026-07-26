@@ -1,9 +1,9 @@
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import {
   NAPCAT_EVENTS_SSE_PATH,
   NapcatAgentEventSchema,
   type NapcatAgentEvent,
-} from "@kagami/napcat-api/event";
+} from "@sparkle/napcat-api/event";
 
 const logger = new AppLogger({ source: "agent.napcat-subscriber" });
 
@@ -28,7 +28,7 @@ type NapcatEventSubscriberDeps = {
 };
 
 /**
- * agent 侧入站事件订阅者（issue #347）：长连 kagami-napcat 的 `GET /napcat/events` SSE 流，解析
+ * agent 侧入站事件订阅者（issue #347）：长连 sparkle-napcat 的 `GET /napcat/events` SSE 流，解析
  * `id:<seq>\ndata:<event>\n\n` 帧，喂给 onEvent（QqApp.handleNapcatEvent），**处理成功后**落持久
  * 游标。断线自动重连（指数退避 1s→30s）+ 30s 无帧的半开检测（主动 abort 重连），重连带
  * Last-Event-ID 让 napcat 回放缺口。按 seq 单调去重（seq <= 已消费则丢弃），配合 napcat 侧

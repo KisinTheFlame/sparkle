@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ZodToolComponent, type ToolKind } from "@kagami/agent-runtime";
+import { ZodToolComponent, type ToolKind } from "@sparkle/agent-runtime";
 import type { TerminalService } from "../application/terminal.service.js";
 
 export const BASH_TOOL_NAME = "bash";

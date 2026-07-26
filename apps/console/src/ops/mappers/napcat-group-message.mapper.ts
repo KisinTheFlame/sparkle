@@ -1,5 +1,5 @@
-import { type NapcatQqMessageListResponse } from "@kagami/console-api/napcat-group-message";
-import type { NapcatQqMessageWireItem } from "@kagami/napcat-api/query";
+import { type NapcatQqMessageListResponse } from "@sparkle/console-api/napcat-group-message";
+import type { NapcatQqMessageWireItem } from "@sparkle/napcat-api/query";
 
 type MapNapcatQqMessageListInput = {
   page: number;

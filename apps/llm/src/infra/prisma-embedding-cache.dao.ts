@@ -3,7 +3,7 @@ import type {
   EmbeddingCacheDao,
   EmbeddingCacheKey,
   EmbeddingCacheRecord,
-} from "@kagami/llm-client/embedding";
+} from "@sparkle/llm-client/embedding";
 
 export class PrismaEmbeddingCacheDao implements EmbeddingCacheDao {
   private readonly database: Database;

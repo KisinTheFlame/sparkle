@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { initLoggerRuntime } from "@kagami/kernel/logger/runtime";
+import { initLoggerRuntime } from "@sparkle/kernel/logger/runtime";
 import { SchedulerEngine } from "../src/application/scheduler-engine.js";
 import { TickBroadcaster, type TickSubscriber } from "../src/application/tick-broadcaster.js";
 

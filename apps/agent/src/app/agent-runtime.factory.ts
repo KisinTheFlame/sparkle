@@ -9,13 +9,13 @@ import {
   type Queue,
   type ToolComponent,
   type ToolExecutor,
-} from "@kagami/agent-runtime";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import type { Config } from "@kagami/kernel/config/config.loader";
-import type { Database } from "@kagami/persistence/db/client";
-import { PrismaInnerThoughtDao } from "@kagami/persistence/dao/impl/inner-thought.impl.dao";
-import type { LlmClient } from "@kagami/llm-client";
-import type { MetricClient } from "@kagami/metric-client/client";
+} from "@sparkle/agent-runtime";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import type { Config } from "@sparkle/kernel/config/config.loader";
+import type { Database } from "@sparkle/persistence/db/client";
+import { PrismaInnerThoughtDao } from "@sparkle/persistence/dao/impl/inner-thought.impl.dao";
+import type { LlmClient } from "@sparkle/llm-client";
+import type { MetricClient } from "@sparkle/metric-client/client";
 import type { NapcatClient } from "../acl/napcat-client.js";
 import type { IthomeService } from "../agent/capabilities/ithome/application/ithome.service.js";
 import type { MainAgentContextQueryService } from "../ops/application/main-agent-context-query.service.js";
@@ -81,7 +81,7 @@ type BuildAgentRuntimeInput = {
   database: Database;
   llmClient: LlmClient;
   metricService: MetricClient;
-  /** QQ 出站门面：打到独立的 kagami-napcat 进程（issue #347）。入站由 server-runtime 的订阅者注入。 */
+  /** QQ 出站门面：打到独立的 sparkle-napcat 进程（issue #347）。入站由 server-runtime 的订阅者注入。 */
   napcatClient: NapcatClient;
   ithomeService: IthomeService;
   todoService: TodoService;
@@ -89,14 +89,14 @@ type BuildAgentRuntimeInput = {
   eventQueue: Queue<Event>;
   /** 自建对象存储客户端；缺省（server.oss 未配）时资源读取/发送/截图落 OSS 优雅降级。 */
   ossClient?: OssClient;
-  /** 浏览器动作客户端：打到独立的 kagami-browser 进程（issue #173）。 */
+  /** 浏览器动作客户端：打到独立的 sparkle-browser 进程（issue #173）。 */
   browserClient: BrowserClient;
-  /** 尖塔游戏动作客户端：打到独立的 kagami-spire 进程（issue #234）。 */
+  /** 尖塔游戏动作客户端：打到独立的 sparkle-spire 进程（issue #234）。 */
   spireClient: SpireClient;
   gbaClient: GbaClient;
-  /** 像素画动作客户端：打到独立的 kagami-pixel 进程（issue #365）。 */
+  /** 像素画动作客户端：打到独立的 sparkle-pixel 进程（issue #365）。 */
   pixelClient: PixelClient;
-  /** 生图客户端：打到 kagami-llm 的生图端点（走 codex 订阅额度，issue #508）。 */
+  /** 生图客户端：打到 sparkle-llm 的生图端点（走 codex 订阅额度，issue #508）。 */
   imageClient: ImageClient;
 };
 
@@ -321,7 +321,7 @@ export async function buildAgentRuntime({
   const helpTool = new HelpTool({
     appManager,
     getCurrentApp: () => rootAgentSession.getCurrentApp(),
-    // 导航语义（怎么进入 App）是 Kagami 的，不属于通用内核：文案在这里注入。
+    // 导航语义（怎么进入 App）是 Sparkle 的，不属于通用内核：文案在这里注入。
     notInAppHint:
       "你不在任何 App 里。先用 switch 进入一个 App，再调用 help 查看那个 App 能做什么；有哪些 App 见系统说明里的 App 列表。",
     appNotFoundHint: (appId: string) =>

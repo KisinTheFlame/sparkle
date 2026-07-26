@@ -1,20 +1,20 @@
 {
-  "name": "@kagami/metric",
+  "name": "@sparkle/metric",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "pretest": "pnpm --filter \"@kagami/metric^...\" build",
+    "pretest": "pnpm --filter \"@sparkle/metric^...\" build",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@duckdb/node-api": "1.5.4-r.1",
-    "@kagami/http": "workspace:*",
-    "@kagami/kernel": "workspace:*",
-    "@kagami/metric-api": "workspace:*",
+    "@sparkle/http": "workspace:*",
+    "@sparkle/kernel": "workspace:*",
+    "@sparkle/metric-api": "workspace:*",
     "fastify": "^5.6.2",
     "zod": "^3.24.4"
   },

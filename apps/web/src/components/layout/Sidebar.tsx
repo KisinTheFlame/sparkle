@@ -19,7 +19,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
     >
       <div className="flex h-14 items-center border-b border-sidebar-active/20 px-4">
         <span className="font-serif text-xl font-semibold tracking-tight text-sidebar-brand">
-          鏡 Kagami
+          Sparkle
         </span>
       </div>
       <nav className="flex flex-col gap-1 p-2">

@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { JsonRecordSchema } from "@kagami/http/wire";
+import { JsonRecordSchema } from "@sparkle/http/wire";
 
 /**
  * console 只读查询的 wire schema（epic #539 子 issue 3：console 脱库，llm_chat_call 经本契约查询）。
  *
- * 形状与 @kagami/console-api 的 llm-chat-call response 逐字段对齐（ISO 字符串时间、payload 为
+ * 形状与 @sparkle/console-api 的 llm-chat-call response 逐字段对齐（ISO 字符串时间、payload 为
  * JSON record），让 console 侧成为纯转发聚合层：DB Date → ISO 的序列化归 llm handler。
  * 服务间 POST JSON，page/pageSize 是真数字；pageSize 上限与 console-api 的 100 对齐。
  */

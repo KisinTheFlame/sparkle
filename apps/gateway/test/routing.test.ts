@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { selectFrontDoor, selectUpstreamKey } from "../src/routing.js";
 
-// 前门三分岔的边界回归（#578：静态托管移交 kagami-web 后，网关只剩 自答 / 分流 / 转 web 三条路）。
+// 前门三分岔的边界回归（#578：静态托管移交 sparkle-web 后，网关只剩 自答 / 分流 / 转 web 三条路）。
 describe("selectFrontDoor", () => {
   it("/health 由网关自答，不转给 web", () => {
     // 探的是前门自身活性；转给 web 会让 web 挂了时网关也显示不健康，误导监控。

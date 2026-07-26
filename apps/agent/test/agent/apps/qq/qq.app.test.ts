@@ -3,11 +3,11 @@ import { QqApp } from "../../../../src/agent/apps/qq/qq.app.js";
 import { GroupMuteStateStore } from "../../../../src/agent/capabilities/messaging/application/group-mute-state.store.js";
 import { NotificationCenter } from "../../../../src/agent/runtime/root-agent/notification/notification-center.js";
 import type { NotificationScheduler } from "../../../../src/agent/runtime/root-agent/notification/notification-scheduler.js";
-import type { ToolComponent } from "@kagami/agent-runtime";
-import type { NapcatGroupBanData } from "@kagami/napcat-api/event";
-import type { NapcatGroupMessageData } from "@kagami/napcat-api/message";
+import type { ToolComponent } from "@sparkle/agent-runtime";
+import type { NapcatGroupBanData } from "@sparkle/napcat-api/event";
+import type { NapcatGroupMessageData } from "@sparkle/napcat-api/message";
 import type { NapcatClient } from "../../../../src/acl/napcat-client.js";
-import type { NapcatReceiveMessageSegment } from "@kagami/napcat-api/segment";
+import type { NapcatReceiveMessageSegment } from "@sparkle/napcat-api/segment";
 import { initTestLoggerRuntime } from "../../../helpers/logger.js";
 
 initTestLoggerRuntime();
@@ -161,7 +161,7 @@ describe("QqApp", () => {
     });
   });
 
-  // napcat 拆成独立进程后（issue #347），QQ App 不再持有网关生命周期（WS 归 kagami-napcat，
+  // napcat 拆成独立进程后（issue #347），QQ App 不再持有网关生命周期（WS 归 sparkle-napcat，
   // 入站订阅 + 关停归 server-runtime）。原「owns the napcat gateway lifecycle」用例随之删除。
 
   it("pushes a chat notification on an incoming group message", async () => {

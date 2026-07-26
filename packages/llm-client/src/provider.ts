@@ -1,4 +1,4 @@
-import type { LlmProviderId } from "@kagami/llm";
+import type { LlmProviderId } from "@sparkle/llm";
 import type { LlmChatRequest, LlmChatResponsePayload } from "./types.js";
 
 export type LlmProviderChatResult = {

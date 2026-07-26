@@ -1,6 +1,6 @@
-import type { SchedulerTaskSchedule } from "@kagami/scheduler-api/schedule";
-import type { SchedulerTaskView, SchedulerTaskViewRun } from "@kagami/scheduler-api/tasks-view";
-import type { SchedulerTriggerResponse } from "@kagami/scheduler-api/trigger";
+import type { SchedulerTaskSchedule } from "@sparkle/scheduler-api/schedule";
+import type { SchedulerTaskView, SchedulerTaskViewRun } from "@sparkle/scheduler-api/tasks-view";
+import type { SchedulerTriggerResponse } from "@sparkle/scheduler-api/trigger";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,7 +40,7 @@ export function SchedulerTasksPage() {
 
       {query.isError ? (
         <p className="mt-3 text-sm text-destructive">
-          调度任务查询失败，请检查 kagami-scheduler 是否运行（GET /scheduler/tasks）。
+          调度任务查询失败，请检查 sparkle-scheduler 是否运行（GET /scheduler/tasks）。
         </p>
       ) : null}
 

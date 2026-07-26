@@ -1,4 +1,4 @@
-import type { LlmChatCallObservation } from "@kagami/llm-client";
+import type { LlmChatCallObservation } from "@sparkle/llm-client";
 import type { LlmChatCallDao } from "../infra/llm-chat-call.dao.js";
 
 /**

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { AsyncTaskManager, type AsyncTaskCompletion } from "@kagami/agent-runtime";
+import { AsyncTaskManager, type AsyncTaskCompletion } from "@sparkle/agent-runtime";
 import { createAtelierGenerateTool } from "../../../../src/agent/capabilities/atelier/tools/generate.tool.js";
 import type { ImageClient } from "../../../../src/acl/image-client.js";
 import type { OssClient } from "../../../../src/acl/oss-client.js";

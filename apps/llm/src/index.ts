@@ -1,15 +1,15 @@
 import { closeDb } from "./infra/db/client.js";
-import { runService } from "@kagami/kernel/http/service-runner";
+import { runService } from "@sparkle/kernel/http/service-runner";
 import { buildLlmServiceRuntime } from "./app/llm-service-runtime.js";
 
-// kagami-llm 进程：日志只走 stdout（同 browser/oss 卫星进程），请求日志由 PM2 的
+// sparkle-llm 进程：日志只走 stdout（同 browser/oss 卫星进程），请求日志由 PM2 的
 // llm-out.log 承载。对 DB 的写只有 llm_chat_call / auth 表 / embedding_cache（数据，非日志）。
 runService({
   name: "llm_service",
   source: "llm-service-bootstrap",
   build: async () => {
     const runtime = await buildLlmServiceRuntime();
-    // 后台注册 + 订阅 kagami-scheduler tick（每日 Claude Files 缓存 GC，#433）。非阻塞：
+    // 后台注册 + 订阅 sparkle-scheduler tick（每日 Claude Files 缓存 GC，#433）。非阻塞：
     // scheduler 连不上时内部指数退避重连，不影响 /internal/chat 主服务。
     runtime.schedulerClient.start();
     return {

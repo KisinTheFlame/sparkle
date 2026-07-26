@@ -1,14 +1,14 @@
 import type { FastifyInstance } from "fastify";
-import { registerJsonRoute } from "@kagami/http/register";
-import { llmApiContract } from "@kagami/llm-api/contract";
-import type { LlmProviderId } from "@kagami/llm";
-import type { LlmUsageId } from "@kagami/kernel/contracts/llm";
-import type { LlmClient, LlmChatRequest } from "@kagami/llm-client";
-import type { EmbeddingClient, EmbeddingRequest } from "@kagami/llm-client/embedding";
-import type { ImageClient, ImageGenerationRequest } from "@kagami/llm-client/image";
-import type { GenerateImageResult } from "@kagami/llm-api/image";
+import { registerJsonRoute } from "@sparkle/http/register";
+import { llmApiContract } from "@sparkle/llm-api/contract";
+import type { LlmProviderId } from "@sparkle/llm";
+import type { LlmUsageId } from "@sparkle/kernel/contracts/llm";
+import type { LlmClient, LlmChatRequest } from "@sparkle/llm-client";
+import type { EmbeddingClient, EmbeddingRequest } from "@sparkle/llm-client/embedding";
+import type { ImageClient, ImageGenerationRequest } from "@sparkle/llm-client/image";
+import type { GenerateImageResult } from "@sparkle/llm-api/image";
 
-// Agent-facing 内部 RPC，全量走 @kagami/llm-api 契约（单一事实源，与 agent 侧 createClient 共享 schema）。
+// Agent-facing 内部 RPC，全量走 @sparkle/llm-api 契约（单一事实源，与 agent 侧 createClient 共享 schema）。
 // chat/chat-direct/embed 的 request 是可信内部契约（agent 直连、仅 localhost）的复杂 union（LlmMessage/
 // Tool/EmbeddingRequest），契约刻意用 z.unknown() 只校验信封、透传后按类型断言——见 llm-api/contract。
 // 抛出的 BizError 由 runtime setErrorHandler 统一序列化成富错误信封，agent 侧据此重建 BizError。

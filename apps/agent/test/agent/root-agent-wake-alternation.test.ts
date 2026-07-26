@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { LlmMessage } from "@kagami/llm-client";
+import type { LlmMessage } from "@sparkle/llm-client";
 import { RootAgentHost } from "../../src/agent/runtime/root-agent/root-agent-runtime.js";
 
 /**

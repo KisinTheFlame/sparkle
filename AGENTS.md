@@ -12,7 +12,7 @@
 
 ## 阅读路径（按任务选）
 
-- 第一次上手，想理解 Kagami 是什么 → 本文「项目理念」+ README.md
+- 第一次上手，想理解 Sparkle 是什么 → 本文「项目理念」+ README.md
 - **动手写任何新 capability / tool / task agent 之前** → 本文「开发原则：KV 缓存命中率优先」（必读，含三个参考实现）
 - 找代码放哪、模块怎么依赖 → ARCHITECTURE.md
 - 改配置或 DB schema、跑迁移 → 本文「硬约束」+ docs/configuration.md
@@ -21,7 +21,7 @@
 
 ## 项目理念（必读）
 
-Kagami **不是一个 QQ 群聊机器人**，而是一个**拥有自己生活的 Agent**。
+Sparkle **不是一个 QQ 群聊机器人**，而是一个**拥有自己生活的 Agent**。
 
 群聊只是她生活的一部分，就像一个人不会把自己定义为"聊天的人"。只要给她足够多的能力（capability），她就可以像一个真正的人那样，去读新闻、去记住发生过的事、去主动做自己感兴趣的事。项目的核心概念是 **Agent as a life**：
 
@@ -50,14 +50,14 @@ Kagami **不是一个 QQ 群聊机器人**，而是一个**拥有自己生活的
 
 ### 工具组织：InvokeTool 是顶层工具集的稳定壳
 
-`InvokeTool` 是 Kagami 工具系统不可动摇的结构性支柱。它本身是一个 meta-tool，只接 `name` 和 `args` 两个参数，但内部承载所有 capability / App 的具体工具。这样设计的关键收益是：**LLM API 的 tools 列表始终只有少数几个顶层工具**（`switch` / `wait` / `invoke` / `help` 这一类结构 / 能力级元工具），从启动到关停不变，不论项目里有多少 capability、多少 App 都不影响。（App 名单本身每轮由主循环渲染进 system prompt，让 Agent 天然知道有哪些 App 可切；靠「App 集合进程内不可变」这条不变量保证每轮字节恒定、前缀不漂移，名单只在增删 App 时变、必然伴随重启。）
+`InvokeTool` 是 Sparkle 工具系统不可动摇的结构性支柱。它本身是一个 meta-tool，只接 `name` 和 `args` 两个参数，但内部承载所有 capability / App 的具体工具。这样设计的关键收益是：**LLM API 的 tools 列表始终只有少数几个顶层工具**（`switch` / `wait` / `invoke` / `help` 这一类结构 / 能力级元工具），从启动到关停不变，不论项目里有多少 capability、多少 App 都不影响。（App 名单本身每轮由主循环渲染进 system prompt，让 Agent 天然知道有哪些 App 可切；靠「App 集合进程内不可变」这条不变量保证每轮字节恒定、前缀不漂移，名单只在增删 App 时变、必然伴随重启。）
 
 如果不通过 InvokeTool，每加一个工具都要在 LLM 的 tools 参数里多一个 entry，这是稳定前缀的一部分，意味着每加一个新工具都会让所有进行中的会话从零换入。InvokeTool 把"加新东西就触发一次前缀失效"的代价从"每加一个工具一次"压缩到"几乎不会发生"。
 
 具体工具的能力 / 参数 / 用法有两种披露方式：
 
 - **早期方案**：把全部子工具的文档塞进 InvokeTool 自己的 description 里。前缀里有完整子工具索引，但加新子工具会改 InvokeTool description 一次（仍然比加顶层工具便宜）。
-- **渐进式披露**（App 框架的目标）：前缀里几乎不写子工具信息，Kagami 通过 `enter(<appId>)` + `help` 两个动作在运行时按需探索能做什么。每个 App 的工具只在 Kagami 真正"进入"该 App 时通过 help 询问才会被披露。前缀对 App 数量完全不敏感。
+- **渐进式披露**（App 框架的目标）：前缀里几乎不写子工具信息，Sparkle 通过 `enter(<appId>)` + `help` 两个动作在运行时按需探索能做什么。每个 App 的工具只在 Sparkle 真正"进入"该 App 时通过 help 询问才会被披露。前缀对 App 数量完全不敏感。
 
 写新 capability 或 App 时记住：**任何想暴露给 Agent 的能力，第一反应都应该是"做成 InvokeTool 的子工具"，而不是"加一个顶层工具"**。新增顶层工具需要明确的设计理由：它必须是结构性的元能力（像 switch / help 这种调度 / 导航工具），而不是某个具体业务能力。
 
@@ -118,7 +118,7 @@ pnpm knip
 完整的包拓扑与模块 DAG 见 [ARCHITECTURE.md](./ARCHITECTURE.md)。写代码时守住这几条边界：
 
 - 后端 `apps/agent` 用「扁平模块 + 模块内分层」（`domain / application / infra / http`）。新代码放进所属模块，从模块根入口或分层路径导入；**不要**新增全局 `handler / service / dao / event / tools / rag` 风格目录。
-- 通用 Agent Runtime 内核放 `packages/agent-runtime`（`TaskAgent` / `Tool` / `App` 框架；原 `Operation` 概念已退役，一次性子任务一律做成 TaskAgent + 终止工具）；**不要**把 NapCat 事件模型、Kagami system prompt、`RootAgentRuntime`、具体 capability 塞进去。Kagami 项目语义放 `apps/agent/src/agent`。
+- 通用 Agent Runtime 内核放 `packages/agent-runtime`（`TaskAgent` / `Tool` / `App` 框架；原 `Operation` 概念已退役，一次性子任务一律做成 TaskAgent + 终止工具）；**不要**把 NapCat 事件模型、Sparkle system prompt、`RootAgentRuntime`、具体 capability 塞进去。Sparkle 项目语义放 `apps/agent/src/agent`。
 - `apps/agent/src/agent` 按 `runtime / capabilities / apps` 分层；新实现只进 `runtime/` 或 `capabilities/`，不要回填旧风格的 `agents / service / dao / tools/*` 目录。
 - `Tool` 只是上层调用入口，不承载能力本体；业务语义放 capability service / task-agent。
 - 群聊相关逻辑只属于 `messaging` capability，不要扩散到 runtime 或其他 capability。
@@ -134,7 +134,7 @@ pnpm format       # Prettier 检查（format:write 自动格式化）
 pnpm knip         # 死代码/僵尸依赖审计。CI 门禁分级：孤儿文件/未用依赖/未声明依赖为 error（卡 CI），
                   # 未用 export / type 仅 warn（进报告不卡 CI，配置见 knip.json）。需先 pnpm build（解析跨包 dist）
 
-pnpm --filter @kagami/agent <script>   # 单包命令，如 test / test:watch / db:*
+pnpm --filter @sparkle/agent <script>   # 单包命令，如 test / test:watch / db:*
 
 pnpm app:deploy                        # 全量部署：build → prisma migrate deploy → PM2 reload(全部) → pm2 save
 pnpm app:deploy <agent|console|gateway|web|oss|browser|llm|metric|spire|pixel|gba|napcat|scheduler>  # 单服务：只重建重载该服务，不跑迁移、不动其它进程
@@ -156,7 +156,7 @@ pnpm app:stop <agent|console|gateway|web|oss|browser|llm|metric|spire|pixel|gba|
 
 **导入约定**：
 
-- 各 `*-api` 契约包与 `@kagami/http` **不提供根 barrel**，用显式子路径导入（`@kagami/http/wire`、`@kagami/console-api/app-log`）；需要 Zod 从 `zod` 导入。原 `@kagami/shared` 已退役（#279）：wire 基元在 `@kagami/http/wire`，各服务 wire schema 在其 `*-api` 包，通用文本工具在 `@kagami/kernel/utils/*`。
+- 各 `*-api` 契约包与 `@sparkle/http` **不提供根 barrel**，用显式子路径导入（`@sparkle/http/wire`、`@sparkle/console-api/app-log`）；需要 Zod 从 `zod` 导入。原 `@sparkle/shared` 已退役（#279）：wire 基元在 `@sparkle/http/wire`，各服务 wire schema 在其 `*-api` 包，通用文本工具在 `@sparkle/kernel/utils/*`。
 - 新代码不要新增 re-export / barrel 文件，优先直接导入真实实现路径或包的显式子路径。
 - 后端构造函数统一用对象参数风格（`{ dep1, dep2 }`）。
 
@@ -174,14 +174,14 @@ pnpm app:stop <agent|console|gateway|web|oss|browser|llm|metric|spire|pixel|gba|
 进程拓扑与端口见 [ARCHITECTURE.md](./ARCHITECTURE.md)「部署」。操作层面：
 
 - `pnpm app:deploy`（无参）= 全量：build → Prisma 迁移 → PM2 reload/startOrReload → `pm2 save`。**涉及 DB schema 变更必须走这个**（会跑 `prisma migrate deploy`）。
-- `pnpm app:deploy <服务名>` = 单服务：只重建重载该服务。改单个服务时优先用它——重载 `console` / `gateway` / `web` / `browser` / `llm` / `metric` / `spire` / `pixel` / `gba` / `napcat` / `scheduler` 不会打断 `kagami-agent` 的热状态（KV 缓存前缀、HNSW 索引、活内存），符合 KV 缓存优先。
-- `web` 自 #578 起是**真服务**（`kagami-web`，管理台前端独立进程，自持静态托管），不再是 `gateway` 的弃用别名。改前端用 `pnpm app:deploy web`，它不动网关；改网关用 `pnpm app:deploy gateway`，它不重建前端。
-- `kagami-browser` / `kagami-llm` / `kagami-metric` 是独立进程，`app:deploy agent` 不触及它们，让「agent 重启不杀浏览器 / 不打断 LLM 服务与登录态 / 不丢 metric 通道」。metric 摄取是 fire-and-forget，服务挂掉只丢点、不影响 agent。
+- `pnpm app:deploy <服务名>` = 单服务：只重建重载该服务。改单个服务时优先用它——重载 `console` / `gateway` / `web` / `browser` / `llm` / `metric` / `spire` / `pixel` / `gba` / `napcat` / `scheduler` 不会打断 `sparkle-agent` 的热状态（KV 缓存前缀、HNSW 索引、活内存），符合 KV 缓存优先。
+- `web` 自 #578 起是**真服务**（`sparkle-web`，管理台前端独立进程，自持静态托管），不再是 `gateway` 的弃用别名。改前端用 `pnpm app:deploy web`，它不动网关；改网关用 `pnpm app:deploy gateway`，它不重建前端。
+- `sparkle-browser` / `sparkle-llm` / `sparkle-metric` 是独立进程，`app:deploy agent` 不触及它们，让「agent 重启不杀浏览器 / 不打断 LLM 服务与登录态 / 不丢 metric 通道」。metric 摄取是 fire-and-forget，服务挂掉只丢点、不影响 agent。
 
 ## 部署红线（用户硬约束）
 
 - **未经用户明确要求，绝不自行执行 `pnpm app:deploy` 或任何部署动作。**
-- gstack 的 `/land-and-deploy` **仅用于合并 PR**：跑到合并 PR（Step 4）即停，绝不进入后续的自动部署（Step 5/6）与 canary（Step 7）。它默认的「merge → 自动 deploy」尾巴与 Kagami 的本地 PM2 模型不匹配，必须砍掉。
+- gstack 的 `/land-and-deploy` **仅用于合并 PR**：跑到合并 PR（Step 4）即停，绝不进入后续的自动部署（Step 5/6）与 canary（Step 7）。它默认的「merge → 自动 deploy」尾巴与 Sparkle 的本地 PM2 模型不匹配，必须砍掉。
 - 部署一律单独走 `pnpm app:deploy`，且只在用户当轮明确要求时执行。
 
 # gstack
@@ -214,12 +214,12 @@ Key routing rules:
 ## Deploy Configuration (configured by /setup-deploy)
 
 - Platform: 本地宿主机（PM2 fork 模式，无任何云平台 / PaaS）
-- Production URL: http://localhost:20003（agent）、http://localhost:20004（kagami-gateway：纯反代，/api 分流后端 + 其余转 kagami-web）
+- Production URL: http://localhost:20003（agent）、http://localhost:20004（sparkle-gateway：纯反代，/api 分流后端 + 其余转 sparkle-web）
 - Deploy workflow: 手动触发，无自动 push 部署
 - Deploy status command: pm2 status / pm2 list
 - Merge method: PR merge（主分支 master）
 - Project type: 后端 Agent 服务 + React 管理台（monorepo）
-- Post-deploy health check: curl http://localhost:20003/health（agent）、http://localhost:20004/health（gateway 前门自答）、http://127.0.0.1:20016/health（kagami-web 自身）。**三个都要探**：gateway 的 /health 由它自答，`kagami-web` 挂掉时它照样返回 200，只探网关会得到假绿（前端已全 502 却判部署成功）。要一条命令覆盖整链，改探 gateway 根路径 `curl -sf -H 'Accept: text/html' http://localhost:20004/` —— 它会穿到 web。
+- Post-deploy health check: curl http://localhost:20003/health（agent）、http://localhost:20004/health（gateway 前门自答）、http://127.0.0.1:20016/health（sparkle-web 自身）。**三个都要探**：gateway 的 /health 由它自答，`sparkle-web` 挂掉时它照样返回 200，只探网关会得到假绿（前端已全 502 却判部署成功）。要一条命令覆盖整链，改探 gateway 根路径 `curl -sf -H 'Accept: text/html' http://localhost:20004/` —— 它会穿到 web。
 
 ### Custom deploy hooks
 

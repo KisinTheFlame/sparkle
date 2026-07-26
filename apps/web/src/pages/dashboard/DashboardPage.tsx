@@ -1,4 +1,4 @@
-import { type MetricChartBucket, METRIC_CHART_MAX_POINTS } from "@kagami/metric-api/chart";
+import { type MetricChartBucket, METRIC_CHART_MAX_POINTS } from "@sparkle/metric-api/chart";
 import { RefreshCw } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";

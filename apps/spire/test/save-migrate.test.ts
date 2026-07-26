@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SpireScreenSchema } from "@kagami/spire-api/contract";
+import { SpireScreenSchema } from "@sparkle/spire-api/contract";
 import { newRun } from "@kisinwen/sts-engine/engine/engine";
 import { startCombat } from "@kisinwen/sts-engine/engine/combat/combat";
 import { toScreenView } from "../src/application/state-view.js";

@@ -1,7 +1,7 @@
-import type { AsyncTaskCompletion } from "@kagami/agent-runtime";
-import type { LlmContentPart, LlmMessage } from "@kagami/llm-client";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
-import { BEIJING_TIME_ZONE } from "@kagami/kernel/utils/time";
+import type { AsyncTaskCompletion } from "@sparkle/agent-runtime";
+import type { LlmContentPart, LlmMessage } from "@sparkle/llm-client";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
+import { BEIJING_TIME_ZONE } from "@sparkle/kernel/utils/time";
 
 type UserMessage = Extract<LlmMessage, { role: "user" }>;
 

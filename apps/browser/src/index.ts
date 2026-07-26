@@ -1,4 +1,4 @@
-import { runService } from "@kagami/kernel/http/service-runner";
+import { runService } from "@sparkle/kernel/http/service-runner";
 import { buildBrowserRuntime } from "./app/browser-runtime.js";
 
 // 浏览器进程：日志只走 stdout（零持久化，不碰任何 DB），

@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   MAIN_AGENT_CONTEXT_COMPRESS_RATIO_MAX,
   MAIN_AGENT_CONTEXT_COMPRESS_RATIO_MIN,
-} from "@kagami/agent-api/main-agent-context";
+} from "@sparkle/agent-api/main-agent-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

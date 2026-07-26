@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# 参数化：默认指向持久化包 @kagami/persistence 及其 server.databaseUrl，保持既有调用行为不变。
+# 参数化：默认指向持久化包 @sparkle/persistence 及其 server.databaseUrl，保持既有调用行为不变。
 # scheduler 有独立 Prisma 库（issue #493），通过覆盖这两个环境变量复用同一脚本：
 #   PRISMA_PACKAGE_DIR：Prisma schema / migrations / 生成 client 所在包目录（相对仓库根）。
 #   PRISMA_CONFIG_KEY ：连库命令（migrate / db push 等）读取 databaseUrl 的 config.yaml dot path。

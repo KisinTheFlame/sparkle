@@ -1,13 +1,13 @@
 import type { FastifyInstance } from "fastify";
-import { registerJsonRoute } from "@kagami/http/register";
-import { consoleApiContract } from "@kagami/console-api/contract";
+import { registerJsonRoute } from "@sparkle/http/register";
+import { consoleApiContract } from "@sparkle/console-api/contract";
 import type { TodoQueryService } from "../application/todo-query.service.js";
 
 type TodoHandlerDeps = {
   todoQueryService: TodoQueryService;
 };
 
-/** Todo 只读查询路由。路由与 schema 的单一事实源在 @kagami/console-api。 */
+/** Todo 只读查询路由。路由与 schema 的单一事实源在 @sparkle/console-api。 */
 export class TodoHandler {
   private readonly todoQueryService: TodoQueryService;
 

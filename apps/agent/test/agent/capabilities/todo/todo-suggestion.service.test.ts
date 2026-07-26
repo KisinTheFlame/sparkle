@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { llmUpstreamCallFailedError, type LlmClient } from "@kagami/llm-client";
-import { createUnguardedSubtoolOwner, ToolCatalog } from "@kagami/agent-runtime";
+import { llmUpstreamCallFailedError, type LlmClient } from "@sparkle/llm-client";
+import { createUnguardedSubtoolOwner, ToolCatalog } from "@sparkle/agent-runtime";
 import {
   InvokeTool,
   INVOKE_TOOL_NAME,

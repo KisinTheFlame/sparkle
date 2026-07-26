@@ -202,7 +202,7 @@ function createProviderConfig(
     // 现有黑盒测试都发文本、且不注入 fileCacheDao → File API 分支短路，逐字节走 base64 旧路。
     // 默认对齐生产（true）；图片相关行为由文件末尾的 File API 专项 describe 覆盖。
     useFileApi: true,
-    // GC 配置：provider 本身不消费（GC 在 kagami-llm 侧的 scheduler task），仅为满足 config 类型。
+    // GC 配置：provider 本身不消费（GC 在 sparkle-llm 侧的 scheduler task），仅为满足 config 类型。
     fileCacheGcEnabled: true,
     fileCacheGcMaxIdleDays: 3,
     fileCacheGcMaxDeletionsPerRun: 2000,

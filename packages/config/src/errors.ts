@@ -8,9 +8,9 @@ type ConfigErrorOptions = {
 };
 
 /**
- * 配置装载/合并阶段的错误类型。字段形状与 `@kagami/kernel` 的 `BizError`
+ * 配置装载/合并阶段的错误类型。字段形状与 `@sparkle/kernel` 的 `BizError`
  * 同构（`message` / `meta` / `cause` / `statusCode`），以便沿用现有按 `meta.reason`
- * 的诊断，同时让 `@kagami/config` 保持零 `@kagami/*` 依赖的叶子包（不反向依赖 kernel）。
+ * 的诊断，同时让 `@sparkle/config` 保持零 `@sparkle/*` 依赖的叶子包（不反向依赖 kernel）。
  */
 export class ConfigError extends Error {
   public readonly meta?: ConfigErrorMeta;

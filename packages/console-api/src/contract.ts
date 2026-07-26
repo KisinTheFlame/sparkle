@@ -1,4 +1,4 @@
-import { defineJsonRoute } from "@kagami/http/contract";
+import { defineJsonRoute } from "@sparkle/http/contract";
 import { z } from "zod";
 import { AppLogListQuerySchema, AppLogListResponseSchema } from "./app-log.js";
 import { InnerThoughtListQuerySchema, InnerThoughtListResponseSchema } from "./inner-thought.js";
@@ -14,7 +14,7 @@ import {
 } from "./napcat-group-message.js";
 import { TodoListQuerySchema, TodoListResponseSchema } from "./todo.js";
 
-// === @kagami/console-api：kagami-console 服务的 HTTP 契约（issue #279 PR4） ===
+// === @sparkle/console-api：sparkle-console 服务的 HTTP 契约（issue #279 PR4） ===
 //
 // console 是纯 DB 查询后端（管理台历史检索），消费者是 web 前端（经 gateway 按前缀分流）。
 // web 走 contractUrl 取 path/schema，fetch 层与 ApiError 链路不变（D1）。

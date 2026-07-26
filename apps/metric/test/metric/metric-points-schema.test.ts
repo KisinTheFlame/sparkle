@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MetricPointsQueryRequestSchema } from "@kagami/metric-api/points";
+import { MetricPointsQueryRequestSchema } from "@sparkle/metric-api/points";
 
 // raw 端点的硬边界 guard 全落在这份 wire schema：无 aggregator/bucket（strict 拒绝），range 上限 7 天，
 // 点数不在 schema 层挡（走服务端行数 LIMIT + truncated）。

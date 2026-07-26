@@ -1,5 +1,5 @@
-import type { App } from "@kagami/agent-runtime";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import type { App } from "@sparkle/agent-runtime";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import { ViewTimeTool } from "./tools/view-time.tool.js";
 
 const CLOCK_APP_ID = "clock";

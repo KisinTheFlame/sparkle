@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { TaskAgentMaxRoundsExceededError } from "@kagami/agent-runtime";
+import { TaskAgentMaxRoundsExceededError } from "@sparkle/agent-runtime";
 import { RootAgentHost } from "../../src/agent/runtime/root-agent/root-agent-runtime.js";
 import { initTestLoggerRuntime } from "../helpers/logger.js";
 

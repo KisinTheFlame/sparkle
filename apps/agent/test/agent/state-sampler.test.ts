@@ -3,7 +3,7 @@ import {
   StateSampler,
   STATE_SAMPLE_METRIC_NAME,
 } from "../../src/agent/runtime/root-agent/state-sampler.js";
-import type { RecordMetricInput } from "@kagami/metric-client/client";
+import type { RecordMetricInput } from "@sparkle/metric-client/client";
 
 describe("StateSampler", () => {
   beforeEach(() => {

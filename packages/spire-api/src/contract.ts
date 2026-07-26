@@ -1,4 +1,4 @@
-import { defineJsonRoute } from "@kagami/http/contract";
+import { defineJsonRoute } from "@sparkle/http/contract";
 import { z } from "zod";
 
 // 游戏接口是轻量 JSON（毫秒级引擎调用），15s 是「服务真挂/半开」的兜底超时，与拆包前
@@ -6,7 +6,7 @@ import { z } from "zod";
 const SPIRE_TIMEOUT_MS = 15_000;
 
 /**
- * kagami-spire 进程对 agent 暴露的 RPC 契约（单一事实源，issue #230 / #274）。
+ * sparkle-spire 进程对 agent 暴露的 RPC 契约（单一事实源，issue #230 / #274）。
  *
  * ScreenView 及各子结构在这里全类型化：服务端 handler 的 execute 返回类型由 `output` 反推、
  * agent 侧 client 对响应 `output.parse`——改服务端 `toScreenView` 的形状，两端一起编译报错。

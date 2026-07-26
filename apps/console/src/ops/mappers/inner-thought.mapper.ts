@@ -1,5 +1,5 @@
-import { type InnerThoughtListResponse } from "@kagami/console-api/inner-thought";
-import type { AgentInnerThoughtWireItem } from "@kagami/agent-api/ops-query";
+import { type InnerThoughtListResponse } from "@sparkle/console-api/inner-thought";
+import type { AgentInnerThoughtWireItem } from "@sparkle/agent-api/ops-query";
 
 type MapInnerThoughtListInput = {
   page: number;

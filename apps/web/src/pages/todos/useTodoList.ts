@@ -1,4 +1,4 @@
-import { type TodoListQuery } from "@kagami/console-api/todo";
+import { type TodoListQuery } from "@sparkle/console-api/todo";
 import { useQuery } from "@tanstack/react-query";
 import { createHistoryListQueryOptions, queryKeys } from "@/lib/query";
 import { consoleClient } from "@/lib/rpc";

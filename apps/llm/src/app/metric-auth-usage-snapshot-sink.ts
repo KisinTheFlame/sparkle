@@ -2,8 +2,8 @@ import type {
   AuthUsageRefreshOutcome,
   AuthUsageSnapshotSink,
   AuthUsageSnapshotSinkRecord,
-} from "@kagami/auth";
-import type { MetricClient } from "@kagami/metric-client/client";
+} from "@sparkle/auth";
+import type { MetricClient } from "@sparkle/metric-client/client";
 
 /** OAuth 额度剩余百分比 gauge（0-100），tags `{provider, window}`，图表用 raw / last。 */
 export const OAUTH_QUOTA_REMAINING_PERCENT_METRIC = "llm.oauth.quota.remaining_percent";

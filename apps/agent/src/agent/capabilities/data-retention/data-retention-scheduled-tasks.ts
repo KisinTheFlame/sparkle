@@ -1,7 +1,7 @@
-import type { Database } from "@kagami/persistence/db/client";
-import type { MetricClient } from "@kagami/metric-client/client";
-import type { SchedulerTaskRegistration } from "@kagami/scheduler-client/types";
-import type { TaskRunMetadata } from "@kagami/scheduler-client/task-run";
+import type { Database } from "@sparkle/persistence/db/client";
+import type { MetricClient } from "@sparkle/metric-client/client";
+import type { SchedulerTaskRegistration } from "@sparkle/scheduler-client/types";
+import type { TaskRunMetadata } from "@sparkle/scheduler-client/task-run";
 import {
   RETENTION_TASKS,
   type PrismaRetentionDelegate,

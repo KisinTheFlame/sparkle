@@ -1,5 +1,5 @@
-import { BaseTaskAgent, type TaskAgentInvoker, type ToolExecutor } from "@kagami/agent-runtime";
-import type { LlmClient, LlmMessage } from "@kagami/llm-client";
+import { BaseTaskAgent, type TaskAgentInvoker, type ToolExecutor } from "@sparkle/agent-runtime";
+import type { LlmClient, LlmMessage } from "@sparkle/llm-client";
 
 export type SummaryTaskInput = {
   systemPrompt: string;

@@ -2,16 +2,16 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { configureSqlite, createDbClient, type Database } from "../infra/db/client.js";
 import { PrismaLlmChatCallDao } from "../infra/impl/llm-chat-call.impl.dao.js";
-import { AppLogger } from "@kagami/kernel/logger/logger";
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { toBizErrorWire } from "@kagami/kernel/errors/biz-error-wire";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { toBizErrorWire } from "@sparkle/kernel/errors/biz-error-wire";
 import {
   createServiceApp,
   type AppRouteHandler,
   type ServiceErrorHandler,
-} from "@kagami/kernel/http/service-app";
-import { HealthHandler } from "@kagami/kernel/http/health.handler";
-import { createAuthModule } from "@kagami/auth";
+} from "@sparkle/kernel/http/service-app";
+import { HealthHandler } from "@sparkle/kernel/http/health.handler";
+import { createAuthModule } from "@sparkle/auth";
 import {
   createLlmClient,
   createDeepSeekProvider,
@@ -20,11 +20,11 @@ import {
   createClaudeCodeProvider,
   type LlmChatCallObservation,
   type LlmClient,
-} from "@kagami/llm-client";
-import { createEmbeddingClient, type EmbeddingClient } from "@kagami/llm-client/embedding";
-import { createImageClient, type ImageClient } from "@kagami/llm-client/image";
-import { HttpMetricClient } from "@kagami/metric-client/client";
-import { SchedulerClient } from "@kagami/scheduler-client/scheduler-client";
+} from "@sparkle/llm-client";
+import { createEmbeddingClient, type EmbeddingClient } from "@sparkle/llm-client/embedding";
+import { createImageClient, type ImageClient } from "@sparkle/llm-client/image";
+import { HttpMetricClient } from "@sparkle/metric-client/client";
+import { SchedulerClient } from "@sparkle/scheduler-client/scheduler-client";
 import { recordLlmCallMetrics } from "./llm-metrics.js";
 import { MetricAuthUsageSnapshotSink } from "./metric-auth-usage-snapshot-sink.js";
 import { PrismaEmbeddingCacheDao } from "../infra/prisma-embedding-cache.dao.js";
@@ -50,8 +50,8 @@ export type LlmServiceRuntime = {
 };
 
 /**
- * kagami-llm 进程运行时装配。独立 PM2 进程，持有全部 LLM provider + OAuth 凭据中心
- * （callback server 绑 1455/54545 在本进程），未来多个 Agent 进程共享它。经 @kagami/persistence
+ * sparkle-llm 进程运行时装配。独立 PM2 进程，持有全部 LLM provider + OAuth 凭据中心
+ * （callback server 绑 1455/54545 在本进程），未来多个 Agent 进程共享它。经 @sparkle/persistence
  * 直读同一 SQLite（WAL）落 llm_chat_call / 读写 auth 表 / embedding_cache。
  */
 export async function buildLlmServiceRuntime(): Promise<LlmServiceRuntime> {
@@ -62,7 +62,7 @@ export async function buildLlmServiceRuntime(): Promise<LlmServiceRuntime> {
   const database = createDbClient({ databaseUrl });
   await configureSqlite(database);
 
-  // metric 打点走独立 metric 服务（@kagami/metric）的 HTTP 摄取端点；地址取自 services.metric。
+  // metric 打点走独立 metric 服务（@sparkle/metric）的 HTTP 摄取端点；地址取自 services.metric。
   // record 是 fire-and-forget（永不 reject），打点失败绝不影响 LLM 结果。提前到 auth 装配前建，
   // 好把 OAuth 额度遥测 sink 注入 auth module（epic #521）。
   const metricService = new HttpMetricClient({
@@ -148,7 +148,7 @@ export async function buildLlmServiceRuntime(): Promise<LlmServiceRuntime> {
     authUsageCacheManager: authModule.authUsageCacheManager,
   });
 
-  // Claude Files API 缓存的每日 GC（#433）：复用独立 kagami-scheduler 通用调度服务。llm 作为
+  // Claude Files API 缓存的每日 GC（#433）：复用独立 sparkle-scheduler 通用调度服务。llm 作为
   // owner "llm-service" 注册 cron task，tick 回来后 handler 在本进程内跑（DAO/OAuth/HTTP 都在此）。
   // GC 幂等 → 不需 occurrenceStore。register 是纯内存、start 是后台重连循环，均不阻塞主服务启动。
   const schedulerClient = new SchedulerClient({

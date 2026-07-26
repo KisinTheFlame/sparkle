@@ -1,5 +1,5 @@
 import { mkdirSync } from "node:fs";
-import { sqliteFilePathFromUrl } from "@kagami/kernel/utils/sqlite-path";
+import { sqliteFilePathFromUrl } from "@sparkle/kernel/utils/sqlite-path";
 import path from "node:path";
 import {
   getPrismaClientClass,
@@ -7,7 +7,7 @@ import {
 } from "../../generated/prisma/internal/class.js";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 
-// scheduler 独占的 SQLite 库（issue #493，与主库 kagami.db 物理分离）。镜像 @kagami/persistence
+// scheduler 独占的 SQLite 库（issue #493，与主库 kagami.db 物理分离）。镜像 @sparkle/persistence
 // 的 db client：better-sqlite3 adapter + busy_timeout + WAL + 建父目录。scheduler 独占本库，WAL
 // 非必需，但与持久化包范式保持一致（也让日后有第二个读进程时不必再改）。
 

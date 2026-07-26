@@ -9,8 +9,8 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@kagami/http/*": ["./../../packages/http/src/*"],
-      "@kagami/oss-api/*": ["./../../packages/oss-api/src/*"]
+      "@sparkle/http/*": ["./../../packages/http/src/*"],
+      "@sparkle/oss-api/*": ["./../../packages/oss-api/src/*"]
     }
   },
   "include": ["src", "test"]

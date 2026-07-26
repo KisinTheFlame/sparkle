@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { BizError } from "@kagami/kernel/errors/biz-error";
-import { AppLogger } from "@kagami/kernel/logger/logger";
+import { BizError } from "@sparkle/kernel/errors/biz-error";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
 import {
   type NapcatGatewayActionResponse,
   type NapcatGatewayActionResponseData,

@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { GbaButton, GbaPressStepSchema } from "@kagami/gba-api/contract";
+import type { GbaButton, GbaPressStepSchema } from "@sparkle/gba-api/contract";
 
 type PressStep = z.infer<typeof GbaPressStepSchema>;
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { JsonRecordSchema } from "@kagami/http/wire";
+import { JsonRecordSchema } from "@sparkle/http/wire";
 import { MessageSegmentsSchema } from "./segment.js";
 
 /**

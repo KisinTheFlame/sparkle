@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CanvasState } from "@kagami/pixel-api/contract";
+import type { CanvasState } from "@sparkle/pixel-api/contract";
 import {
   renderCanvasReject,
   renderCanvasSummary,

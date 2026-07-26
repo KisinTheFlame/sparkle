@@ -15,7 +15,7 @@ importers:
       '@eslint/js':
         specifier: ^9.39.1
         version: 9.39.3
-      '@kagami/config':
+      '@sparkle/config':
         specifier: workspace:*
         version: link:packages/config
       eslint:
@@ -57,61 +57,61 @@ importers:
 
   apps/agent:
     dependencies:
-      '@kagami/agent-api':
+      '@sparkle/agent-api':
         specifier: workspace:*
         version: link:../../packages/agent-api
-      '@kagami/agent-runtime':
+      '@sparkle/agent-runtime':
         specifier: workspace:*
         version: link:../../packages/agent-runtime
-      '@kagami/browser-api':
+      '@sparkle/browser-api':
         specifier: workspace:*
         version: link:../../packages/browser-api
-      '@kagami/gba-api':
+      '@sparkle/gba-api':
         specifier: workspace:*
         version: link:../../packages/gba-api
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../../packages/http
-      '@kagami/image':
+      '@sparkle/image':
         specifier: workspace:*
         version: link:../../packages/image
-      '@kagami/kernel':
+      '@sparkle/kernel':
         specifier: workspace:*
         version: link:../../packages/kernel
-      '@kagami/llm':
+      '@sparkle/llm':
         specifier: workspace:*
         version: link:../../packages/llm
-      '@kagami/llm-api':
+      '@sparkle/llm-api':
         specifier: workspace:*
         version: link:../../packages/llm-api
-      '@kagami/llm-client':
+      '@sparkle/llm-client':
         specifier: workspace:*
         version: link:../../packages/llm-client
-      '@kagami/metric-client':
+      '@sparkle/metric-client':
         specifier: workspace:*
         version: link:../../packages/metric-client
-      '@kagami/napcat-api':
+      '@sparkle/napcat-api':
         specifier: workspace:*
         version: link:../../packages/napcat-api
-      '@kagami/oss-api':
+      '@sparkle/oss-api':
         specifier: workspace:*
         version: link:../../packages/oss-api
-      '@kagami/persistence':
+      '@sparkle/persistence':
         specifier: workspace:*
         version: link:../../packages/persistence
-      '@kagami/pixel-api':
+      '@sparkle/pixel-api':
         specifier: workspace:*
         version: link:../../packages/pixel-api
-      '@kagami/rpc-client':
+      '@sparkle/rpc-client':
         specifier: workspace:*
         version: link:../../packages/rpc-client
-      '@kagami/scheduler-api':
+      '@sparkle/scheduler-api':
         specifier: workspace:*
         version: link:../../packages/scheduler-api
-      '@kagami/scheduler-client':
+      '@sparkle/scheduler-client':
         specifier: workspace:*
         version: link:../../packages/scheduler-client
-      '@kagami/spire-api':
+      '@sparkle/spire-api':
         specifier: workspace:*
         version: link:../../packages/spire-api
       fast-xml-parser:
@@ -142,13 +142,13 @@ importers:
 
   apps/browser:
     dependencies:
-      '@kagami/browser-api':
+      '@sparkle/browser-api':
         specifier: workspace:*
         version: link:../../packages/browser-api
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../../packages/http
-      '@kagami/kernel':
+      '@sparkle/kernel':
         specifier: workspace:*
         version: link:../../packages/kernel
       cloakbrowser:
@@ -176,25 +176,25 @@ importers:
 
   apps/console:
     dependencies:
-      '@kagami/agent-api':
+      '@sparkle/agent-api':
         specifier: workspace:*
         version: link:../../packages/agent-api
-      '@kagami/console-api':
+      '@sparkle/console-api':
         specifier: workspace:*
         version: link:../../packages/console-api
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../../packages/http
-      '@kagami/kernel':
+      '@sparkle/kernel':
         specifier: workspace:*
         version: link:../../packages/kernel
-      '@kagami/llm-api':
+      '@sparkle/llm-api':
         specifier: workspace:*
         version: link:../../packages/llm-api
-      '@kagami/napcat-api':
+      '@sparkle/napcat-api':
         specifier: workspace:*
         version: link:../../packages/napcat-api
-      '@kagami/rpc-client':
+      '@sparkle/rpc-client':
         specifier: workspace:*
         version: link:../../packages/rpc-client
       fastify:
@@ -216,10 +216,10 @@ importers:
 
   apps/gateway:
     dependencies:
-      '@kagami/config':
+      '@sparkle/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../../packages/http
       yaml:
@@ -238,27 +238,27 @@ importers:
 
   apps/gba:
     dependencies:
-      '@kagami/gba-api':
-        specifier: workspace:*
-        version: link:../../packages/gba-api
-      '@kagami/http':
-        specifier: workspace:*
-        version: link:../../packages/http
-      '@kagami/kernel':
-        specifier: workspace:*
-        version: link:../../packages/kernel
-      '@kagami/oss-api':
-        specifier: workspace:*
-        version: link:../../packages/oss-api
-      '@kagami/rpc-client':
-        specifier: workspace:*
-        version: link:../../packages/rpc-client
       '@prisma/adapter-better-sqlite3':
         specifier: ^7.8.0
         version: 7.9.0
       '@prisma/client':
         specifier: ^7.6.0
         version: 7.6.0(prisma@7.6.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(better-sqlite3@12.11.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)
+      '@sparkle/gba-api':
+        specifier: workspace:*
+        version: link:../../packages/gba-api
+      '@sparkle/http':
+        specifier: workspace:*
+        version: link:../../packages/http
+      '@sparkle/kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
+      '@sparkle/oss-api':
+        specifier: workspace:*
+        version: link:../../packages/oss-api
+      '@sparkle/rpc-client':
+        specifier: workspace:*
+        version: link:../../packages/rpc-client
       better-sqlite3:
         specifier: ^12.11.1
         version: 12.11.1
@@ -296,36 +296,36 @@ importers:
 
   apps/llm:
     dependencies:
-      '@kagami/auth':
-        specifier: workspace:*
-        version: link:../../packages/auth
-      '@kagami/http':
-        specifier: workspace:*
-        version: link:../../packages/http
-      '@kagami/kernel':
-        specifier: workspace:*
-        version: link:../../packages/kernel
-      '@kagami/llm':
-        specifier: workspace:*
-        version: link:../../packages/llm
-      '@kagami/llm-api':
-        specifier: workspace:*
-        version: link:../../packages/llm-api
-      '@kagami/llm-client':
-        specifier: workspace:*
-        version: link:../../packages/llm-client
-      '@kagami/metric-client':
-        specifier: workspace:*
-        version: link:../../packages/metric-client
-      '@kagami/scheduler-client':
-        specifier: workspace:*
-        version: link:../../packages/scheduler-client
       '@prisma/adapter-better-sqlite3':
         specifier: 7.6.0
         version: 7.6.0
       '@prisma/client':
         specifier: 7.6.0
         version: 7.6.0(prisma@7.6.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(better-sqlite3@12.11.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)
+      '@sparkle/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@sparkle/http':
+        specifier: workspace:*
+        version: link:../../packages/http
+      '@sparkle/kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
+      '@sparkle/llm':
+        specifier: workspace:*
+        version: link:../../packages/llm
+      '@sparkle/llm-api':
+        specifier: workspace:*
+        version: link:../../packages/llm-api
+      '@sparkle/llm-client':
+        specifier: workspace:*
+        version: link:../../packages/llm-client
+      '@sparkle/metric-client':
+        specifier: workspace:*
+        version: link:../../packages/metric-client
+      '@sparkle/scheduler-client':
+        specifier: workspace:*
+        version: link:../../packages/scheduler-client
       fastify:
         specifier: ^5.6.2
         version: 5.7.4
@@ -351,13 +351,13 @@ importers:
       '@duckdb/node-api':
         specifier: 1.5.4-r.1
         version: 1.5.4-r.1
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../../packages/http
-      '@kagami/kernel':
+      '@sparkle/kernel':
         specifier: workspace:*
         version: link:../../packages/kernel
-      '@kagami/metric-api':
+      '@sparkle/metric-api':
         specifier: workspace:*
         version: link:../../packages/metric-api
       fastify:
@@ -379,36 +379,36 @@ importers:
 
   apps/napcat:
     dependencies:
-      '@kagami/http':
-        specifier: workspace:*
-        version: link:../../packages/http
-      '@kagami/image':
-        specifier: workspace:*
-        version: link:../../packages/image
-      '@kagami/kernel':
-        specifier: workspace:*
-        version: link:../../packages/kernel
-      '@kagami/llm-api':
-        specifier: workspace:*
-        version: link:../../packages/llm-api
-      '@kagami/llm-client':
-        specifier: workspace:*
-        version: link:../../packages/llm-client
-      '@kagami/napcat-api':
-        specifier: workspace:*
-        version: link:../../packages/napcat-api
-      '@kagami/oss-api':
-        specifier: workspace:*
-        version: link:../../packages/oss-api
-      '@kagami/rpc-client':
-        specifier: workspace:*
-        version: link:../../packages/rpc-client
       '@prisma/adapter-better-sqlite3':
         specifier: 7.6.0
         version: 7.6.0
       '@prisma/client':
         specifier: 7.6.0
         version: 7.6.0(prisma@7.6.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(better-sqlite3@12.11.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)
+      '@sparkle/http':
+        specifier: workspace:*
+        version: link:../../packages/http
+      '@sparkle/image':
+        specifier: workspace:*
+        version: link:../../packages/image
+      '@sparkle/kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
+      '@sparkle/llm-api':
+        specifier: workspace:*
+        version: link:../../packages/llm-api
+      '@sparkle/llm-client':
+        specifier: workspace:*
+        version: link:../../packages/llm-client
+      '@sparkle/napcat-api':
+        specifier: workspace:*
+        version: link:../../packages/napcat-api
+      '@sparkle/oss-api':
+        specifier: workspace:*
+        version: link:../../packages/oss-api
+      '@sparkle/rpc-client':
+        specifier: workspace:*
+        version: link:../../packages/rpc-client
       fastify:
         specifier: ^5.6.2
         version: 5.7.4
@@ -431,24 +431,24 @@ importers:
 
   apps/oss:
     dependencies:
-      '@kagami/config':
-        specifier: workspace:*
-        version: link:../../packages/config
-      '@kagami/http':
-        specifier: workspace:*
-        version: link:../../packages/http
-      '@kagami/kernel':
-        specifier: workspace:*
-        version: link:../../packages/kernel
-      '@kagami/oss-api':
-        specifier: workspace:*
-        version: link:../../packages/oss-api
       '@prisma/adapter-better-sqlite3':
         specifier: ^7.8.0
         version: 7.9.0
       '@prisma/client':
         specifier: ^7.6.0
         version: 7.6.0(prisma@7.6.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(better-sqlite3@12.11.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)
+      '@sparkle/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@sparkle/http':
+        specifier: workspace:*
+        version: link:../../packages/http
+      '@sparkle/kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
+      '@sparkle/oss-api':
+        specifier: workspace:*
+        version: link:../../packages/oss-api
       better-sqlite3:
         specifier: ^12.11.1
         version: 12.11.1
@@ -474,13 +474,13 @@ importers:
 
   apps/pixel:
     dependencies:
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../../packages/http
-      '@kagami/kernel':
+      '@sparkle/kernel':
         specifier: workspace:*
         version: link:../../packages/kernel
-      '@kagami/pixel-api':
+      '@sparkle/pixel-api':
         specifier: workspace:*
         version: link:../../packages/pixel-api
       fastify:
@@ -505,24 +505,24 @@ importers:
 
   apps/scheduler:
     dependencies:
-      '@kagami/http':
-        specifier: workspace:*
-        version: link:../../packages/http
-      '@kagami/kernel':
-        specifier: workspace:*
-        version: link:../../packages/kernel
-      '@kagami/rpc-client':
-        specifier: workspace:*
-        version: link:../../packages/rpc-client
-      '@kagami/scheduler-api':
-        specifier: workspace:*
-        version: link:../../packages/scheduler-api
       '@prisma/adapter-better-sqlite3':
         specifier: 7.6.0
         version: 7.6.0
       '@prisma/client':
         specifier: 7.6.0
         version: 7.6.0(prisma@7.6.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(better-sqlite3@12.11.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)
+      '@sparkle/http':
+        specifier: workspace:*
+        version: link:../../packages/http
+      '@sparkle/kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
+      '@sparkle/rpc-client':
+        specifier: workspace:*
+        version: link:../../packages/rpc-client
+      '@sparkle/scheduler-api':
+        specifier: workspace:*
+        version: link:../../packages/scheduler-api
       better-sqlite3:
         specifier: ^12.11.1
         version: 12.11.1
@@ -548,18 +548,18 @@ importers:
 
   apps/spire:
     dependencies:
-      '@kagami/http':
-        specifier: workspace:*
-        version: link:../../packages/http
-      '@kagami/kernel':
-        specifier: workspace:*
-        version: link:../../packages/kernel
-      '@kagami/spire-api':
-        specifier: workspace:*
-        version: link:../../packages/spire-api
       '@kisinwen/sts-engine':
         specifier: 0.5.0
         version: 0.5.0
+      '@sparkle/http':
+        specifier: workspace:*
+        version: link:../../packages/http
+      '@sparkle/kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
+      '@sparkle/spire-api':
+        specifier: workspace:*
+        version: link:../../packages/spire-api
       fastify:
         specifier: ^5.6.2
         version: 5.7.4
@@ -579,39 +579,39 @@ importers:
 
   apps/web:
     dependencies:
-      '@kagami/agent-api':
-        specifier: workspace:*
-        version: link:../../packages/agent-api
-      '@kagami/config':
-        specifier: workspace:*
-        version: link:../../packages/config
-      '@kagami/console-api':
-        specifier: workspace:*
-        version: link:../../packages/console-api
-      '@kagami/gba-api':
-        specifier: workspace:*
-        version: link:../../packages/gba-api
-      '@kagami/http':
-        specifier: workspace:*
-        version: link:../../packages/http
-      '@kagami/llm-api':
-        specifier: workspace:*
-        version: link:../../packages/llm-api
-      '@kagami/metric-api':
-        specifier: workspace:*
-        version: link:../../packages/metric-api
-      '@kagami/oss-api':
-        specifier: workspace:*
-        version: link:../../packages/oss-api
-      '@kagami/rpc-client':
-        specifier: workspace:*
-        version: link:../../packages/rpc-client
-      '@kagami/scheduler-api':
-        specifier: workspace:*
-        version: link:../../packages/scheduler-api
       '@radix-ui/react-select':
         specifier: ^2.2.6
         version: 2.2.6(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@sparkle/agent-api':
+        specifier: workspace:*
+        version: link:../../packages/agent-api
+      '@sparkle/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@sparkle/console-api':
+        specifier: workspace:*
+        version: link:../../packages/console-api
+      '@sparkle/gba-api':
+        specifier: workspace:*
+        version: link:../../packages/gba-api
+      '@sparkle/http':
+        specifier: workspace:*
+        version: link:../../packages/http
+      '@sparkle/llm-api':
+        specifier: workspace:*
+        version: link:../../packages/llm-api
+      '@sparkle/metric-api':
+        specifier: workspace:*
+        version: link:../../packages/metric-api
+      '@sparkle/oss-api':
+        specifier: workspace:*
+        version: link:../../packages/oss-api
+      '@sparkle/rpc-client':
+        specifier: workspace:*
+        version: link:../../packages/rpc-client
+      '@sparkle/scheduler-api':
+        specifier: workspace:*
+        version: link:../../packages/scheduler-api
       '@tanstack/react-query':
         specifier: ^5.90.21
         version: 5.90.21(react@19.2.4)
@@ -679,7 +679,7 @@ importers:
 
   packages/agent-api:
     dependencies:
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../http
       zod:
@@ -695,7 +695,7 @@ importers:
 
   packages/agent-runtime:
     dependencies:
-      '@kagami/llm':
+      '@sparkle/llm':
         specifier: workspace:*
         version: link:../llm
       zod:
@@ -714,16 +714,16 @@ importers:
 
   packages/auth:
     dependencies:
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../http
-      '@kagami/kernel':
+      '@sparkle/kernel':
         specifier: workspace:*
         version: link:../kernel
-      '@kagami/llm':
+      '@sparkle/llm':
         specifier: workspace:*
         version: link:../llm
-      '@kagami/llm-api':
+      '@sparkle/llm-api':
         specifier: workspace:*
         version: link:../llm-api
       fastify:
@@ -742,7 +742,7 @@ importers:
 
   packages/browser-api:
     dependencies:
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../http
       zod:
@@ -774,7 +774,7 @@ importers:
 
   packages/console-api:
     dependencies:
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../http
       zod:
@@ -790,7 +790,7 @@ importers:
 
   packages/gba-api:
     dependencies:
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../http
       zod:
@@ -841,13 +841,13 @@ importers:
 
   packages/kernel:
     dependencies:
-      '@kagami/config':
+      '@sparkle/config':
         specifier: workspace:*
         version: link:../config
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../http
-      '@kagami/llm':
+      '@sparkle/llm':
         specifier: workspace:*
         version: link:../llm
       fastify:
@@ -881,10 +881,10 @@ importers:
 
   packages/llm-api:
     dependencies:
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../http
-      '@kagami/llm':
+      '@sparkle/llm':
         specifier: workspace:*
         version: link:../llm
       zod:
@@ -903,16 +903,16 @@ importers:
       '@google/genai':
         specifier: ^1.44.0
         version: 1.44.0
-      '@kagami/image':
+      '@sparkle/image':
         specifier: workspace:*
         version: link:../image
-      '@kagami/kernel':
+      '@sparkle/kernel':
         specifier: workspace:*
         version: link:../kernel
-      '@kagami/llm':
+      '@sparkle/llm':
         specifier: workspace:*
         version: link:../llm
-      '@kagami/llm-api':
+      '@sparkle/llm-api':
         specifier: workspace:*
         version: link:../llm-api
       openai:
@@ -937,7 +937,7 @@ importers:
 
   packages/metric-api:
     dependencies:
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../http
       zod:
@@ -953,13 +953,13 @@ importers:
 
   packages/metric-client:
     dependencies:
-      '@kagami/kernel':
+      '@sparkle/kernel':
         specifier: workspace:*
         version: link:../kernel
-      '@kagami/metric-api':
+      '@sparkle/metric-api':
         specifier: workspace:*
         version: link:../metric-api
-      '@kagami/rpc-client':
+      '@sparkle/rpc-client':
         specifier: workspace:*
         version: link:../rpc-client
     devDependencies:
@@ -975,7 +975,7 @@ importers:
 
   packages/napcat-api:
     dependencies:
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../http
       zod:
@@ -991,7 +991,7 @@ importers:
 
   packages/oss-api:
     dependencies:
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../http
       zod:
@@ -1007,15 +1007,15 @@ importers:
 
   packages/persistence:
     dependencies:
-      '@kagami/kernel':
-        specifier: workspace:*
-        version: link:../kernel
       '@prisma/adapter-better-sqlite3':
         specifier: 7.6.0
         version: 7.6.0
       '@prisma/client':
         specifier: 7.6.0
         version: 7.6.0(prisma@7.6.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(better-sqlite3@12.11.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)
+      '@sparkle/kernel':
+        specifier: workspace:*
+        version: link:../kernel
       better-sqlite3:
         specifier: ^12.11.1
         version: 12.11.1
@@ -1035,7 +1035,7 @@ importers:
 
   packages/pixel-api:
     dependencies:
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../http
       zod:
@@ -1051,10 +1051,10 @@ importers:
 
   packages/rpc-client:
     dependencies:
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../http
-      '@kagami/kernel':
+      '@sparkle/kernel':
         specifier: workspace:*
         version: link:../kernel
       zod:
@@ -1073,7 +1073,7 @@ importers:
 
   packages/scheduler-api:
     dependencies:
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../http
       zod:
@@ -1089,13 +1089,13 @@ importers:
 
   packages/scheduler-client:
     dependencies:
-      '@kagami/kernel':
+      '@sparkle/kernel':
         specifier: workspace:*
         version: link:../kernel
-      '@kagami/rpc-client':
+      '@sparkle/rpc-client':
         specifier: workspace:*
         version: link:../rpc-client
-      '@kagami/scheduler-api':
+      '@sparkle/scheduler-api':
         specifier: workspace:*
         version: link:../scheduler-api
     devDependencies:
@@ -1111,7 +1111,7 @@ importers:
 
   packages/spire-api:
     dependencies:
-      '@kagami/http':
+      '@sparkle/http':
         specifier: workspace:*
         version: link:../http
       zod:

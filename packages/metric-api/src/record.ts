@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * Metric 摄取端点（`POST /metric/record`）的请求契约。agent 侧 HTTP 客户端与
- * `@kagami/metric` 服务端共用这一份，保证线上字节形状一致。
+ * `@sparkle/metric` 服务端共用这一份，保证线上字节形状一致。
  *
  * 校验权威在服务端：值类型 / metricName 非空 / value 有限 / occurredAt 带时区都在这里，
  * 但「tag key 去空白后不能为空」这条 zod record 天然做不到，留服务端 normalizeTags 兜。

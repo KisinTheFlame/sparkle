@@ -1,6 +1,6 @@
-import { RECENT_RUNS_PER_TASK, type SchedulerTaskViewRun } from "@kagami/scheduler-api/tasks-view";
-import type { SchedulerReportRunRequest } from "@kagami/scheduler-api/run";
-import type { SchedulerRunStatus, SchedulerRunTrigger } from "@kagami/scheduler-api/run";
+import { RECENT_RUNS_PER_TASK, type SchedulerTaskViewRun } from "@sparkle/scheduler-api/tasks-view";
+import type { SchedulerReportRunRequest } from "@sparkle/scheduler-api/run";
+import type { SchedulerRunStatus, SchedulerRunTrigger } from "@sparkle/scheduler-api/run";
 import type { Database } from "./client.js";
 
 type TaskRunStoreDeps = {

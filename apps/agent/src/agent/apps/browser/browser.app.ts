@@ -1,5 +1,5 @@
-import type { App } from "@kagami/agent-runtime";
-import { renderServerStaticTemplate } from "@kagami/kernel/runtime/read-static-text";
+import type { App } from "@sparkle/agent-runtime";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
 import { BrowserNavigateTool } from "../../capabilities/browser/tools/navigate.tool.js";
 import { BrowserObserveTool } from "../../capabilities/browser/tools/observe.tool.js";
 import { BrowserClickTool } from "../../capabilities/browser/tools/click.tool.js";
@@ -15,17 +15,17 @@ import type { BrowserClient } from "../../../acl/browser-client.js";
 const BROWSER_APP_ID = "browser";
 
 type BrowserAppDeps = {
-  /** 浏览器动作客户端：打到独立的 kagami-browser 进程（issue #173）。 */
+  /** 浏览器动作客户端：打到独立的 sparkle-browser 进程（issue #173）。 */
   browserClient: BrowserClient;
   /** 截图叠加落 OSS 用；缺省（OSS 关闭）时截图仍入上下文，只是没有 resid。 */
   ossClient?: OssClient;
 };
 
 /**
- * 浏览器 App：把浏览器的 8 个工具包成 Kagami 桌面上的一个能力单元。结构照抄 TerminalApp。
+ * 浏览器 App：把浏览器的 8 个工具包成 Sparkle 桌面上的一个能力单元。结构照抄 TerminalApp。
  *
  * 拆进程后（issue #173）：本 App 不再持有 BrowserService / 不再 launch 或杀浏览器，
- * 只持有一个打到独立 kagami-browser 进程的 HttpBrowserClient。浏览器进程有自己的 PM2
+ * 只持有一个打到独立 sparkle-browser 进程的 HttpBrowserClient。浏览器进程有自己的 PM2
  * 生命周期，agent 重启不影响它——这是「重启不杀浏览器」的根。
  *
  * - 工具：browser_navigate / observe / click / type / press / wait_for / screenshot / eval。

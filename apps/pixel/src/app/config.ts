@@ -1,4 +1,4 @@
-import { loadStaticConfig } from "@kagami/kernel/config/config.loader";
+import { loadStaticConfig } from "@sparkle/kernel/config/config.loader";
 
 export type PixelServiceConfig = {
   /** 监听端口，来自顶层 services.pixel.port（单一事实来源，见 issue #162）。 */
@@ -8,7 +8,7 @@ export type PixelServiceConfig = {
 };
 
 /**
- * kagami-pixel 进程配置。端口取 `services.pixel.port`；存档落仓库根 data/pixel——
+ * sparkle-pixel 进程配置。端口取 `services.pixel.port`；存档落仓库根 data/pixel——
  * 进程 cwd 固定仓库根（见 ecosystem.config.cjs），画布跨 agent / 本进程重启留存。
  */
 export async function loadPixelServiceConfig(): Promise<PixelServiceConfig> {
