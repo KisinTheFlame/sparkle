@@ -29,7 +29,7 @@ apps/scheduler ──→ packages/kernel / http / scheduler-api  （独立进程
 | 包                           | 角色                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@sparkle/agent`             | Fastify 后端、Agent 业务装配、NapCat 网关、Agent 活内存接口（实时上下文 / auth / scheduler / QQ 发送）                                                                                                                                                                                                                                                                                                                                    |
-| `@sparkle/console`           | 管理台后端独立进程（Fastify），前端只读查询聚合层（#539 起**零 DB 依赖**）：app-log / inner-thought / todo 经 `@sparkle/agent-api`、llm-chat-call 经 `@sparkle/llm-api`、napcat 两表经 `@sparkle/napcat-api` 的契约查询路由拨各数据属主服务                                                                                                                                                                                               |
+| `@sparkle/console`           | 管理台后端独立进程（Fastify），前端只读查询聚合层（#539 起**零 DB 依赖**）：app-log / todo 经 `@sparkle/agent-api`、llm-chat-call 经 `@sparkle/llm-api`、napcat 两表经 `@sparkle/napcat-api` 的契约查询路由拨各数据属主服务                                                                                                                                                                                                               |
 | `@sparkle/gateway`           | 前门网关进程（独立进程，运行时仅依赖 `@sparkle/config` / `@sparkle/http`）：**纯反向代理，自 #578 起不再托管任何静态文件**——按前缀把 `/api/*` 分流到 console / agent，`/auth/*` + `/llm/providers` 到 llm、`/metric` 到 metric、`/oss-object` 到 oss、`/scheduler/tasks` 到 scheduler、`/gba/roms` + `/gba/console` 到 gba；`/health` 自答；其余（前端页面与静态资源）原样转给 web                                                        |
 | `@sparkle/llm-service`       | LLM 网关 + OAuth 凭据中心进程（`apps/llm`，仅 localhost）：持有全部 provider + OAuth callback server + 刷新 timer；#539 起独占 `data/llm/llm.db`（llm*chat_call / embedding_cache / claude_file_cache / oauth*\* + 自带 retention），console 的 llm-chat-call 查询经 `@sparkle/llm-api` 契约路由；agent 经 HTTP 直连                                                                                                                      |
 | `@sparkle/metric`            | metric 领域独立进程（Fastify，仅 localhost）：一手包办 metric 摄取（`POST /metric/record`，agent HTTP 上报）+ metric 图表查询（`POST /metric/query`，前端传内联聚合规格），#475 P1 起独占 `data/metric/metric.duckdb`、不碰 persistence                                                                                                                                                                                                   |
@@ -54,8 +54,8 @@ apps/scheduler ──→ packages/kernel / http / scheduler-api  （独立进程
 | `@sparkle/metric-client`     | metric 上报 SDK（消费端）：基于 metric-api 契约在 `createClient` 之上包一层 fire-and-forget（永不抛、失败只记日志、2s 超时）；`HttpMetricClient` / `NOOP_METRIC_CLIENT`，agent 装配                                                                                                                                                                                                                                                       |
 | `@sparkle/scheduler-api`     | sparkle-scheduler 进程契约包（#428）：register（幂等 replace-all）/ status 两条 JSON 路由 + SSE tick 事件（`SchedulerTickEvent` / `SCHEDULER_TICKS_SSE_PATH`）+ 通用调度 schema（`ScheduleSpec` / misfire 策略 / TaskRun）；零业务语义                                                                                                                                                                                                    |
 | `@sparkle/scheduler-client`  | 定时调度使用方 SDK（消费端，#428/#493）：注册任务集 + 长连 SSE tick 流自动派发到本地 handler + 本地 per-task 并发锁 + occurrence 去重 + 执行结果两阶段回报（running→终态）给 scheduler 落库 + 反向触发受理（`triggerNowDetached`）；`SchedulerClient`，agent（ithome/todo/data-retention）与 sparkle-llm（Claude Files 缓存每日 GC，#433）装配                                                                                            |
-| `@sparkle/console-api`       | sparkle-console 进程契约包：app-log / llm-chat-call（含 `:id` 路径参数）/ inner-thought / napcat-event / napcat-group-message / todo 七条管理台查询路由（web 消费）                                                                                                                                                                                                                                                                       |
-| `@sparkle/agent-api`         | sparkle-agent 进程面向管理台的契约包：napcat 发送 ×2、LLM provider 列举 ×1、scheduler ×2（`:name` 路径参数）、main-agent-context ×2（web 消费）+ ops 只读查询 ×3（app-log / inner-thought / todo，console 服务间消费，#539）                                                                                                                                                                                                              |
+| `@sparkle/console-api`       | sparkle-console 进程契约包：app-log / llm-chat-call（含 `:id` 路径参数）/ napcat-event / napcat-group-message / todo 六条管理台查询路由（web 消费）                                                                                                                                                                                                                                                                                       |
+| `@sparkle/agent-api`         | sparkle-agent 进程面向管理台的契约包：napcat 发送 ×2、LLM provider 列举 ×1、scheduler ×2（`:name` 路径参数）、main-agent-context ×2（web 消费）+ ops 只读查询 ×2（app-log / todo，console 服务间消费，#539）                                                                                                                                                                                                                              |
 | `@sparkle/browser-api`       | sparkle-browser 进程对 agent 暴露的动作 RPC 契约包（9 条 JSON 路由；screenshot 以 base64 over JSON，agent 门面解回 Buffer；错误通道独立于 BizErrorWire）                                                                                                                                                                                                                                                                                  |
 | `@sparkle/oss-api`           | sparkle-oss 进程的对象存储 RPC 契约包（binary 两形状：putObject 信封路由共享 `{ key }` schema；get/head/delete raw 路由只钉路径与参数，字节流不进 Zod）                                                                                                                                                                                                                                                                                   |
 | `@sparkle/pixel-api`         | sparkle-pixel 进程的像素画 RPC 契约包（#365）：8 条 JSON 绘图路由回 `CanvasResponse`（领域拒绝走 `{ok:false}`）+ render binary-raw 路由回 PNG 字节；含 DB16 命名调色板（name/glyph/hex）共享常量                                                                                                                                                                                                                                          |
@@ -102,7 +102,7 @@ apps/scheduler ──→ packages/kernel / http / scheduler-api  （独立进程
 | `napcat`    | NapCat 协议适配（gateway transport / 入站归一 / 图片分析 / 持久化写入）；网关实例由 QQ App 持有                                                                                                  |
 | `scheduler` | 后台定时任务（auth 刷新、IThome 轮询、数据保留清理等）                                                                                                                                           |
 | `agent`     | Sparkle 业务层：手机 OS 运行时（Portal / App / NotificationCenter）、capabilities、上下文压缩                                                                                                    |
-| `ops`       | 后台观测接口：app-log、llm-chat-call、inner-thought、embedding-cache、main-agent-context、napcat history                                                                                         |
+| `ops`       | 后台观测接口：app-log、llm-chat-call、embedding-cache、main-agent-context、napcat history                                                                                                        |
 | `app`       | 模块装配、Fastify 路由注册、健康检查、Agent / 网关生命周期编排                                                                                                                                   |
 
 ### Agent 子结构（手机 OS 模型）
@@ -126,8 +126,7 @@ apps/agent/src/agent/
 │   ├── resource/       资源工具（read_resource / upload_resource / download_resource，OSS 对象进出上下文）
 │   ├── spire/          尖塔卡牌游戏工具本体（look / play_card / choose 等，经 SpireClient 打独立进程）
 │   ├── terminal/       终端能力本体
-│   ├── todo/           待办本能力本体（到点提醒经通知中心）
-│   └── inner-voice/    摸鱼判定（确定性）+ 内心独白 TaskAgent（镜像装配命中 KV cache）：空闲时以小镜口吻注入 `<inner_impulse>`，一次 2~4 个候选念头（#265 / #410 / #592）
+│   └── todo/           待办本能力本体（到点提醒经通知中心）
 └── apps/             手机 OS 的 App（Portal 下可 enter 的地点）
     ├── qq/             QQ App：收纳 NapCat 网关，自管会话 + 入站事件 + 出站发送
     ├── ithome/         IThome App：RSS 未读推送
@@ -154,7 +153,6 @@ apps/web/src/
 │   ├── scheduler-tasks/         后台任务面板
 │   ├── todos/                   待办（只读，含历史）
 │   ├── llm-history/             LLM 调用历史
-│   ├── inner-thought/           内心念头（inner-voice 每次触发的念头流水，#359）
 │   ├── app-log-history/         应用日志
 │   ├── napcat-event-history/    NapCat 事件
 │   └── napcat-group-message-history/  群消息
@@ -184,7 +182,7 @@ async_tool_result / wake 等内部事件 ─────────────
 
 - **NapCat 网关收纳进 QQ App**。入站事件不再进共享事件队列，而是直达 `QqApp.handleNapcatEvent`；QQ App 按「屏幕 vs 横幅」分流：前台且属当前会话的消息入缓冲并敲门（实时路径），其余累积进会话、向 NotificationCenter push 一个 `ChatNotificationDraft`。出站发送（工具 + 管理台 HTTP）统一走 QQ App 的出站端口。
 - **NotificationCenter 是后台 / 非焦点信号到 Agent 的唯一桥（横幅）**。它源无关，按 source 折叠 draft，窗口聚合后 enqueue 一个 `notification` 事件——这条事件既投递内容也唤醒 Agent。前台当前会话经 `foreground_input` 直达上下文尾部（屏幕），不经 center；焦点漂移（退后台 / 切会话 / reset）时未投递的未读退化回通知路径，绝不静默丢。
-- 共享事件队列只承载 `notification` / `async_tool_result_completed` / `foreground_input` / `wake` / `inner_thought` 等已归一的事件，不承载原始协议消息。`foreground_input` 是不带内容的敲门：内容在 drain 时由 session 向当前前台 App（实现 `ForegroundInputSource` 的）现拉，永不 stale。`inner_thought` 由 inner-voice 摸鱼判定触发（#265），装配成 `<inner_impulse>` 追加尾部并唤醒一轮；事件载荷是 2~4 条候选念头（#592）。
+- 共享事件队列只承载 `notification` / `async_tool_result_completed` / `foreground_input` / `wake` 等已归一的事件，不承载原始协议消息。`foreground_input` 是不带内容的敲门：内容在 drain 时由 session 向当前前台 App（实现 `ForegroundInputSource` 的）现拉，永不 stale。
 
 ### App 与状态
 
@@ -219,14 +217,14 @@ LLM API 暴露的顶层 tools 集合是少量结构性 / 能力级元工具（`s
 
 ## HTTP 接口入口
 
-| 类别            | 路径                                                                                                                                                        |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 健康检查        | `/health`                                                                                                                                                   |
-| OAuth / 配额    | `/auth/:provider/status` \| `login-url` \| `logout` \| `refresh` \| `usage-limits`（额度趋势已迁到 sparkle-metric 的 `/metric/points`，epic #521）          |
-| LLM Provider    | `/llm/providers`（由 sparkle-llm 服务，管理台直连、不再经 agent 中转）                                                                                      |
-| NapCat 主动发送 | `/napcat/group/send`、`/napcat/private/send`                                                                                                                |
-| 观测查询        | `/app-log/query`、`/llm-chat-call/query`、`/llm-chat-call/:id`、`/inner-thought/query`、`/napcat-event/query`、`/napcat-group-message/query`、`/todo/query` |
-| Agent / 指标    | `/main-agent-context/recent`、`/main-agent-context/compact`、`/metric/query`、`/scheduler/*`                                                                |
+| 类别            | 路径                                                                                                                                               |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 健康检查        | `/health`                                                                                                                                          |
+| OAuth / 配额    | `/auth/:provider/status` \| `login-url` \| `logout` \| `refresh` \| `usage-limits`（额度趋势已迁到 sparkle-metric 的 `/metric/points`，epic #521） |
+| LLM Provider    | `/llm/providers`（由 sparkle-llm 服务，管理台直连、不再经 agent 中转）                                                                             |
+| NapCat 主动发送 | `/napcat/group/send`、`/napcat/private/send`                                                                                                       |
+| 观测查询        | `/app-log/query`、`/llm-chat-call/query`、`/llm-chat-call/:id`、`/napcat-event/query`、`/napcat-group-message/query`、`/todo/query`                |
+| Agent / 指标    | `/main-agent-context/recent`、`/main-agent-context/compact`、`/metric/query`、`/scheduler/*`                                                       |
 
 > `apps/oss` 另起独立 HTTP 服务（`POST /objects` 上传、`GET` / `HEAD` / `DELETE /objects/:key`，另有 `GET /health`），仅 localhost 监听，Fastify + `@sparkle/oss-api` 契约（putObject 信封路由 / 其余 raw 路由，上行字节流透传不缓冲）。
 

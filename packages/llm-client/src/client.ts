@@ -64,7 +64,7 @@ export type LlmChatOptions = {
   /**
    * 调用归因（自由 string）：进 metric 标签与 llm_chat_call.scene 列，只做「哪个业务
    * 场景发起的」归因，不参与选模型、不影响缓存。fork 型 task agent 用 usage=agent 但
-   * 各带自己的 scene（contextSummarizer / todoSuggestionAgent / innerVoice）。
+   * 各带自己的 scene（contextSummarizer / todoSuggestionAgent）。
    */
   scene: string;
   recordCall?: boolean;

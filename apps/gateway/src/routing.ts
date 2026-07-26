@@ -26,7 +26,6 @@ export type UpstreamKey = "metric" | "llm" | "console" | "oss" | "scheduler" | "
 const CONSOLE_PATH_PREFIXES = [
   "/app-log",
   "/llm-chat-call",
-  "/inner-thought",
   "/napcat-event",
   "/napcat-group-message",
   "/todo",

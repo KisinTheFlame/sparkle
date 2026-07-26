@@ -436,7 +436,7 @@ const ConfigSchema = z.object({
           }),
       }),
       // usage = KV 缓存身份，只有 agent / vision 两个。fork 型 task agent
-      // （contextSummarizer / todoSuggestionAgent / innerVoice）复用主 Agent 前缀命中
+      // （contextSummarizer / todoSuggestionAgent）复用主 Agent 前缀命中
       // prompt cache，直接用 usage=agent 走同一份配置，不单独配置。调用归因走 scene
       // 字段（见 @sparkle/kernel/contracts/llm 与 issue #555）。
       usages: z

@@ -1,7 +1,6 @@
 import { defineJsonRoute } from "@sparkle/http/contract";
 import { z } from "zod";
 import { AppLogListQuerySchema, AppLogListResponseSchema } from "./app-log.js";
-import { InnerThoughtListQuerySchema, InnerThoughtListResponseSchema } from "./inner-thought.js";
 import {
   LlmChatCallDetailResponseSchema,
   LlmChatCallListQuerySchema,
@@ -43,12 +42,6 @@ export const consoleApiContract = {
     }),
     input: z.object({}),
     output: LlmChatCallDetailResponseSchema,
-  }),
-  queryInnerThoughts: defineJsonRoute({
-    method: "GET",
-    path: "/inner-thought/query",
-    input: InnerThoughtListQuerySchema,
-    output: InnerThoughtListResponseSchema,
   }),
   queryNapcatEvents: defineJsonRoute({
     method: "GET",

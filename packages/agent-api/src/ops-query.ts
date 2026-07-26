@@ -3,7 +3,7 @@ import { JsonRecordSchema } from "@sparkle/http/wire";
 
 /**
  * console 只读查询的 wire schema（epic #539 子 issue 4：console 脱库，agent 持有的
- * app_log / inner_thought / todo_item 经本契约查询）。
+ * app_log / todo_item 经本契约查询）。
  *
  * 形状与 @sparkle/console-api 的对应 response item 逐字段逐约束对齐（ISO 字符串时间），
  * 让 console 侧成为纯转发聚合层：DB Date → ISO 的序列化与 legacy 值归一（如 todo 的
@@ -49,35 +49,6 @@ export const AgentQueryAppLogsResponseSchema = z.object({
 });
 
 export type AgentQueryAppLogsResponse = z.infer<typeof AgentQueryAppLogsResponseSchema>;
-
-// —— inner_thought ——
-
-export const AgentInnerThoughtOutcomeSchema = z.enum(["injected", "empty", "failed"]);
-
-export const AgentQueryInnerThoughtsRequestSchema = z.object({
-  outcome: AgentInnerThoughtOutcomeSchema.optional(),
-  ...QueryPaginationSchema,
-});
-
-export type AgentQueryInnerThoughtsRequest = z.infer<typeof AgentQueryInnerThoughtsRequestSchema>;
-
-export const AgentInnerThoughtWireItemSchema = z.object({
-  id: z.number().int().positive(),
-  triggeredAt: z.string().datetime(),
-  outcome: AgentInnerThoughtOutcomeSchema,
-  thought: z.string(),
-  runtimeKey: z.string(),
-  createdAt: z.string().datetime(),
-});
-
-export type AgentInnerThoughtWireItem = z.infer<typeof AgentInnerThoughtWireItemSchema>;
-
-export const AgentQueryInnerThoughtsResponseSchema = z.object({
-  total: z.number().int().min(0),
-  items: z.array(AgentInnerThoughtWireItemSchema),
-});
-
-export type AgentQueryInnerThoughtsResponse = z.infer<typeof AgentQueryInnerThoughtsResponseSchema>;
 
 // —— todo_item ——
 

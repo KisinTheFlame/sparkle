@@ -136,7 +136,7 @@ server:
         fileCacheGcMaxIdleDays: 3 # 连续多少天未被使用即回收
         fileCacheGcMaxDeletionsPerRun: 2000 # 单轮删除上限，超出的次日续删
     # 只配 agent / vision 两个 KV 缓存身份。fork 型 task agent（contextSummarizer /
-    # todoSuggestionAgent / innerVoice）在调用点直接用 usage=agent，复用主 Agent 前缀命中
+    # todoSuggestionAgent）在调用点直接用 usage=agent，复用主 Agent 前缀命中
     # prompt cache，故不在此单独配置；调用归因走 scene 字段（见 issue #555）。
     usages:
       agent:
