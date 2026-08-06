@@ -1,0 +1,278 @@
+import { createHash } from "node:crypto";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import type { LlmChatRequest, LlmImageContentPart } from "../types.js";
+import type { ClaudeFileCacheDao } from "./claude-file-cache.dao.js";
+import { ANTHROPIC_VERSION, CLAUDE_CODE_USER_AGENT } from "./claude-code-constants.js";
+
+/**
+ * claude-code 图片 File API 预解析：把请求里所有图片（user-role content part）先换成
+ * 已上传的 Anthropic file_id，避免每轮把 base64 塞进 /v1/messages 请求体撑爆 ~32MB 上限。
+ *
+ * - 缓存命中（sha256 → file_id）直接用；未命中 POST /v1/files 上传一次再写缓存。
+ * - 单张失败（网络 / 401/403 scope 缺失）→ 不写入返回 map → 上层 builder 回退 base64 内联，
+ *   请求仍成功。整批 best-effort、并发上传。
+ * - 依赖 OAuth scope 含 user:file_upload + Anthropic-Beta 含 files-api-2025-04-14。
+ */
+
+const logger = new AppLogger({ source: "claude-code-file-upload" });
+
+type ClaudeFileUploadResponse = {
+  id?: string;
+};
+
+/** 收集请求里所有唯一图片（按裸 base64 content 去重），逐张解析成 file_id。返回 content→fileId。 */
+export async function resolveClaudeImageFileIds(params: {
+  request: LlmChatRequest;
+  fileCacheDao: ClaudeFileCacheDao;
+  baseUrl: string;
+  anthropicBeta: string;
+  // 惰性取 token：仅在真正需要上传（缓存未命中）时才解析 OAuth token，且整批只解析一次。
+  // 纯文本轮 / 全部命中缓存的轮次完全不触发 getAuth，热路径零额外开销。
+  getAccessToken: () => Promise<string>;
+  timeoutMs: number;
+}): Promise<Map<string, string>> {
+  const uniqueImages = collectUniqueImageParts(params.request);
+  const resolved = new Map<string, string>();
+  if (uniqueImages.size === 0) {
+    return resolved;
+  }
+
+  let tokenPromise: Promise<string> | null = null;
+  const getAccessToken = (): Promise<string> => (tokenPromise ??= params.getAccessToken());
+
+  await Promise.all(
+    [...uniqueImages.values()].map(async part => {
+      const fileId = await resolveSingleImage({
+        part,
+        fileCacheDao: params.fileCacheDao,
+        baseUrl: params.baseUrl,
+        anthropicBeta: params.anthropicBeta,
+        getAccessToken,
+        timeoutMs: params.timeoutMs,
+      });
+      if (fileId !== null) {
+        resolved.set(part.content, fileId);
+      }
+    }),
+  );
+
+  return resolved;
+}
+
+function collectUniqueImageParts(request: LlmChatRequest): Map<string, LlmImageContentPart> {
+  const uniqueImages = new Map<string, LlmImageContentPart>();
+  for (const message of request.messages) {
+    if (message.role !== "user" || typeof message.content === "string") {
+      continue;
+    }
+    for (const part of message.content) {
+      if (part.type === "image") {
+        // key 用裸 base64 content：同一张图 content 相同 → 去重；builder 也按 content 查表。
+        uniqueImages.set(part.content, part);
+      }
+    }
+  }
+  return uniqueImages;
+}
+
+/**
+ * 进程内单飞：把「同一图片内容(sha256)的解析——查缓存命中 / 或上传+落缓存」在整个进程里
+ * 合并成一次，直到它 settle。
+ *
+ * 堵住的核心竞态：跨并发请求（主 Agent + task agent、或连续轮次）带同一张**新**图时，各自
+ * findByHash miss → 各自 uploadClaudeFile 拿到**不同** file_id → save 覆盖后，先落的那个
+ * file_id 成永久孤儿——它从不进 claude_file_cache，LRU GC 的 findIdle 永远扫不到它，只增不减
+ * 撞组织存储配额。把整段解析按 sha256 单飞后，同一内容的并发解析复用同一个在飞 Promise，只
+ * 上传一次。顺带也关掉「A 上传中、B 的 findByHash 恰在 A save 落库前返回 miss」这个更窄的窗口
+ * ——只要该 sha256 有在飞解析，B 直接复用、绝不第二次上传。
+ *
+ * settle 后即从表移除：失败不缓存 → 下轮重试；成功后再来的走 findByHash 命中、不再进单飞。
+ * 进程级 Map，正是我们要的合并粒度（sparkle-llm 单进程、所有上传都过这里）。
+ */
+const inFlightResolutions = new Map<string, Promise<string>>();
+
+async function resolveSingleImage(params: {
+  part: LlmImageContentPart;
+  fileCacheDao: ClaudeFileCacheDao;
+  baseUrl: string;
+  anthropicBeta: string;
+  getAccessToken: () => Promise<string>;
+  timeoutMs: number;
+}): Promise<string | null> {
+  try {
+    const bytes = Buffer.from(params.part.content, "base64");
+
+    // 0 字节图（空 base64 / 被 JSON 毒成 {type:"Buffer",data:[]} 的历史坏图）：绝不上传，
+    // 否则会把一个空文件的 file_id 永久写进缓存（Files API 文件不过期），后续该内容永远引用坏文件。
+    // 返回 null → builder 回退 base64（与引入 File API 前对坏图的处理一致）。
+    if (bytes.byteLength === 0) {
+      return null;
+    }
+
+    const contentSha256 = createHash("sha256").update(bytes).digest("hex");
+    return await resolveFileIdSingleFlight({ ...params, bytes, contentSha256 });
+  } catch (error) {
+    logUploadFailure(error);
+    return null;
+  }
+}
+
+/** 单飞入口：同一 sha256 已有在飞解析则复用它，否则起一个并登记，settle 后清表。 */
+function resolveFileIdSingleFlight(params: {
+  part: LlmImageContentPart;
+  bytes: Buffer;
+  contentSha256: string;
+  fileCacheDao: ClaudeFileCacheDao;
+  baseUrl: string;
+  anthropicBeta: string;
+  getAccessToken: () => Promise<string>;
+  timeoutMs: number;
+}): Promise<string> {
+  // 原子性铁律：get(miss) → 起 Promise → set 这三步之间**绝不能有 await**。resolveFileIdOnce
+  // 是 async，被调用时同步执行到它第一个 await（findByHash）才让出，返回一个 pending Promise；
+  // 我们在同一同步块内 set。单线程 event loop 下这是不可中断的整体，故并发两个调用不可能都 miss
+  // 都 set。任何人日后在这里插入 await 都会重新打开并发重复上传的窗口。
+  const existing = inFlightResolutions.get(params.contentSha256);
+  if (existing) {
+    return existing;
+  }
+
+  const resolution = resolveFileIdOnce(params);
+  inFlightResolutions.set(params.contentSha256, resolution);
+  // 成功/失败都清表。winner / loser 各自 await 这个 Promise（其 rejection 由它们的 try/catch
+  // 消费），这里再挂一个只做清理的消费者；两个分支都返回 void、绝不重抛，故不产生 unhandled。
+  const cleanup = (): void => {
+    inFlightResolutions.delete(params.contentSha256);
+  };
+  resolution.then(cleanup, cleanup);
+  return resolution;
+}
+
+async function resolveFileIdOnce(params: {
+  part: LlmImageContentPart;
+  bytes: Buffer;
+  contentSha256: string;
+  fileCacheDao: ClaudeFileCacheDao;
+  baseUrl: string;
+  anthropicBeta: string;
+  getAccessToken: () => Promise<string>;
+  timeoutMs: number;
+}): Promise<string> {
+  const cached = await params.fileCacheDao.findByHash(params.contentSha256);
+  if (cached) {
+    // 刷新最近使用时间（GC 判据）。best-effort：DAO 内部已节流成"每图最多 TOUCH_THROTTLE 一次真写"，
+    // 此处再兜一层 try/catch——刷新失败绝不拖垮图片解析 / LLM 主请求（最坏 last_used_at 滞后，
+    // 该图稍早被 GC → 下轮命中 miss 自动重传，自愈）。
+    //
+    // KV 安全的关键（#433）：消息列表持久化的是 base64 原文（见 root-agent-runtime-snapshot），
+    // file_id 只在 wire 层每轮现拼。故一张图只要还在活上下文，每轮 chat 都会重新走到这里被 touch
+    // → last_used_at 恒新（≤TOUCH_THROTTLE）→ 永远到不了 idle cutoff → GC 永不删它 → 不会因重传
+    // 换 file_id 撞前缀漂移。只有连续 idleDays 天零轮次的图才会被回收，那时 provider 侧 KV cache
+    // 早已过期，冷重建重传不额外损失。
+    try {
+      await params.fileCacheDao.touch(params.contentSha256);
+    } catch (error) {
+      logTouchFailure(error);
+    }
+    return cached.fileId;
+  }
+
+  const fileId = await uploadClaudeFile({
+    bytes: params.bytes,
+    mimeType: params.part.mimeType,
+    filename: params.part.filename,
+    baseUrl: params.baseUrl,
+    anthropicBeta: params.anthropicBeta,
+    accessToken: await params.getAccessToken(),
+    timeoutMs: params.timeoutMs,
+  });
+
+  await params.fileCacheDao.save({
+    contentSha256: params.contentSha256,
+    fileId,
+    mimeType: params.part.mimeType,
+    sizeBytes: params.bytes.byteLength,
+  });
+
+  return fileId;
+}
+
+async function uploadClaudeFile(params: {
+  bytes: Buffer;
+  mimeType: string;
+  filename?: string;
+  baseUrl: string;
+  anthropicBeta: string;
+  accessToken: string;
+  timeoutMs: number;
+}): Promise<string> {
+  const baseUrl = params.baseUrl.replace(/\/+$/, "");
+  const form = new FormData();
+  // 拷进新的 Uint8Array（底层是纯 ArrayBuffer，非 SharedArrayBuffer）：Node 的 Buffer 类型
+  // 是 ArrayBufferLike-backed，直接喂 Blob 会被 TS 判为不满足 BlobPart。图片只上传一次，
+  // 一次拷贝成本可忽略。
+  const view = Uint8Array.from(params.bytes);
+  const blob = new Blob([view], { type: params.mimeType });
+  form.append("file", blob, params.filename ?? "image");
+
+  const response = await fetch(`${baseUrl}/v1/files`, {
+    method: "POST",
+    headers: {
+      // 不设 Content-Type：FormData 由 fetch 自动带 multipart boundary。
+      Authorization: `Bearer ${params.accessToken}`,
+      Accept: "application/json",
+      "Anthropic-Version": ANTHROPIC_VERSION,
+      "Anthropic-Beta": params.anthropicBeta,
+      "Anthropic-Dangerous-Direct-Browser-Access": "true",
+      "User-Agent": CLAUDE_CODE_USER_AGENT,
+      "X-App": "cli",
+    },
+    body: form,
+    signal: AbortSignal.timeout(params.timeoutMs),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw Object.assign(new Error(`Claude Files API upload failed: HTTP ${response.status}`), {
+      status: response.status,
+      responseText: text.slice(0, 500),
+    });
+  }
+
+  const payload = (await response.json()) as ClaudeFileUploadResponse;
+  if (!payload?.id) {
+    throw new Error("Claude Files API upload returned no file id");
+  }
+  return payload.id;
+}
+
+function logTouchFailure(error: unknown): void {
+  try {
+    logger.warn("Claude 图片缓存 last_used_at 刷新失败（不影响本次请求）", {
+      event: "llm.claude_code.file_cache_touch_failed",
+      error: error instanceof Error ? error.message : String(error),
+    });
+  } catch {
+    // logger runtime 未初始化的上下文里忽略日志失败。
+  }
+}
+
+function logUploadFailure(error: unknown): void {
+  const status =
+    error !== null && typeof error === "object" && "status" in error
+      ? (error as { status?: unknown }).status
+      : undefined;
+  const scopeHint =
+    status === 401 || status === 403
+      ? "（可能 OAuth 缺 user:file_upload scope，需在 console 重新登录 claude-code）"
+      : "";
+  try {
+    logger.warn(`Claude 图片上传失败，该图回退 base64 内联${scopeHint}`, {
+      event: "llm.claude_code.file_upload_failed",
+      status: typeof status === "number" ? status : undefined,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  } catch {
+    // logger runtime 未初始化的上下文里忽略日志失败。
+  }
+}

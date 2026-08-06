@@ -1,0 +1,72 @@
+import { readFileSync } from "node:fs";
+import { resolveConfigPath } from "@sparkle/config/source";
+import { parse } from "yaml";
+
+export interface GatewayConfig {
+  /** gateway 自身监听端口（来自 services.gateway.port）。 */
+  port: number;
+  /** agent 上游基址（原 API_TARGET），由 services.agent.host/port 拼出。 */
+  agentTarget: URL;
+  /** console 上游基址（原 CONSOLE_TARGET），由 services.console.host/port 拼出。 */
+  consoleTarget: URL;
+  /** sparkle-llm 上游基址（LLM 网关 + OAuth 凭据中心），由 services.llm.host/port 拼出。 */
+  llmTarget: URL;
+  /** metric 上游基址，由 services.metric.host/port 拼出（metric-chart 查询走它）。 */
+  metricTarget: URL;
+  /** oss 上游基址，由 services.oss.host/port 拼出（管理台只读对象浏览 /oss-object 走它）。 */
+  ossTarget: URL;
+  /** scheduler 上游基址，由 services.scheduler.host/port 拼出（调度任务全局查询 / 触发 /scheduler/tasks 走它）。 */
+  schedulerTarget: URL;
+  /** web 上游基址，由 services.web.host/port 拼出：非 /api 的请求（前端页面 + 静态资源）全转给它（#578）。 */
+  webTarget: URL;
+}
+
+interface RawServiceEndpoint {
+  host?: string;
+  port?: number;
+}
+
+interface RawConfig {
+  services?: {
+    agent?: RawServiceEndpoint;
+    console?: RawServiceEndpoint;
+    gateway?: RawServiceEndpoint;
+    llm?: RawServiceEndpoint;
+    metric?: RawServiceEndpoint;
+    oss?: RawServiceEndpoint;
+    scheduler?: RawServiceEndpoint;
+    web?: RawServiceEndpoint;
+  };
+}
+
+/** 从 services 块读取一个端点的 host/port，缺失即响亮失败（地址不容缺省）。 */
+function resolveEndpoint(endpoint: RawServiceEndpoint | undefined, name: string): URL {
+  if (!endpoint || typeof endpoint.host !== "string" || typeof endpoint.port !== "number") {
+    throw new Error(`[gateway] config.yaml 缺少 services.${name}.host / services.${name}.port`);
+  }
+
+  return new URL(`http://${endpoint.host}:${endpoint.port}`);
+}
+
+export function loadGatewayConfig(): GatewayConfig {
+  // 定位逻辑收敛到 @sparkle/config；gateway 只读非隐私的 services 块，不触 config.secret.yaml。
+  const configPath = resolveConfigPath(import.meta.url);
+  const raw = parse(readFileSync(configPath, "utf8")) as RawConfig;
+  const services = raw.services;
+
+  const gateway = services?.gateway;
+  if (!gateway || typeof gateway.port !== "number") {
+    throw new Error("[gateway] config.yaml 缺少 services.gateway.port");
+  }
+
+  return {
+    port: gateway.port,
+    agentTarget: resolveEndpoint(services?.agent, "agent"),
+    consoleTarget: resolveEndpoint(services?.console, "console"),
+    llmTarget: resolveEndpoint(services?.llm, "llm"),
+    metricTarget: resolveEndpoint(services?.metric, "metric"),
+    ossTarget: resolveEndpoint(services?.oss, "oss"),
+    schedulerTarget: resolveEndpoint(services?.scheduler, "scheduler"),
+    webTarget: resolveEndpoint(services?.web, "web"),
+  };
+}

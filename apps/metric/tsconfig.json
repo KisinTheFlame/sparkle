@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "paths": {
+      "@sparkle/persistence/prisma": [
+        "./../../packages/persistence/src/generated/prisma/internal/prismaNamespace.ts"
+      ],
+      "@sparkle/persistence/*": ["./../../packages/persistence/src/*"],
+      "@sparkle/kernel/*": ["./../../packages/kernel/src/*"],
+      "@sparkle/http/*": ["./../../packages/http/src/*"],
+      "@sparkle/metric-api/*": ["./../../packages/metric-api/src/*"]
+    }
+  },
+  "include": ["src", "test"]
+}

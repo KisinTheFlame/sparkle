@@ -1,0 +1,121 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model AppLog {
+  id        Int      @id @default(autoincrement())
+  traceId   String   @map("trace_id")
+  level     String
+  message   String
+  metadata  Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@index([traceId, createdAt], map: "app_log_trace_id_created_at_idx")
+  @@index([level, createdAt], map: "app_log_level_created_at_idx")
+  @@index([createdAt], map: "app_log_created_at_idx")
+  @@map("app_log")
+}
+
+model RootAgentRuntimeSnapshot {
+  id                 Int       @id @default(autoincrement())
+  runtimeKey         String    @unique(map: "root_agent_runtime_snapshot_runtime_key_uq") @map("runtime_key")
+  schemaVersion      Int       @map("schema_version")
+  contextSnapshot    Json      @map("context_snapshot")
+  lastWakeReminderAt DateTime? @map("last_wake_reminder_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @default(now()) @map("updated_at")
+
+  @@map("root_agent_runtime_snapshot")
+}
+
+model LinearMessageLedger {
+  id         Int      @id @default(autoincrement())
+  runtimeKey String   @map("runtime_key")
+  message    Json
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([runtimeKey, id], map: "ledger_runtime_key_id_idx")
+  @@index([createdAt], map: "ledger_created_at_idx")
+  @@map("ledger")
+}
+
+// App 状态持久化能力的通用存储：一张表服务所有 App，按 appId 存一份不透明 JSON。
+// 形状 + 版本由各 App 自己拥有；这里只负责 KV 式存取。
+model AppState {
+  appId     String   @id @map("app_id")
+  state     Json
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("app_state")
+}
+
+model IthomeArticle {
+  id                      Int       @id @default(autoincrement())
+  upstreamId              String    @unique(map: "ithome_article_upstream_id_uq") @map("upstream_id")
+  title                   String
+  url                     String
+  publishedAt             DateTime  @map("published_at")
+  rssSummary              String    @map("rss_summary")
+  rssPayload              Json      @map("rss_payload")
+  articleContent          String?   @map("article_content")
+  articleContentStatus    String    @default("pending") @map("article_content_status")
+  articleContentFetchedAt DateTime? @map("article_content_fetched_at")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @default(now()) @map("updated_at")
+
+  @@index([publishedAt], map: "ithome_article_published_at_idx")
+  @@map("ithome_article")
+}
+
+model IthomeFeedCursor {
+  id                  Int      @id @default(1)
+  lastSeenArticleId   Int      @map("last_seen_article_id")
+  lastSeenPublishedAt DateTime @map("last_seen_published_at")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @default(now()) @map("updated_at")
+
+  @@map("ithome_feed_cursor")
+}
+
+model TerminalState {
+  id        Int      @id @default(autoincrement())
+  cwd       String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("terminal_state")
+}
+
+model TerminalOutput {
+  id        Int      @id @default(autoincrement())
+  outputId  String   @unique(map: "terminal_output_output_id_uq") @map("output_id")
+  stdout    String
+  stderr    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt], map: "terminal_output_created_at_idx")
+  @@map("terminal_output")
+}
+
+model TodoItem {
+  id            Int       @id @default(autoincrement())
+  title         String
+  note          String?
+  status        String    @default("pending")
+  remindAt      DateTime? @map("remind_at")
+  repeatEveryMs Int?      @map("repeat_every_ms")
+  snoozedUntil  DateTime? @map("snoozed_until")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")
+  completedAt   DateTime? @map("completed_at")
+
+  @@map("todo_item")
+}

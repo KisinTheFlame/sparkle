@@ -1,0 +1,39 @@
+{
+  "name": "@sparkle/napcat",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "pnpm db:generate && tsc -p tsconfig.build.json && node scripts/copy-static.mjs",
+    "pretest": "pnpm --filter \"@sparkle/napcat^...\" build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "pnpm db:generate && tsc --noEmit",
+    "start": "node dist/index.js",
+    "db:generate": "PRISMA_PACKAGE_DIR=apps/napcat PRISMA_CONFIG_KEY=services.napcat.databaseUrl bash ../../scripts/prisma.sh generate",
+    "db:migrate:dev": "PRISMA_PACKAGE_DIR=apps/napcat PRISMA_CONFIG_KEY=services.napcat.databaseUrl bash ../../scripts/prisma.sh migrate dev",
+    "db:migrate:deploy": "PRISMA_PACKAGE_DIR=apps/napcat PRISMA_CONFIG_KEY=services.napcat.databaseUrl bash ../../scripts/prisma.sh migrate deploy",
+    "db:migrate:status": "PRISMA_PACKAGE_DIR=apps/napcat PRISMA_CONFIG_KEY=services.napcat.databaseUrl bash ../../scripts/prisma.sh migrate status"
+  },
+  "dependencies": {
+    "@sparkle/http": "workspace:*",
+    "@sparkle/image": "workspace:*",
+    "@sparkle/kernel": "workspace:*",
+    "@sparkle/llm-api": "workspace:*",
+    "@sparkle/llm-client": "workspace:*",
+    "@sparkle/napcat-api": "workspace:*",
+    "@sparkle/oss-api": "workspace:*",
+    "@sparkle/rpc-client": "workspace:*",
+    "@prisma/adapter-better-sqlite3": "7.6.0",
+    "@prisma/client": "7.6.0",
+    "fastify": "^5.6.2",
+    "prisma": "7.6.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

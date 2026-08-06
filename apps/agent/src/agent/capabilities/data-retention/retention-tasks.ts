@@ -1,0 +1,68 @@
+import type { Database } from "@sparkle/persistence/db/client";
+
+/**
+ * `findMany` / `deleteMany` subset of a Prisma delegate that this factory needs.
+ *
+ * Retention targets all use `Int @id @default(autoincrement())`, so the id type
+ * is narrowed to `number` here.
+ */
+export type PrismaRetentionDelegate = {
+  findMany(args: {
+    where: Record<string, { lt: Date }>;
+    select: { id: true };
+    take: number;
+  }): Promise<Array<{ id: number }>>;
+  deleteMany(args: { where: { id: { in: number[] } } }): Promise<{ count: number }>;
+};
+
+export type RetentionSpec = {
+  /** Physical table name, used as the data-retention task's suffix (e.g. `data-retention:app_log`). */
+  displayName: string;
+  /** Prisma model field used in the `<field> < threshold` predicate. */
+  field: string;
+  /** Retention horizon in days. */
+  days: number;
+  /** Stagger offset in minutes, combined with the 00:00 base cron to form `<offset> 0 * * *`. */
+  offsetMinutes: number;
+  /**
+   * Pick the Prisma delegate for this table. Returns `unknown` because each
+   * concrete delegate has a model-specific `findMany`/`deleteMany` signature
+   * that does not structurally match the loose {@link PrismaRetentionDelegate};
+   * the single narrowing cast lives at the call site in the task factory.
+   */
+  getDelegate: (db: Database) => unknown;
+};
+
+/**
+ * Tables cleared by the data-retention scheduled tasks. Edit this list to change
+ * the cleanup surface — no config file, no enum, no Zod schema. Developers know
+ * which tables are logs/metrics/caches and which are Agent memory.
+ *
+ * Intentionally NOT cleaned up (not in this list):
+ * - `ledger` (model LinearMessageLedger) — root agent 消息账本，只写不读，留作将来记忆系统的原始素材
+ * - `root_agent_runtime_snapshot` — runtime snapshot
+ * - `ithome_article` / `ithome_feed_cursor` — RSS articles (see TODOS.md for deferred strategy)
+ * - 已随表迁往独立库的清理面（epic #539）：metric（#475，DuckDB 自理）、napcat 两表
+ *   （sparkle-napcat 的 prune 定时器）、llm 三表 + oauth（sparkle-llm 的
+ *   data-retention-tasks，字段判据说明见彼处）
+ */
+export const RETENTION_TASKS: readonly RetentionSpec[] = [
+  {
+    displayName: "app_log",
+    field: "createdAt",
+    days: 7,
+    offsetMinutes: 0,
+    getDelegate: db => db.appLog,
+  },
+  // napcat_event / napcat_qq_message 自 epic #539 子 issue 2 起归 napcat 独占库，其保留清理
+  // 随表迁入 sparkle-napcat 进程（napcat-runtime 的 prune 定时器）；llm_chat_call /
+  // embedding_cache / oauth_state 自子 issue 3 起归 llm 独占库，清理随表迁入 sparkle-llm
+  // （data-retention-tasks，窗口不变），均不在此清理面。
+  {
+    displayName: "terminal_output",
+    field: "createdAt",
+    days: 7,
+    offsetMinutes: 25,
+    getDelegate: db => db.terminalOutput,
+  },
+];

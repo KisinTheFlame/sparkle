@@ -1,0 +1,134 @@
+import type { FastifyInstance } from "fastify";
+import type { Database } from "@sparkle/persistence/db/client";
+import { closeDb as defaultCloseDb } from "@sparkle/persistence/db/client";
+import { AppLogger } from "@sparkle/kernel/logger/logger";
+import { getLoggerRuntime } from "@sparkle/kernel/logger/runtime";
+import type { SchedulerClient } from "@sparkle/scheduler-client/scheduler-client";
+
+export type AgentRuntimeController = {
+  stop(): Promise<void>;
+};
+
+type ShutdownLogger = Pick<AppLogger, "info" | "warn" | "error" | "errorWithCause">;
+type ShutdownTimeoutHandle = ReturnType<typeof setTimeout>;
+type SetShutdownTimeout = (handler: () => void, timeoutMs: number) => ShutdownTimeoutHandle;
+type ClearShutdownTimeout = (timeout: ShutdownTimeoutHandle) => void;
+
+type ShutdownServerResourcesOptions = {
+  signal: NodeJS.Signals;
+  timeoutMs: number;
+  isServerStarted: boolean;
+  app: FastifyInstance | null;
+  database: Database | null;
+  /** 反序关停所有 App（含 QQ App 停 napcat 网关）。取代旧的 napcatGatewayService.stop。 */
+  shutdownApps: (() => Promise<void>) | null;
+  schedulerClient: SchedulerClient | null;
+  rootAgentRuntime: AgentRuntimeController | null;
+  /** 状态心跳采样器：关停时停掉定时器，stop 后不再打点。同步、幂等。缺省/ null 视为无采样器。 */
+  stateSampler?: { stop(): void } | null;
+  logger?: ShutdownLogger;
+  closeLoggerRuntime?: () => Promise<void>;
+  closeDatabase?: (database: Database) => Promise<void>;
+  exit?: (code: number) => void;
+  setShutdownTimeout?: SetShutdownTimeout;
+  clearShutdownTimeout?: ClearShutdownTimeout;
+};
+
+const logger = new AppLogger({ source: "bootstrap" });
+
+export async function shutdownServerResources({
+  signal,
+  timeoutMs,
+  isServerStarted,
+  app,
+  database,
+  shutdownApps,
+  schedulerClient,
+  rootAgentRuntime,
+  stateSampler,
+  logger: shutdownLogger = logger,
+  closeLoggerRuntime = async () => {
+    await getLoggerRuntime().close();
+  },
+  closeDatabase = defaultCloseDb,
+  exit = code => {
+    process.exit(code);
+  },
+  setShutdownTimeout = setTimeout,
+  clearShutdownTimeout = clearTimeout,
+}: ShutdownServerResourcesOptions): Promise<void> {
+  shutdownLogger.info("Shutdown signal received", {
+    event: "server.shutdown.signal_received",
+    signal,
+  });
+
+  const timeoutHandle = setShutdownTimeout(() => {
+    shutdownLogger.error("Shutdown timed out", {
+      event: "server.shutdown.timeout",
+      timeoutMs,
+    });
+    exit(1);
+  }, timeoutMs);
+
+  // 每个资源的关停都 best-effort 兜住：单步抛错**不**跳过后续步骤（尤其 DB 关闭必须执行，否则
+  // SQLite 连接泄漏 / WAL 不 checkpoint）。收集所有失败，最后据此决定 exit code。
+  const errors: unknown[] = [];
+  const step = async (
+    label: string,
+    event: string,
+    run: () => void | Promise<void>,
+  ): Promise<void> => {
+    try {
+      await run();
+      shutdownLogger.info(label, { event });
+    } catch (error) {
+      errors.push(error);
+      shutdownLogger.errorWithCause(`${label} failed`, error, {
+        event: `${event}.failed`,
+        signal,
+      });
+    }
+  };
+
+  // 先停状态心跳采样：同步、幂等，保证关停期间不再打无谓的状态样本点。
+  if (stateSampler) {
+    await step("State sampler stopped", "server.shutdown.state_sampler_stopped", () =>
+      stateSampler.stop(),
+    );
+  }
+  if (isServerStarted && app) {
+    await step("HTTP server closed", "server.shutdown.http_closed", () => app.close());
+  }
+  if (shutdownApps) {
+    await step(
+      "Apps shut down (incl. Napcat gateway)",
+      "server.shutdown.apps_closed",
+      shutdownApps,
+    );
+  }
+  if (schedulerClient) {
+    // 拆分后调度器在独立进程；本地只停 SDK 的订阅循环 + 中断在跑的 handler（同步，无需 await）。
+    await step("Scheduler client closed", "server.shutdown.scheduler_client_closed", () =>
+      schedulerClient.stop(),
+    );
+  }
+  if (rootAgentRuntime) {
+    await step("Root agent runtime closed", "server.shutdown.root_agent_runtime_closed", () =>
+      rootAgentRuntime.stop(),
+    );
+  }
+  // logger runtime 与 DB 放最后关：前面各步都可能还要写日志。DB 关闭无条件执行（在 errors 里也照关）。
+  await step("Logger runtime closed", "server.shutdown.logger_closed", closeLoggerRuntime);
+  if (database) {
+    await step("Database client closed", "server.shutdown.db_closed", () =>
+      closeDatabase(database),
+    );
+  }
+
+  clearShutdownTimeout(timeoutHandle);
+  if (errors.length > 0) {
+    exit(1);
+    return;
+  }
+  exit(0);
+}

@@ -1,0 +1,442 @@
+import {
+  type LlmChatCallStatus,
+  type LlmChatCallSummary,
+} from "@sparkle/console-api/llm-chat-call";
+import { useQuery } from "@tanstack/react-query";
+import { type FormEvent, useMemo } from "react";
+import { HistoryListPageLayout } from "@/components/layout/HistoryListPageLayout";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { MobileSelectCard } from "@/components/ui/mobile-select-card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useHistoryListPageState } from "@/hooks/useHistoryListPageState";
+import { formatDateTime } from "@/lib/format";
+import { createSchemaQueryOptions, queryKeys } from "@/lib/query";
+import { llmProvidersClient } from "@/lib/rpc";
+import { normalizeOptionalText, setIfNonEmpty } from "@/lib/search-params";
+import { cn } from "@/lib/utils";
+import { LlmChatCallDetailPanel } from "./LlmChatCallDetailPanel";
+import { toStatusLabel } from "./format-status";
+import { useLlmChatCallList } from "./useLlmChatCallList";
+
+const PAGE_SIZE = 20;
+const ALL_PROVIDER_VALUE = "__all_provider__";
+const ALL_MODEL_VALUE = "__all_model__";
+const ALL_SCENE_VALUE = "__all_scene__";
+const ALL_STATUS_VALUE = "__all__";
+const EMPTY_PROVIDERS: Array<{ id: string; models: string[] }> = [];
+
+// 当前代码里在用的 scene 归因值（issue #555）。scene 是自由 string，这里只是把常见值
+// 做成下拉方便筛；DB 里若出现新值，可直接改 URL 的 ?scene= 精确查。
+const SCENE_OPTIONS = ["agent", "contextSummarizer", "vision"] as const;
+
+type FilterFormState = {
+  provider: string;
+  model: string;
+  scene: string;
+  status: "" | LlmChatCallStatus;
+};
+
+export function LlmHistoryPage() {
+  const providersQuery = useQuery({
+    ...createSchemaQueryOptions({
+      queryKey: queryKeys.llm.providers(),
+      queryFn: () => llmProvidersClient.listProviders({}),
+    }),
+  });
+  const {
+    isMobile,
+    page,
+    filters,
+    formState,
+    setFormState,
+    selectedId,
+    showMobileDetail,
+    handleSelectItem,
+    handleBackToList,
+    submitFilters,
+    resetFilters,
+    goToPage,
+  } = useHistoryListPageState({
+    parseFilters,
+    toFormState,
+    buildSearchParams,
+    createEmptyFormState,
+    onSameParamsSubmit: () => {
+      void refetch();
+    },
+  });
+  const { data, isLoading, isFetching, isError, refetch } = useLlmChatCallList(
+    page,
+    PAGE_SIZE,
+    filters,
+  );
+  const isInitialLoading = isLoading && !data;
+  const providerOptions = providersQuery.data?.providers ?? EMPTY_PROVIDERS;
+  const modelOptions = useMemo(() => {
+    if (formState.provider) {
+      return providerOptions.find(provider => provider.id === formState.provider)?.models ?? [];
+    }
+
+    return [...new Set(providerOptions.flatMap(provider => provider.models))];
+  }, [formState.provider, providerOptions]);
+  const total = data?.pagination.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const items = useMemo(() => data?.items ?? [], [data?.items]);
+  const selectedSummary = useMemo(
+    () => items.find(item => item.id === selectedId) ?? null,
+    [items, selectedId],
+  );
+
+  function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    submitFilters();
+  }
+
+  function handleProviderChange(value: string): void {
+    const nextProvider = value === ALL_PROVIDER_VALUE ? "" : value;
+    const nextModelOptions = nextProvider
+      ? (providerOptions.find(provider => provider.id === nextProvider)?.models ?? [])
+      : [...new Set(providerOptions.flatMap(provider => provider.models))];
+
+    setFormState(prev => ({
+      ...prev,
+      provider: nextProvider,
+      model: nextModelOptions.includes(prev.model) ? prev.model : "",
+    }));
+  }
+
+  return (
+    <HistoryListPageLayout
+      filterForm={
+        <form
+          onSubmit={handleFilterSubmit}
+          className={cn("rounded-none border p-4", showMobileDetail && "hidden")}
+        >
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:gap-3">
+              <span className="text-muted-foreground sm:w-24 sm:shrink-0 sm:text-right">
+                Provider
+              </span>
+              <Select
+                value={formState.provider || ALL_PROVIDER_VALUE}
+                onValueChange={handleProviderChange}
+                disabled={providersQuery.isLoading || providersQuery.isError}
+              >
+                <SelectTrigger aria-label="Provider" className="min-w-0 flex-1">
+                  <SelectValue
+                    placeholder={
+                      providersQuery.isLoading
+                        ? "正在加载 provider"
+                        : providersQuery.isError
+                          ? "加载 provider 失败"
+                          : "全部"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_PROVIDER_VALUE}>全部</SelectItem>
+                  {providerOptions.map(provider => (
+                    <SelectItem key={provider.id} value={provider.id}>
+                      {provider.id}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:gap-3">
+              <span className="text-muted-foreground sm:w-24 sm:shrink-0 sm:text-right">Model</span>
+              <Select
+                value={formState.model || ALL_MODEL_VALUE}
+                onValueChange={value =>
+                  setFormState(prev => ({
+                    ...prev,
+                    model: value === ALL_MODEL_VALUE ? "" : value,
+                  }))
+                }
+                disabled={
+                  providersQuery.isLoading || providersQuery.isError || modelOptions.length === 0
+                }
+              >
+                <SelectTrigger aria-label="Model" className="min-w-0 flex-1">
+                  <SelectValue
+                    placeholder={
+                      providersQuery.isLoading
+                        ? "正在加载 model"
+                        : providersQuery.isError
+                          ? "加载 model 失败"
+                          : modelOptions.length === 0
+                            ? "暂无可选 model"
+                            : "全部"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_MODEL_VALUE}>全部</SelectItem>
+                  {modelOptions.map(model => (
+                    <SelectItem key={model} value={model}>
+                      {model}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:gap-3">
+              <span className="text-muted-foreground sm:w-24 sm:shrink-0 sm:text-right">Scene</span>
+              <Select
+                value={formState.scene || ALL_SCENE_VALUE}
+                onValueChange={value =>
+                  setFormState(prev => ({
+                    ...prev,
+                    scene: value === ALL_SCENE_VALUE ? "" : value,
+                  }))
+                }
+              >
+                <SelectTrigger aria-label="Scene" className="min-w-0 flex-1">
+                  <SelectValue placeholder="全部" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_SCENE_VALUE}>全部</SelectItem>
+                  {SCENE_OPTIONS.map(scene => (
+                    <SelectItem key={scene} value={scene}>
+                      {scene}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:gap-3">
+              <span className="text-muted-foreground sm:w-24 sm:shrink-0 sm:text-right">状态</span>
+              <Select
+                value={formState.status || ALL_STATUS_VALUE}
+                onValueChange={value =>
+                  setFormState(prev => ({
+                    ...prev,
+                    status: value === ALL_STATUS_VALUE ? "" : (value as FilterFormState["status"]),
+                  }))
+                }
+              >
+                <SelectTrigger aria-label="状态" className="min-w-0 flex-1">
+                  <SelectValue placeholder="全部" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_STATUS_VALUE}>全部</SelectItem>
+                  <SelectItem value="success">成功</SelectItem>
+                  <SelectItem value="failed">失败</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="mt-3 flex items-center gap-2">
+            <Button type="submit" size="sm">
+              查询
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={resetFilters}>
+              重置
+            </Button>
+          </div>
+        </form>
+      }
+      desktopList={
+        <div className="min-h-0 flex-1 overflow-hidden rounded-none border">
+          <Table className="min-w-[760px] table-fixed">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[190px]">时间</TableHead>
+                <TableHead className="w-[130px]">Provider</TableHead>
+                <TableHead>Model</TableHead>
+                <TableHead className="w-[150px]">Scene</TableHead>
+                <TableHead className="w-[140px]">状态</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isInitialLoading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                    加载中…
+                  </TableCell>
+                </TableRow>
+              ) : items.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                    暂无数据
+                  </TableCell>
+                </TableRow>
+              ) : (
+                items.map(item => (
+                  <TableRow
+                    key={item.id}
+                    data-state={selectedId === item.id ? "selected" : undefined}
+                    className="cursor-pointer"
+                    onClick={() => handleSelectItem(item.id)}
+                  >
+                    <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                      {formatDateTime(item.createdAt)}
+                    </TableCell>
+                    <TableCell className="truncate text-sm">{item.provider}</TableCell>
+                    <TableCell className="truncate text-sm">{item.model}</TableCell>
+                    <TableCell className="truncate text-sm text-muted-foreground">
+                      {item.scene ?? "—"}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <Badge variant={item.status === "success" ? "story" : "destructive"}>
+                        {toStatusLabel(item.status)}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      }
+      mobileList={
+        <div className="min-h-0 flex-1 overflow-auto">
+          {isInitialLoading ? (
+            <div className="flex h-24 items-center justify-center rounded-none border text-sm text-muted-foreground">
+              加载中…
+            </div>
+          ) : items.length === 0 ? (
+            <div className="flex h-24 items-center justify-center rounded-none border text-sm text-muted-foreground">
+              暂无数据
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {items.map(item => (
+                <LlmHistoryMobileCard
+                  key={item.id}
+                  item={item}
+                  isSelected={selectedId === item.id}
+                  onClick={() => handleSelectItem(item.id)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      }
+      detailPanel={<LlmChatCallDetailPanel id={selectedId} summary={selectedSummary} />}
+      detailTitle={getDetailTitle(selectedSummary)}
+      isMobile={isMobile}
+      showMobileDetail={showMobileDetail}
+      isError={isError}
+      page={page}
+      total={total}
+      totalPages={totalPages}
+      isPaginationDisabled={isFetching}
+      onPrevPage={() => goToPage(page - 1)}
+      onNextPage={() => goToPage(page + 1)}
+      onBackToList={handleBackToList}
+    />
+  );
+}
+
+function parseFilters(params: URLSearchParams): {
+  provider: string | undefined;
+  model: string | undefined;
+  scene: string | undefined;
+  status: LlmChatCallStatus | undefined;
+} {
+  return {
+    provider: normalizeOptionalText(params.get("provider")),
+    model: normalizeOptionalText(params.get("model")),
+    scene: normalizeOptionalText(params.get("scene")),
+    status: parseStatus(params.get("status")),
+  };
+}
+
+function toFormState(params: URLSearchParams): FilterFormState {
+  return {
+    provider: params.get("provider") ?? "",
+    model: params.get("model") ?? "",
+    scene: params.get("scene") ?? "",
+    status: parseStatus(params.get("status")) ?? "",
+  };
+}
+
+function buildSearchParams(formState: FilterFormState): URLSearchParams {
+  const nextParams = new URLSearchParams();
+  setIfNonEmpty(nextParams, "provider", formState.provider);
+  setIfNonEmpty(nextParams, "model", formState.model);
+  setIfNonEmpty(nextParams, "scene", formState.scene);
+  if (formState.status) {
+    nextParams.set("status", formState.status);
+  }
+
+  return nextParams;
+}
+
+function createEmptyFormState(): FilterFormState {
+  return {
+    provider: "",
+    model: "",
+    scene: "",
+    status: "",
+  };
+}
+
+function parseStatus(value: string | null): LlmChatCallStatus | undefined {
+  if (value === "success" || value === "failed") {
+    return value;
+  }
+
+  return undefined;
+}
+
+function getDetailTitle(item: LlmChatCallSummary | null): string {
+  if (item === null) {
+    return "LLM 调用详情";
+  }
+
+  return `${item.provider} · ${item.model} · ${toStatusLabel(item.status)}`;
+}
+
+function LlmHistoryMobileCard({
+  item,
+  isSelected,
+  onClick,
+}: {
+  item: LlmChatCallSummary;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <MobileSelectCard isSelected={isSelected} onClick={onClick}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold">{item.model}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {item.provider}
+            {item.scene ? ` · ${item.scene}` : ""}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <Badge variant={item.status === "success" ? "default" : "destructive"}>
+            {toStatusLabel(item.status)}
+          </Badge>
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+        <span>{formatDateTime(item.createdAt)}</span>
+      </div>
+    </MobileSelectCard>
+  );
+}

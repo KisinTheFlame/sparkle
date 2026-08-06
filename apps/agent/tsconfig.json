@@ -1,0 +1,32 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "paths": {
+      "@sparkle/agent-runtime": ["./../../packages/agent-runtime/src/index.ts"],
+      "@sparkle/agent-runtime/*": ["./../../packages/agent-runtime/src/*"],
+      "@sparkle/llm": ["./../../packages/llm/src/index.ts"],
+      "@sparkle/llm-client": ["./../../packages/llm-client/src/index.ts"],
+      "@sparkle/llm-client/embedding": ["./../../packages/llm-client/src/embedding/index.ts"],
+      "@sparkle/persistence/prisma": [
+        "./../../packages/persistence/src/generated/prisma/internal/prismaNamespace.ts"
+      ],
+      "@sparkle/persistence/*": ["./../../packages/persistence/src/*"],
+      "@sparkle/kernel/*": ["./../../packages/kernel/src/*"],
+      "@sparkle/http/*": ["./../../packages/http/src/*"],
+      "@sparkle/llm-api/*": ["./../../packages/llm-api/src/*"],
+      "@sparkle/browser-api/*": ["./../../packages/browser-api/src/*"],
+      "@sparkle/oss-api/*": ["./../../packages/oss-api/src/*"],
+      "@sparkle/rpc-client/*": ["./../../packages/rpc-client/src/*"],
+      "@sparkle/metric-api/*": ["./../../packages/metric-api/src/*"],
+      "@sparkle/napcat-api/*": ["./../../packages/napcat-api/src/*"],
+      "@sparkle/agent-api/*": ["./../../packages/agent-api/src/*"]
+    }
+  },
+  "include": ["src", "test"]
+}

@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "paths": {
+      "@sparkle/kernel/*": ["./../../packages/kernel/src/*"],
+      "@sparkle/http/*": ["./../../packages/http/src/*"],
+      "@sparkle/napcat-api/*": ["./../../packages/napcat-api/src/*"],
+      "@sparkle/llm-api/*": ["./../../packages/llm-api/src/*"],
+      "@sparkle/llm-client": ["./../../packages/llm-client/src/index.ts"],
+      "@sparkle/oss-api/*": ["./../../packages/oss-api/src/*"],
+      "@sparkle/rpc-client/*": ["./../../packages/rpc-client/src/*"]
+    }
+  },
+  "include": ["src", "test"]
+}

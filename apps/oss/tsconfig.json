@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@sparkle/http/*": ["./../../packages/http/src/*"],
+      "@sparkle/oss-api/*": ["./../../packages/oss-api/src/*"]
+    }
+  },
+  "include": ["src", "test"]
+}

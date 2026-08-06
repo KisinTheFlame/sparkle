@@ -1,0 +1,94 @@
+import type {
+  AssistantLikeMessage,
+  ReActKernelExtension,
+  ReActKernelRunRoundInput,
+} from "@sparkle/agent-runtime";
+import { isRetryableLlmFailure, type LlmMessage } from "@sparkle/llm-client";
+
+export const DEFAULT_LLM_RETRY_BACKOFF_MS = 30_000;
+
+export type RetryBackoffPolicy = {
+  nextDelayMs(input: { attempt: number }): number;
+  reset?(): void;
+};
+
+export class FixedRetryBackoffPolicy implements RetryBackoffPolicy {
+  private readonly delayMs: number;
+
+  public constructor(delayMs: number) {
+    this.delayMs = delayMs;
+  }
+
+  public nextDelayMs(): number {
+    return this.delayMs;
+  }
+
+  public reset(): void {}
+}
+
+export class LoopLlmRetryExtension<
+  TUsage extends string,
+  TCompletion extends {
+    message: Extract<LlmMessage, { role: "assistant" }> & AssistantLikeMessage;
+  },
+  TExtensionData = unknown,
+> implements ReActKernelExtension<TUsage, TCompletion, TExtensionData> {
+  private readonly backoffPolicy: RetryBackoffPolicy;
+  private readonly sleep: (ms: number) => Promise<void>;
+  private readonly onBeforeRetry?:
+    | ((input: {
+        request: ReActKernelRunRoundInput<TUsage>;
+        error: unknown;
+        delayMs: number;
+        attempt: number;
+      }) => Promise<void> | void)
+    | undefined;
+  private retryAttempt = 0;
+
+  public constructor(input: {
+    backoffPolicy: RetryBackoffPolicy;
+    sleep: (ms: number) => Promise<void>;
+    onBeforeRetry?: (input: {
+      request: ReActKernelRunRoundInput<TUsage>;
+      error: unknown;
+      delayMs: number;
+      attempt: number;
+    }) => Promise<void> | void;
+  }) {
+    this.backoffPolicy = input.backoffPolicy;
+    this.sleep = input.sleep;
+    this.onBeforeRetry = input.onBeforeRetry;
+  }
+
+  public async onAfterModel(): Promise<void> {
+    this.retryAttempt = 0;
+    this.backoffPolicy.reset?.();
+  }
+
+  public async onModelError(input: {
+    request: ReActKernelRunRoundInput<TUsage>;
+    error: unknown;
+  }): Promise<{ handled: boolean; retry: boolean } | void> {
+    if (!isRetryableLlmFailure(input.error)) {
+      return;
+    }
+
+    this.retryAttempt += 1;
+    const delayMs = this.backoffPolicy.nextDelayMs({
+      attempt: this.retryAttempt,
+    });
+
+    await this.onBeforeRetry?.({
+      request: input.request,
+      error: input.error,
+      delayMs,
+      attempt: this.retryAttempt,
+    });
+    await this.sleep(delayMs);
+
+    return {
+      handled: true,
+      retry: true,
+    };
+  }
+}

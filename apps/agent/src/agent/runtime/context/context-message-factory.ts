@@ -1,0 +1,138 @@
+import type { AsyncTaskCompletion } from "@sparkle/agent-runtime";
+import type { LlmContentPart, LlmMessage } from "@sparkle/llm-client";
+import { renderServerStaticTemplate } from "@sparkle/kernel/runtime/read-static-text";
+import { BEIJING_TIME_ZONE } from "@sparkle/kernel/utils/time";
+
+type UserMessage = Extract<LlmMessage, { role: "user" }>;
+
+export function createUserMessage(content: string): UserMessage {
+  return {
+    role: "user",
+    content,
+  };
+}
+
+/**
+ * 一条多模态 user 消息：文本 + 图片块（可多张，如切片长图按序排列）。图片直接进上下文，
+ * 不经 vision 转文字。由 Browser App 的 screenshot / read_resource 经 append_message
+ * Effect（带 images）触发。
+ */
+export function createUserImageMessage(
+  text: string,
+  images: readonly { content: string; mimeType: string; filename?: string }[],
+): UserMessage {
+  const parts: LlmContentPart[] = [
+    { type: "text", text },
+    ...images.map(
+      (image): LlmContentPart => ({
+        type: "image",
+        content: image.content,
+        mimeType: image.mimeType,
+        ...(image.filename ? { filename: image.filename } : {}),
+      }),
+    ),
+  ];
+  return { role: "user", content: parts };
+}
+
+export function createWakeReminderMessage(now: Date): UserMessage {
+  const parts = new Intl.DateTimeFormat("zh-CN", {
+    timeZone: BEIJING_TIME_ZONE,
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    weekday: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(now);
+  const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+
+  return createUserMessage(
+    renderServerStaticTemplate(import.meta.url, "context/wake-reminder.hbs", values),
+  );
+}
+
+/**
+ * 桌面（Portal）reminder：手机 OS 模型下桌面只是初始状态，离开后不可返回。
+ * 进入 / 切换 App 一律用 switch；App 名单已常驻 system prompt，这里不再重复列出。
+ */
+export function createPortalReminderMessage(): UserMessage {
+  return createUserMessage(
+    renderServerStaticTemplate(import.meta.url, "context/portal-reminder.hbs", {}),
+  );
+}
+
+export function createConversationSummaryMessage(summary: string): UserMessage {
+  return createUserMessage(
+    renderServerStaticTemplate(import.meta.url, "context/conversation-summary.hbs", {
+      summary: summary.trim(),
+    }),
+  );
+}
+
+export function createRootContextSummaryReminderMessage(): UserMessage {
+  return createUserMessage(
+    renderServerStaticTemplate(import.meta.url, "context/root-context-summary-reminder.hbs"),
+  );
+}
+
+/**
+ * 手机 OS 模型的统一通知消息：NotificationCenter 聚合后每源一行，包在
+ * `<notification>` 标签里追加到上下文尾部。`lines` 已由各源 Draft 渲染好。
+ */
+export function createNotificationMessage(lines: string[]): UserMessage {
+  return createUserMessage(
+    renderServerStaticTemplate(import.meta.url, "context/notification.hbs", { lines }),
+  );
+}
+
+/**
+ * 前台输入消息：当前前台 App drain 出的实时输入，文本已由 App 自己的模板渲染好、
+ * 自带伪标签（如 QQ 的 `<qq_conversation_new_messages>`），这里只做薄包装成 user
+ * message，不再套第二层标签。与 `<notification>` / `<async_tool_result>` 同为
+ * 「事件 → 尾部 append」路径的消息装配点，收在同一处可审。
+ */
+export function createForegroundInputMessage(text: string): UserMessage {
+  return createUserMessage(text);
+}
+
+/**
+ * 异步工具任务完成后的回流消息：包成一条 `<async_tool_result>` user message 追加到尾部。
+ * 凭 task_id 对应到当初的 `<async_task_submitted>`。content/message 原样插入，不做 XML 转义
+ * （与 `<notification>` 一致：给 LLM 阅读的伪标签，下游无 XML 解析器）。
+ *
+ * 成功且携带图片（`outcome.images`，如生图工具）时，拼成多模态 user message：`<async_tool_result>`
+ * 文本作 text part、产物图作 image part(s)，让主 Agent「看见」异步产物。多模态块用 base64 string、
+ * 走尾部追加（KV 友好，与 append_message 带 image 同源）。无图时退化为纯文本。
+ */
+export function createAsyncToolResultMessage(completion: AsyncTaskCompletion): UserMessage {
+  const { taskId, toolName, outcome } = completion;
+  const view =
+    outcome.status === "success"
+      ? { status: "", isTimeout: false, body: outcome.content }
+      : outcome.status === "error"
+        ? { status: "error", isTimeout: false, body: outcome.message }
+        : { status: "timeout", isTimeout: true, body: "" };
+  const text = renderServerStaticTemplate(import.meta.url, "context/async-tool-result.hbs", {
+    taskId,
+    toolName,
+    ...view,
+  });
+
+  const images = outcome.status === "success" ? outcome.images : undefined;
+  if (images && images.length > 0) {
+    const parts: LlmContentPart[] = [
+      { type: "text", text },
+      ...images.map(image => ({
+        type: "image" as const,
+        content: image.content,
+        mimeType: image.mimeType,
+        ...(image.filename ? { filename: image.filename } : {}),
+      })),
+    ];
+    return { role: "user", content: parts };
+  }
+
+  return createUserMessage(text);
+}

@@ -1,0 +1,48 @@
+{
+  "name": "@sparkle/web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "dist/server/index.js",
+  "scripts": {
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b && tsc --noEmit -p tsconfig.test.json",
+    "start": "node dist/server/index.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@sparkle/agent-api": "workspace:*",
+    "@sparkle/config": "workspace:*",
+    "@sparkle/console-api": "workspace:*",
+    "@sparkle/http": "workspace:*",
+    "@sparkle/llm-api": "workspace:*",
+    "@sparkle/metric-api": "workspace:*",
+    "@sparkle/oss-api": "workspace:*",
+    "@sparkle/rpc-client": "workspace:*",
+    "@sparkle/scheduler-api": "workspace:*",
+    "@radix-ui/react-select": "^2.2.6",
+    "@tanstack/react-query": "^5.90.21",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.552.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.13.1",
+    "recharts": "2.15.4",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss-animate": "^1.0.7",
+    "yaml": "^2.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.18",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vitest": "^3.2.4"
+  }
+}
