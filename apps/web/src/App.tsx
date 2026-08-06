@@ -53,11 +53,6 @@ const OssObjectsPage = lazy(() =>
     default: module.OssObjectsPage,
   })),
 );
-const GbaPage = lazy(() =>
-  import("@/pages/gba/GbaPage").then(module => ({
-    default: module.GbaPage,
-  })),
-);
 
 function App() {
   return (
@@ -77,7 +72,6 @@ function App() {
           <Route path="/napcat-group-message-history" element={<NapcatGroupMessageHistoryPage />} />
           <Route path="/todos" element={<TodosPage />} />
           <Route path="/oss-objects" element={<OssObjectsPage />} />
-          <Route path="/gba" element={<GbaPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

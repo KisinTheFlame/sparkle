@@ -41,12 +41,6 @@ import { TerminalApp } from "../agent/apps/terminal/terminal.app.js";
 import { IthomeApp } from "../agent/apps/ithome/ithome.app.js";
 import { BrowserApp } from "../agent/apps/browser/browser.app.js";
 import type { BrowserClient } from "../acl/browser-client.js";
-import { SpireApp } from "../agent/apps/spire/spire.app.js";
-import { GbaApp } from "../agent/apps/gba/gba.app.js";
-import type { SpireClient } from "../acl/spire-client.js";
-import type { GbaClient } from "../acl/gba-client.js";
-import { PixelApp } from "../agent/apps/pixel/pixel.app.js";
-import type { PixelClient } from "../acl/pixel-client.js";
 import { TodoApp } from "../agent/apps/todo/todo.app.js";
 import type { TodoService } from "../agent/capabilities/todo/application/todo.service.js";
 import { PrismaLinearMessageLedgerDao } from "../agent/capabilities/ledger/infra/impl/prisma-linear-message-ledger.impl.dao.js";
@@ -59,7 +53,6 @@ import { UploadResourceTool } from "../agent/capabilities/resource/tools/upload-
 import type { OssClient } from "../acl/oss-client.js";
 import { CalcApp } from "../agent/apps/calc/calc.app.js";
 import { ClockApp } from "../agent/apps/clock/clock.app.js";
-import { HnApp } from "../agent/apps/hn/hn.app.js";
 import { AmapApp } from "../agent/apps/amap/amap.app.js";
 import { AtelierApp } from "../agent/apps/atelier/atelier.app.js";
 import type { ImageClient } from "../acl/image-client.js";
@@ -83,11 +76,6 @@ type BuildAgentRuntimeInput = {
   ossClient?: OssClient;
   /** 浏览器动作客户端：打到独立的 sparkle-browser 进程（issue #173）。 */
   browserClient: BrowserClient;
-  /** 尖塔游戏动作客户端：打到独立的 sparkle-spire 进程（issue #234）。 */
-  spireClient: SpireClient;
-  gbaClient: GbaClient;
-  /** 像素画动作客户端：打到独立的 sparkle-pixel 进程（issue #365）。 */
-  pixelClient: PixelClient;
   /** 生图客户端：打到 sparkle-llm 的生图端点（走 codex 订阅额度，issue #508）。 */
   imageClient: ImageClient;
 };
@@ -187,9 +175,6 @@ export async function buildAgentRuntime({
   eventQueue,
   ossClient,
   browserClient,
-  spireClient,
-  gbaClient,
-  pixelClient,
   imageClient,
 }: BuildAgentRuntimeInput): Promise<AgentRuntimeBundle> {
   const rootAgentRuntimeSnapshotRepository = new PrismaRootAgentRuntimeSnapshotRepository({
@@ -265,12 +250,8 @@ export async function buildAgentRuntime({
   appManager.register(new IthomeApp({ ithomeService }));
   appManager.register(new TodoApp({ todoService }));
   appManager.register(new ClockApp());
-  appManager.register(new HnApp());
   appManager.register(new AmapApp({ ossClient }));
   appManager.register(new BrowserApp({ browserClient, ossClient }));
-  appManager.register(new SpireApp({ spireClient }));
-  appManager.register(new GbaApp({ gbaClient, ossClient }));
-  appManager.register(new PixelApp({ pixelClient, ossClient }));
   // 共享异步任务原语：completion 以事件形式塞回主 Agent 事件队列，session 装配成 <async_tool_result>
   // 尾部追加触发新轮。atelier 是首个消费者；未来其它异步工具复用同一实例（#508）。
   const asyncTaskManager = new AsyncTaskManager({

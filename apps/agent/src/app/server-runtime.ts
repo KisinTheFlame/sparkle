@@ -31,9 +31,6 @@ import { SchedulerTriggerCallbackHandler } from "./scheduler-trigger-callback.ha
 import { AppStateOccurrenceStore } from "./app-state-occurrence-store.js";
 import { HttpOssClient } from "../acl/oss-client.js";
 import { HttpBrowserClient } from "../acl/browser-client.js";
-import { HttpSpireClient } from "../acl/spire-client.js";
-import { HttpGbaClient } from "../acl/gba-client.js";
-import { HttpPixelClient } from "../acl/pixel-client.js";
 import { PrismaIthomeArticleDao } from "../agent/capabilities/ithome/infra/prisma-ithome-article.dao.js";
 import { PrismaIthomeFeedCursorDao } from "../agent/capabilities/ithome/infra/prisma-ithome-feed-cursor.dao.js";
 import { DefaultIthomeClient } from "../agent/capabilities/ithome/application/ithome-client.js";
@@ -127,21 +124,6 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
   const browserClient = new HttpBrowserClient({
     baseUrl: `http://${config.services.browser.host}:${config.services.browser.port}`,
   });
-  // 尖塔卡牌游戏拆成独立 sparkle-spire 进程（issue #234）：agent 经 HTTP client 调它，地址从
-  // 顶层 services.spire 派生。游戏进程未起时，client 把错误归一成 SPIRE_NOT_READY，工具仍回规整失败结构。
-  const spireClient = new HttpSpireClient({
-    baseUrl: `http://${config.services.spire.host}:${config.services.spire.port}`,
-  });
-  // 像素画拆成独立 sparkle-pixel 进程（issue #365）：agent 经 HTTP client 调它，地址从顶层
-  // services.pixel 派生。服务未起时，client 把错误归一成 PIXEL_NOT_READY，工具仍回规整失败结构。
-  const pixelClient = new HttpPixelClient({
-    baseUrl: `http://${config.services.pixel.host}:${config.services.pixel.port}`,
-  });
-  // GBA 掌机拆成独立 sparkle-gba 进程（issue #541）：agent 经 HTTP client 直连游玩面,地址从
-  // 顶层 services.gba 派生。服务未起时,client 把错误归一成 GBA_NOT_READY,工具仍回规整失败结构。
-  const gbaClient = new HttpGbaClient({
-    baseUrl: `http://${config.services.gba.host}:${config.services.gba.port}`,
-  });
   const eventQueue = new InMemoryQueue<Event>();
   // 手机 OS 模型：被动通知中心。各源（这里是 ithome poller）向它 push draft，它窗口
   // 聚合后把一条 notification 事件塞进事件队列——既投递内容也唤醒 Agent。
@@ -181,9 +163,6 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
     eventQueue,
     ossClient,
     browserClient,
-    spireClient,
-    gbaClient,
-    pixelClient,
     imageClient,
   });
 

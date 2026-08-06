@@ -106,50 +106,11 @@ module.exports = {
       },
     },
     {
-      // 尖塔卡牌游戏引擎：独立 PM2 生命周期，agent 重启不打断进行中的对局。cwd 固定仓库根，
-      // 让存档 data/spire/ 落在仓库根 data/ 下，对局跨 agent / 本进程重启留存。
-      name: "sparkle-spire",
-      cwd: __dirname,
-      script: "apps/spire/dist/index.js",
-      interpreter: "node",
-      exec_mode: "fork",
-      instances: 1,
-      env: {
-        NODE_ENV: "production",
-      },
-    },
-    {
       // NapCat 接入：独立 PM2 生命周期，agent 重启不打断到 NapCat 的 WS 长连接（issue #347）。
       // 持有出站 RPC + 入站 SSE + vision/OSS/落库；cwd 固定仓库根，读同一 config.yaml / SQLite。
       name: "sparkle-napcat",
       cwd: __dirname,
       script: "apps/napcat/dist/index.js",
-      interpreter: "node",
-      exec_mode: "fork",
-      instances: 1,
-      env: {
-        NODE_ENV: "production",
-      },
-    },
-    {
-      // 像素画服务：独立 PM2 生命周期，agent 重启不丢画布。cwd 固定仓库根，
-      // 让存档 data/pixel/ 落在仓库根 data/ 下，画布跨 agent / 本进程重启留存。
-      name: "sparkle-pixel",
-      cwd: __dirname,
-      script: "apps/pixel/dist/index.js",
-      interpreter: "node",
-      exec_mode: "fork",
-      instances: 1,
-      env: {
-        NODE_ENV: "production",
-      },
-    },
-    {
-      // GBA 模拟器服务：独立 PM2 生命周期，agent 重启不丢模拟器热状态（issue #541）。内嵌 mGBA
-      // WASM 核心；cwd 固定仓库根，让元数据库 data/gba/（ROM 库 + 电池存档）跨重启留存。
-      name: "sparkle-gba",
-      cwd: __dirname,
-      script: "apps/gba/dist/index.js",
       interpreter: "node",
       exec_mode: "fork",
       instances: 1,

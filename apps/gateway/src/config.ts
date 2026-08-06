@@ -17,8 +17,6 @@ export interface GatewayConfig {
   ossTarget: URL;
   /** scheduler 上游基址，由 services.scheduler.host/port 拼出（调度任务全局查询 / 触发 /scheduler/tasks 走它）。 */
   schedulerTarget: URL;
-  /** gba 上游基址，由 services.gba.host/port 拼出（ROM 管理 /gba/roms 与实况面 /gba/console 走它）。 */
-  gbaTarget: URL;
   /** web 上游基址，由 services.web.host/port 拼出：非 /api 的请求（前端页面 + 静态资源）全转给它（#578）。 */
   webTarget: URL;
 }
@@ -37,7 +35,6 @@ interface RawConfig {
     metric?: RawServiceEndpoint;
     oss?: RawServiceEndpoint;
     scheduler?: RawServiceEndpoint;
-    gba?: RawServiceEndpoint;
     web?: RawServiceEndpoint;
   };
 }
@@ -70,7 +67,6 @@ export function loadGatewayConfig(): GatewayConfig {
     metricTarget: resolveEndpoint(services?.metric, "metric"),
     ossTarget: resolveEndpoint(services?.oss, "oss"),
     schedulerTarget: resolveEndpoint(services?.scheduler, "scheduler"),
-    gbaTarget: resolveEndpoint(services?.gba, "gba"),
     webTarget: resolveEndpoint(services?.web, "web"),
   };
 }

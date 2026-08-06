@@ -19,7 +19,6 @@ const UPSTREAM_TARGETS: Record<UpstreamKey, URL> = {
   console: config.consoleTarget,
   oss: config.ossTarget,
   scheduler: config.schedulerTarget,
-  gba: config.gbaTarget,
   agent: config.agentTarget,
 };
 // 上游响应超时：等待上游返回响应头的上限。命中即回 504，避免上游卡死 / 半开时前端连接

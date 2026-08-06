@@ -8,7 +8,7 @@ import type { SeriesMetaResolver } from "./MetricChartView";
  *   是最该被一眼扫到的空闲带（也恒堆在最顶，见 DashboardPage 的 pinSeriesToTop）；
  * - `portal` = 桌面初始态（未进任何 App），中性弱色。
  *
- * 其余状态（各 App）不再维护名字/配色映射：图例回落到后端返回的原始 state tag（如 "qq"/"gba"），
+ * 其余状态（各 App）不再维护名字/配色映射：图例回落到后端返回的原始 state tag（如 "qq"），
  * 颜色走 MetricChartView 的 seriesColors 轮转。新增 App 零维护，绝不再显示「未知」。
  */
 const STATE_META: Record<string, { label: string; color: string }> = {

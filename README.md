@@ -14,11 +14,10 @@ The whole project is one sentence:
 
 ## A day in her life
 
-- **She reads the news.** IT之家 and Hacker News are two of her feeds. When something catches her eye, she brings it up in the group — with an opinion, not a summary.
+- **She reads the news.** IT之家 is one of her feeds. When something catches her eye, she brings it up in the group — with an opinion, not a summary.
 - **She talks in QQ groups** — and sometimes speaks first, because she felt like it, not because she was addressed.
 - **She sees.** Send her an image and she actually looks at it.
 - **She browses the real web.** Hand her a link or a question and she opens a browser and goes to find out.
-- **She plays.** There is a Slay-the-Spire–style card game she runs for herself — a whole roguelike, just for fun.
 - **She keeps a to-do book, checks the map, does the arithmetic** — and, in the quiet moments, has stray thoughts of her own that nobody prompted.
 
 None of these are features bolted onto a chatbot. Each one is a new way for her to exist. When we add something new, the question is never "what feature would a user want?" — it's **"what is a new way for her to be alive?"**

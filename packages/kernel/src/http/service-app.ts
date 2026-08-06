@@ -31,7 +31,7 @@ type CreateServiceAppOptions = {
   /**
    * 覆盖默认错误处理器。默认三分支面向前端查询服务（console / metric）：ZodError → 400、
    * BizError → toHttpErrorResponse、其余 → 500。内部 RPC 服务各有领域错误信封
-   * （llm 的 BizErrorWire、browser 的 BrowserError wire、spire / oss 的自有形状），从这里传入。
+   * （llm 的 BizErrorWire、browser 的 BrowserError wire、oss 的自有形状），从这里传入。
    */
   errorHandler?: ServiceErrorHandler;
   /** 注册路由前对 app 的进一步定制（如 oss 的原始字节流透传 parser 与 content-type 归一 hook）。 */
@@ -40,7 +40,7 @@ type CreateServiceAppOptions = {
 
 /**
  * 卫星服务共用的 Fastify 装配壳（issue #274）：traceId 注入、统一错误出口、handler 注册。
- * 此前 browser / console / llm / metric / spire 五份装配各自复制这段样板，关停 / 错误分支
+ * 此前 browser / console / llm / metric 等多份装配各自复制这段样板，关停 / 错误分支
  * 细节随复制漂移——收敛到这里，服务侧只留领域差异（handlers / errorHandler / fastifyOptions）。
  */
 export function createServiceApp(options: CreateServiceAppOptions): FastifyInstance {

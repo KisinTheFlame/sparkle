@@ -1,7 +1,0 @@
-{
-  "name": "webgl-node",
-  "version": "0.0.0-sparkle-stub",
-  "description": "sparkle 本地 stub：webgl-node 只服务 retroemu 的 canvas 型 GL 核心（parallel_n64/flycast 等），mGBA 软渲染永不触达。stub 掉后安装无需原生构建工具链，见 issue #541。",
-  "type": "module",
-  "main": "index.js"
-}

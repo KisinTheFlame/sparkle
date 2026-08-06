@@ -1,6 +1,5 @@
 import { agentApiContract } from "@sparkle/agent-api/contract";
 import { consoleApiContract } from "@sparkle/console-api/contract";
-import { gbaConsoleContract, gbaRomsContract } from "@sparkle/gba-api/contract";
 import { authApiContract } from "@sparkle/llm-api/auth-contract";
 import { llmProvidersViewContract } from "@sparkle/llm-api/providers-view";
 import { metricApiContract } from "@sparkle/metric-api/contract";
@@ -84,15 +83,3 @@ export const ossConsoleClient = createClient(ossConsoleContract, clientOptions);
 // /scheduler/tasks 前缀分流到 sparkle-scheduler。
 export const schedulerTasksClient = createClient(schedulerTasksViewContract, clientOptions);
 export const schedulerTriggerClient = createClient(schedulerTriggerContract, clientOptions);
-
-// GBA 面（#541 PR3）：ROM 列表 / 删除 + 实况状态,经 gateway /gba/roms + /gba/console 前缀直连
-// sparkle-gba。uploadRom 是 binary-envelope(裸字节上行),不进 JSON client——上传走 buildApiUrl
-// 的裸 fetch(见 pages/gba);实况画面 /gba/console/screen 是 binary-raw PNG,同样裸 fetch 轮询。
-export const gbaClient = createClient(
-  {
-    listRoms: gbaRomsContract.listRoms,
-    deleteRom: gbaRomsContract.deleteRom,
-    consoleState: gbaConsoleContract.state,
-  },
-  clientOptions,
-);

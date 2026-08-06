@@ -15,7 +15,7 @@ import {
 // === @sparkle/agent-api：sparkle-agent 服务面向管理台的 HTTP 契约（issue #279 PR5） ===
 //
 // 消费者是 web 前端（gateway 默认目标）。web 走 contractUrl 取 path/schema，fetch 层与
-// ApiError 链路不变（D1）。agent 对上游（llm/oss/browser/spire/metric）的消费契约在各上游
+// ApiError 链路不变（D1）。agent 对上游（llm/oss/browser/metric）的消费契约在各上游
 // 自己的 *-api 包，这里只收 agent 自己产出的路由。
 
 export const agentApiContract = {

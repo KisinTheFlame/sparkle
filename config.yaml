@@ -10,7 +10,7 @@ services:
   agent: { host: localhost, port: 20003 } # sparkle-agent
   console: { host: localhost, port: 20006 } # sparkle-console（管理台后端，纯 DB 查询）
   gateway: { host: localhost, port: 20004 } # sparkle-gateway（前门：纯反向代理，/api 分流后端 + 其余转 web；#578）
-  web: { host: 127.0.0.1, port: 20016 } # sparkle-web（管理台前端，自持静态托管，仅 localhost：只经 gateway 反代；#578。20015 gba 已占）
+  web: { host: 127.0.0.1, port: 20016 } # sparkle-web（管理台前端，自持静态托管，仅 localhost：只经 gateway 反代；#578）
   oss: # sparkle-oss（自建对象存储，仅 localhost：agent 经 HttpOssClient 存取，gateway 转只读浏览）
     host: 127.0.0.1
     port: 20005
@@ -24,17 +24,11 @@ services:
     host: 127.0.0.1
     port: 20010
     databaseUrl: file:./data/metric/metric.duckdb # metric 独占 DuckDB 单文件（列式，为 p95/分析聚合而生，#475）；与旧反推路径同址，无需迁移
-  spire: { host: 127.0.0.1, port: 20011 } # sparkle-spire（杀塔式卡牌游戏引擎，仅 localhost：agent 经 HttpSpireClient 驱动）
-  napcat: # sparkle-napcat（NapCat 接入独立进程，仅 localhost：agent 经 HttpNapcatClient 出站 + SSE 订阅入站；#347。20012 留给像素画 #365）
+  napcat: # sparkle-napcat（NapCat 接入独立进程，仅 localhost：agent 经 HttpNapcatClient 出站 + SSE 订阅入站；#347）
     host: 127.0.0.1
     port: 20013
     databaseUrl: file:./data/napcat/napcat.db # napcat 独占 SQLite 库（napcat_event / napcat_qq_message / outbox / image_asset，#539）
-  pixel: { host: 127.0.0.1, port: 20012 } # sparkle-pixel（像素画服务，仅 localhost：agent 经 HttpPixelClient 驱动）
-  gba: # sparkle-gba（GBA 模拟器服务，仅 localhost：agent 经 HttpGbaClient 直连游玩面，gateway 只转 /gba/roms 管理面；#541。20014 scheduler 已占）
-    host: 127.0.0.1
-    port: 20015
-    databaseUrl: file:./data/gba/gba.db # gba 独占 SQLite 库（rom / battery_save / run_state / resume_state；ROM 字节在 OSS）
-  scheduler: # sparkle-scheduler（通用定时调度服务，仅 localhost：agent 经 SchedulerClient 注册 + SSE 收 tick；#428。20013 napcat / 20012 pixel 已占）
+  scheduler: # sparkle-scheduler（通用定时调度服务，仅 localhost：agent 经 SchedulerClient 注册 + SSE 收 tick；#428。20013 napcat 已占）
     host: 127.0.0.1
     port: 20014
     databaseUrl: file:./data/scheduler/scheduler.db # scheduler 独占 SQLite 库（TaskRun 执行历史，#493）
@@ -173,23 +167,6 @@ server:
       maxCommandLength: 4096 # command 参数字符长度上限
       readOutputMaxSize: 4096 # read_bash_output 单次返回字节上限
       shell: /bin/sh # 执行 bash command 时使用的 shell
-    hn:
-      # Hacker News App（只读：逛 / 读讨论 / 搜 / 看用户）。两个 API 都零鉴权公开。
-      # 整段可省略，全部字段都有默认值。
-      userAgent: "Mozilla/5.0 ... Sparkle/1.0" # 请求 HN 用的 User-Agent
-      fetchTimeoutMs: 10000 # 单次 HTTP 超时
-      fetchMaxAttempts: 3 # 含首次的最大尝试次数（只对 429/408/5xx/网络错误重试）
-      fetchBackoffBaseMs: 500 # 指数退避基数
-      fetchBackoffMaxMs: 8000 # 退避上限
-      glanceDefaultLimit: 15 # glance_hn 默认看几条
-      glanceLimitCap: 30 # glance_hn 上限（超过被截断）
-      glanceConcurrency: 6 # glance_hn 拉 item 的并发上限
-      commentTopLimit: 20 # open_hn_thread 展开的主楼评论数
-      commentReplyLimit: 3 # 每条主楼展开的第一层回复数
-      perCommentMaxChars: 600 # 单条评论 / 片段最大字符
-      responseMaxChars: 8000 # open_hn_thread 评论总字符预算，超出截断
-      searchHitsLimit: 15 # search_hn 返回命中数
-      userActivityLimit: 10 # open_hn_user 近期发言条数
     amap:
       # 高德地图 App（接入高德 Web 服务 API：geocode / POI / 路径 / 天气 / 静态地图）。
       # apiKey 是凭据，不放这里——填到 config.secret.yaml 的 server.apps.amap.apiKey；

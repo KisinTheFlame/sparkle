@@ -1,12 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { CalcApp } from "../../../src/agent/apps/calc/calc.app.js";
 import { ClockApp } from "../../../src/agent/apps/clock/clock.app.js";
-import { HnApp } from "../../../src/agent/apps/hn/hn.app.js";
 import { AmapApp } from "../../../src/agent/apps/amap/amap.app.js";
 import { BrowserApp } from "../../../src/agent/apps/browser/browser.app.js";
-import { SpireApp } from "../../../src/agent/apps/spire/spire.app.js";
 import type { BrowserClient } from "../../../src/acl/browser-client.js";
-import type { SpireClient } from "../../../src/acl/spire-client.js";
 import type { RootAgentEffect } from "../../../src/agent/runtime/effect/root-agent-effect.js";
 
 /**
@@ -29,8 +26,6 @@ const BROWSER_TOOLS = [
   "browser_eval",
 ];
 
-const SPIRE_TOOLS = ["start_run", "play_card", "end_turn", "choose", "look", "lookup"];
-
 const AMAP_TOOLS = [
   "geocode",
   "regeocode",
@@ -41,8 +36,6 @@ const AMAP_TOOLS = [
   "weather",
   "static_map",
 ];
-
-const HN_TOOLS = ["glance_hn", "search_hn", "open_hn_thread", "open_hn_user"];
 
 function appendedContent(effects: readonly RootAgentEffect[]): string {
   expect(effects).toHaveLength(1);
@@ -68,10 +61,6 @@ function stubBrowserApp(): BrowserApp {
     },
   } as unknown as BrowserClient;
   return new BrowserApp({ browserClient });
-}
-
-function stubSpireApp(): SpireApp {
-  return new SpireApp({ spireClient: {} as unknown as SpireClient });
 }
 
 async function startedAmapApp(apiKey: string): Promise<AmapApp> {
@@ -118,30 +107,11 @@ describe("calc / clock — help 逐字锁（无 onFocus，本就只靠 help）",
 });
 
 describe("portal 定位屏 — 不含子工具清单与导航指引", () => {
-  it("hn：portal 只剩定位散文", async () => {
-    const content = appendedContent(await new HnApp().onFocus());
-    expect(content.startsWith("<hn_portal>")).toBe(true);
-    expect(content).toContain("你进了 Hacker News。这里没有未读提醒——想看才看。");
-    expect(content.endsWith("</hn_portal>")).toBe(true);
-    expectPortalIsPureIntro(content, HN_TOOLS);
-  });
-
   it("browser：portal 只剩定位散文", async () => {
     const content = appendedContent(await stubBrowserApp().onFocus());
     expect(content.startsWith("<browser_portal>")).toBe(true);
     expect(content).toContain("你进了浏览器。");
     expectPortalIsPureIntro(content, BROWSER_TOOLS);
-  });
-
-  it("spire：portal 缩到定位散文，≤ 2 句", async () => {
-    const content = appendedContent(await stubSpireApp().onFocus());
-    expect(content.startsWith("<spire_portal>")).toBe(true);
-    expect(content).toContain("你进了杀戮尖塔");
-    expect(content).not.toContain("玩法");
-    expectPortalIsPureIntro(content, SPIRE_TOOLS);
-    const body = content.replace(/<\/?spire_portal>/g, "").trim();
-    const sentences = body.split(/[。！？]/).filter(s => s.trim().length > 0);
-    expect(sentences.length).toBeLessThanOrEqual(2);
   });
 
   it("amap（已配置）：portal 只剩定位散文", async () => {
@@ -183,18 +153,6 @@ describe("help — 子工具清单的唯一来源，保留 switch 指引", () =>
     expect(await app.help()).toContain("你在浏览器 App 里。上次你在：（https://example.com）");
   });
 
-  it("spire：help 披露全部 6 个工具与玩法段，且与 onFocus 屏不再相同", async () => {
-    const app = stubSpireApp();
-    const help = await app.help();
-    for (const name of SPIRE_TOOLS) {
-      expect(help).toContain(name);
-    }
-    expect(help).toContain("玩法");
-    expect(help).toContain("每次动作后都会返回最新战况");
-    expect(help).toContain("switch");
-    expect(help).not.toBe(appendedContent(await app.onFocus()));
-  });
-
   it("amap（已配置）：help 披露全部 8 个工具与 GCJ-02 要点", async () => {
     const help = await (await startedAmapApp("K")).help();
     for (const name of AMAP_TOOLS) {
@@ -209,13 +167,5 @@ describe("help — 子工具清单的唯一来源，保留 switch 指引", () =>
     const helpText = await app.help();
     expect(helpText).toContain("你进了高德地图，但它还没配置 key，暂时不能用。");
     expect(appendedContent(await app.onFocus())).toBe(helpText);
-  });
-
-  it("hn：help 披露全部 4 个工具", async () => {
-    const help = await new HnApp().help();
-    for (const name of HN_TOOLS) {
-      expect(help).toContain(name);
-    }
-    expect(help).toContain("switch");
   });
 });

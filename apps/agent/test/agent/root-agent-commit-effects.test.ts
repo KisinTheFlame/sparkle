@@ -3,7 +3,7 @@ import type { LlmMessage } from "@sparkle/llm";
 import { RootAgentHost } from "../../src/agent/runtime/root-agent/root-agent-runtime.js";
 
 /**
- * 回归测试（针对 glance_hn / ithome 列表"看不到内容"的根因）：
+ * 回归测试（针对 ithome 列表这类只走 append_message 的屏"看不到内容"的根因）：
  *
  * tool 的 `append_message` effect 经 kernel interpreter 翻译后挂在
  * `toolExecution.effectMessages` 上。`RootAgentHost.commitRoundResult` 必须把它
@@ -53,14 +53,14 @@ describe("RootAgentHost.commitRoundResult — append_message effect 持久化", 
     const assistantMessage = {
       role: "assistant" as const,
       content: "",
-      toolCalls: [{ id: "tc1", name: "invoke", arguments: { tool: "glance_hn" } }],
+      toolCalls: [{ id: "tc1", name: "invoke", arguments: { tool: "view_time" } }],
     };
     return {
       completion: { message: assistantMessage },
       assistantMessage,
       toolExecutions: [
         {
-          toolCall: { id: "tc1", name: "invoke", arguments: { tool: "glance_hn" } },
+          toolCall: { id: "tc1", name: "invoke", arguments: { tool: "view_time" } },
           result: { content: '{"ok":true,"feed":"top","count":10}', kind: "business" },
           appendedMessages: [
             { role: "tool", toolCallId: "tc1", content: '{"ok":true,"feed":"top","count":10}' },

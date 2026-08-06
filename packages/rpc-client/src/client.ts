@@ -171,8 +171,8 @@ async function callJsonRoute(
 
 /**
  * 通用「服务未就绪」兜底映射器：把三种兜底成因统一成一个领域错误。`label` 拼进标准中文文案
- * （不可达 / HTTP 状态 / 响应体无效），`make` 决定错误类。给 browser（BrowserError）/ spire
- * （SpireError）这类「连接失败/半开/非 2xx/坏响应一律归一为 X_NOT_READY」的消费者共用，替掉各自
+ * （不可达 / HTTP 状态 / 响应体无效），`make` 决定错误类。给 browser（BrowserError）这类
+ * 「连接失败/半开/非 2xx/坏响应一律归一为 X_NOT_READY」的消费者共用，替掉各自
  * 手写、逐字相同的 switch（issue #310）。文案与被替换的原实现逐字一致，字节基线不变。
  */
 export function notReadyFallbackMapper(

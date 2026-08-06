@@ -104,7 +104,7 @@ type PendingToolPersistence = {
   };
   /**
    * 本次工具执行的 `effects` 经 interpreter 翻译出的待追加消息（App 列表 / 文章正文等
-   * "屏幕"）。必须落库——否则 glance_hn / ithome 列表这类只走 `append_message` effect 的
+   * "屏幕"）。必须落库——否则 ithome 列表这类只走 `append_message` effect 的
    * 内容只会在回合内可见、不进 ledger，下一轮 Agent 就看不到了。
    */
   effectMessages: LlmMessage[];

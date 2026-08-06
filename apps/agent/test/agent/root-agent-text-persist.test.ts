@@ -39,7 +39,7 @@ describe("RootAgentHost.commitRoundResult — assistant text 保留与纯文本�
     const assistantMessage = {
       role: "assistant" as const,
       content: "我打算先看看列表再决定。",
-      toolCalls: [{ id: "tc1", name: "invoke", arguments: { tool: "glance_hn" } }],
+      toolCalls: [{ id: "tc1", name: "invoke", arguments: { tool: "view_time" } }],
     };
 
     await host.commitRoundResult(
@@ -64,7 +64,7 @@ describe("RootAgentHost.commitRoundResult — assistant text 保留与纯文本�
     expect(appendAssistantTurn).toHaveBeenCalledWith({
       role: "assistant",
       content: "我打算先看看列表再决定。",
-      toolCalls: [{ id: "tc1", name: "invoke", arguments: { tool: "glance_hn" } }],
+      toolCalls: [{ id: "tc1", name: "invoke", arguments: { tool: "view_time" } }],
     });
   });
 

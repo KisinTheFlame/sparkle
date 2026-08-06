@@ -13,7 +13,7 @@ const Schema = z.object({
 });
 
 // as const + 具名 const（非内联字面量）：JsonSchema 类型不含 required，内联传参会触发 excess property
-// 检查；抽成 const 后按结构子类型赋值、额外 required 被接受（同 pixel 各工具的 parameters 声明）。
+// 检查；抽成 const 后按结构子类型赋值、额外 required 被接受。
 const GENERATE_PARAMETERS = {
   type: "object",
   properties: {
@@ -38,7 +38,7 @@ type Deps = {
  * 完成时**原图直接进你的视野**（多模态块），并叠加落 OSS 拿 resid（之后 switch(qq) 用 send_resource 发群）。
  *
  * 只收 prompt：codex 后端忽略 size/quality、固定 1254×1254，暴露尺寸旋钮是误导（见 #503）。
- * 镜像 pixel render 的「落 OSS + 图进视野 + OSS 关闭则降级无 resid」，区别只在这里走异步回流路径。
+ * 「落 OSS + 图进视野 + OSS 关闭则降级无 resid」，区别只在这里走异步回流路径。
  */
 export function createAtelierGenerateTool({
   imageClient,

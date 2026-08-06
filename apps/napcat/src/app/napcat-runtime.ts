@@ -37,7 +37,7 @@ const PRUNE_INTERVAL_MS = 60 * 60 * 1000;
  * Fastify 默认 bodyLimit 1 MB 远不够：send_resource 发图经 `/napcat/image/send` 以 `base64://` 内联
  * 整图字节（自包含、不依赖 napcat 访问 OSS），一张图上限是 agent 侧 resource.maxBytes（4 MiB），base64
  * 膨胀 ~4/3 后约 5.5 MiB，加 JSON 信封仍需 6 MiB 以上。取 16 MiB 留足头（也覆盖 resource cap 未来上调）。
- * 不设的话 pixel/browser 小图能发、生图等大图一律 413（issue #508 上线后发现）。
+ * 不设的话 browser 截图等小图能发、生图等大图一律 413（issue #508 上线后发现）。
  */
 const NAPCAT_BODY_LIMIT_BYTES = 16 * 1024 * 1024;
 

@@ -233,18 +233,10 @@ const ServicesSchema = z
     metric: ServiceEndpointSchema.extend({
       databaseUrl: DatabaseUrlSchema,
     }),
-    spire: ServiceEndpointSchema,
     // napcat 除 host/port 外还持有独立 Prisma 库（epic #539 子 issue 2）：napcat_event /
     // napcat_qq_message / napcat_event_outbox / image_asset 落它自己的 SQLite 文件，
     // 与主库 server.databaseUrl 物理分离。databaseUrl 非隐私，进 config.yaml。
     napcat: ServiceEndpointSchema.extend({
-      databaseUrl: DatabaseUrlSchema,
-    }),
-    pixel: ServiceEndpointSchema,
-    // gba 除 host/port 外还持有独立 Prisma 库：rom / battery_save / run_state / resume_state
-    // 落它自己的 SQLite 文件（ROM 元数据 + 电池存档 + 重启现场；ROM 字节在 OSS）。
-    // databaseUrl 非隐私，进 config.yaml。
-    gba: ServiceEndpointSchema.extend({
       databaseUrl: DatabaseUrlSchema,
     }),
     // scheduler 除 host/port 外还持有独立 Prisma 库（issue #493）：TaskRun 执行历史落它自己的
@@ -552,11 +544,6 @@ export async function loadStaticConfig(options: LoadStaticConfigOptions = {}): P
       llm: {
         ...data.services.llm,
         databaseUrl: resolveSqliteFileUrl(configDir, data.services.llm.databaseUrl),
-      },
-      // gba 独立 SQLite 库：同上，把相对 file: 路径锚定到仓库根。
-      gba: {
-        ...data.services.gba,
-        databaseUrl: resolveSqliteFileUrl(configDir, data.services.gba.databaseUrl),
       },
       // metric 独占 DuckDB 单文件（#475）：同上把相对 file: 路径锚定到仓库根（resolveSqliteFileUrl
       // 只做 file: 绝对化，对 .duckdb 同样适用），杜绝按进程 cwd 静默解析。
