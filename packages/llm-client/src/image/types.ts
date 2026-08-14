@@ -1,6 +1,6 @@
 /**
  * 生图（image generation）能力的抽象层类型，与 [[embedding/types]] 平级：都是「非 chat 的第二类
- * LLM 能力」。抽象层保持纯粹——「给 prompt，回原始字节」，落 OSS / 发 QQ 属消费端职责，不进本包。
+ * LLM 能力」。抽象层保持纯粹——「给 prompt，回原始字节」，落 OSS 等属消费端职责，不进本包。
  */
 export type ImageProviderId = "openai-codex";
 

@@ -20,7 +20,7 @@ type ShutdownServerResourcesOptions = {
   isServerStarted: boolean;
   app: FastifyInstance | null;
   database: Database | null;
-  /** 反序关停所有 App（含 QQ App 停 napcat 网关）。取代旧的 napcatGatewayService.stop。 */
+  /** 反序关停所有 App。 */
   shutdownApps: (() => Promise<void>) | null;
   schedulerClient: SchedulerClient | null;
   rootAgentRuntime: AgentRuntimeController | null;
@@ -100,11 +100,7 @@ export async function shutdownServerResources({
     await step("HTTP server closed", "server.shutdown.http_closed", () => app.close());
   }
   if (shutdownApps) {
-    await step(
-      "Apps shut down (incl. Napcat gateway)",
-      "server.shutdown.apps_closed",
-      shutdownApps,
-    );
+    await step("Apps shut down", "server.shutdown.apps_closed", shutdownApps);
   }
   if (schedulerClient) {
     // 拆分后调度器在独立进程；本地只停 SDK 的订阅循环 + 中断在跑的 handler（同步，无需 await）。

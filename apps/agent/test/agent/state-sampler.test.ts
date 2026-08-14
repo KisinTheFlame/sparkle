@@ -30,7 +30,7 @@ describe("StateSampler", () => {
   }
 
   it("每 intervalMs 打一条 value=1 的 agent.state.sample，tags.state 取当前状态，occurredAt 为 Date", () => {
-    let state = "qq";
+    let state = "terminal";
     const { sampler, records } = setup(() => state);
     sampler.start();
 
@@ -39,7 +39,7 @@ describe("StateSampler", () => {
     expect(records[0]).toMatchObject({
       metricName: STATE_SAMPLE_METRIC_NAME,
       value: 1,
-      tags: { state: "qq" },
+      tags: { state: "terminal" },
     });
     expect(records[0]?.occurredAt).toBeInstanceOf(Date);
 
@@ -73,10 +73,10 @@ describe("StateSampler", () => {
   });
 
   it("record 抛错不冒泡（fire-and-forget）", () => {
-    const { sampler } = setup(() => "qq");
+    const { sampler } = setup(() => "terminal");
     // 覆盖成抛错的 record，验证 sampleOnce 不让它冒泡崩溃定时器回调。
     const throwingClient = new StateSampler({
-      getStateTag: () => "qq",
+      getStateTag: () => "terminal",
       metricClient: {
         record: vi.fn(() => Promise.reject(new Error("metric down"))),
       },

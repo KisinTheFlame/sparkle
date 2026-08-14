@@ -7,7 +7,7 @@ import type { TickBroadcaster, TickSubscriber } from "../application/tick-broadc
 
 const logger = new AppLogger({ source: "scheduler.ticks-handler" });
 
-/** SSE 背压宽限期：res.write 背压后等 drain 这么久，还不 drain 就销毁连接（复刻 napcat #425）。 */
+/** SSE 背压宽限期：res.write 背压后等 drain 这么久，还不 drain 就销毁连接（#425）。 */
 const SSE_BACKPRESSURE_GRACE_MS = 15_000;
 
 type SchedulerTicksHandlerDeps = {
@@ -48,7 +48,7 @@ export class SchedulerTicksHandler {
         "X-Accel-Buffering": "no",
       });
 
-      // 背压保护（复刻 napcat #425）：慢/半死消费方（agent 事件循环卡住）若不 drain，裸 res.write
+      // 背压保护（#425）：慢/半死消费方（agent 事件循环卡住）若不 drain，裸 res.write
       // 续写会让 scheduler 进程内存无界增长——tick 帧虽小，但同进程内所有 owner 共享一个进程。背压即
       // 停写、宽限期后 destroy，让对端重连（重连重新注册 + flush pending，tick 是派生事实不做回放）。
       const write = createBackpressureAwareWrite(res, SSE_BACKPRESSURE_GRACE_MS, () => {

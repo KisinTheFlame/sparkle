@@ -12,7 +12,6 @@ coverage
 .vscode
 packages/persistence/src/generated/prisma
 apps/scheduler/src/generated/prisma
-apps/napcat/src/generated/prisma
 apps/llm/src/generated/prisma
 apps/oss/src/generated/prisma
 .claude/worktrees

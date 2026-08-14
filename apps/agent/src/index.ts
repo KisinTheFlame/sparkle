@@ -123,7 +123,6 @@ try {
   stateSampler = runtime.stateSampler;
   port = runtime.port;
 
-  // napcat 网关已收纳进 QQ App：在 buildServerRuntime 内随 App.onStartup 起好了，这里不再单独 start。
   await runtime.app.listen({ host: "0.0.0.0", port: runtime.port });
   runtime.schedulerClient.start();
   isServerStarted = true;
@@ -144,7 +143,6 @@ try {
     port: runtime.port,
     pid: process.pid,
     providers,
-    blockedGroupIds: runtime.blockedGroupIds,
     traceRuntimeEnabled: true,
   });
 

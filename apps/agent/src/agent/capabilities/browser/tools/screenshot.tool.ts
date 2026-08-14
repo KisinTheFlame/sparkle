@@ -18,8 +18,8 @@ const logger = new AppLogger({ source: "agent.browser.screenshot" });
  * vision 转文字）。聚焦密码字段时服务层会拒截。语义树(observe)够用就别频繁截图——
  * 截图 token 较贵、会推高压缩频率（见设计「截图预算」）。
  *
- * 叠加式落 OSS：截图同时 PUT 进 OSS 拿一个 resId 一并回给你，方便日后 send_resource
- * 转发或 read_resource 重看。OSS 关闭或 PUT 失败只是少了 resId，截图照常入上下文（降级）。
+ * 叠加式落 OSS：截图同时 PUT 进 OSS 拿一个 resId 一并回给你，方便日后 read_resource
+ * 重看或 download_resource 落盘。OSS 关闭或 PUT 失败只是少了 resId，截图照常入上下文（降级）。
  */
 export class BrowserScreenshotTool extends BrowserToolComponent<typeof Schema> {
   public readonly name = BROWSER_SCREENSHOT_TOOL_NAME;

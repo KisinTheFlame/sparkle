@@ -1,7 +1,7 @@
 /**
  * 前台输入：App 的可选能力（Sparkle 语义，不进 kernel 的公共 `App` 接口）。
  *
- * 当前前台 App 的「屏幕」上出现实时输入（首个消费者：QQ 当前会话的新消息）时，App 经
+ * 当前前台 App 的「屏幕」上出现实时输入时，App 经
  * factory 注入的敲门端口 enqueue 一个不带内容的 `foreground_input` 事件；drain 时 session
  * 只向**当前**前台 App 拉取待注入文本。内容在 drain 时才现拉，永不 stale；事件不带来源，
  * 焦点已切走时拉空 no-op（stale 敲门天然安全）。

@@ -237,7 +237,7 @@ export class RootAgentHost implements RootAgentExtensionHost {
       await this.deletePersistedSnapshot();
       this.eventQueue.clear();
       // 失焦广播：reset 是「计划性重建」五入口里唯一会清事件队列的，若不通知 App 层，
-      // 依赖 App 私有焦点态的机制（如 QQ 的 focused）会悬空——此后前台消息继续走实时
+      // 依赖 App 私有焦点态的机制会悬空——此后前台消息继续走实时
       // 路径却永远 drain 不到、center 又没有 draft，静默滞留。放在 clear 之后：onBlur
       // 的退化补推经 center 窗口 flush（setTimeout 后续才 enqueue），不会被本次 clear
       // 误伤。blurCurrentApp 内部吞错，绝不阻断 reset。
@@ -810,7 +810,7 @@ export class RootLoopAgent extends BaseLoopAgent<
 
     // Step 1: drain any events in the queue into the context. This is the
     // moment where wake events get silently consumed (session routes them
-    // to a no-op), napcat messages get routed to their state, etc.
+    // to a no-op), notifications get assembled into tail messages, etc.
     await this.host.consumePendingEvents();
     await this.awaitPendingMutations();
 

@@ -9,7 +9,7 @@ function occurrenceAppId(taskName: string): string {
 /**
  * 把通用 app_state 存储适配成 SchedulerClient 要的 OccurrenceStore（issue #428）。按任务名存"已处理
  * 到的 scheduledAt"单值——scheduledAt 单调，去重判据是 incoming <= 已存则跳过（仅 dedupe 任务用，
- * 目前只有 todo:daily-digest）。仿 napcat 游标复用 app_state 表的做法。
+ * 目前只有 todo:daily-digest）。复用 app_state 通用表。
  */
 export class AppStateOccurrenceStore implements OccurrenceStore {
   private readonly appStateStore: AppStateStore;

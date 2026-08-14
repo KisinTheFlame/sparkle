@@ -25,7 +25,7 @@ describe("RootAgentSession (App 启动器)", () => {
   it("initializes with a portal reminder (app 名单已移到 system prompt，reminder 不再逐条列)", async () => {
     const context = createContext();
     const appManager = new AppManager();
-    appManager.register(createTestApp("qq", "QQ"));
+    appManager.register(createTestApp("clock", "时钟"));
     const session = new RootAgentSession({ context, appManager });
 
     await session.initializeContext();
@@ -36,7 +36,7 @@ describe("RootAgentSession (App 启动器)", () => {
     expect(reminder?.content).toContain("桌面（Portal）");
     // App 名单常驻 system prompt，Portal 提醒只给导航说明，不再逐条列 App。
     const content = typeof reminder?.content === "string" ? reminder.content : "";
-    expect(content).not.toContain("- qq：QQ");
+    expect(content).not.toContain("- clock：时钟");
     expect(content).toContain("switch(id=...)");
   });
 
@@ -73,7 +73,7 @@ describe("RootAgentSession (App 启动器)", () => {
   it("markRestored marks context initialized so the portal reminder is not re-appended", async () => {
     const context = createContext();
     const appManager = new AppManager();
-    appManager.register(createTestApp("qq", "QQ"));
+    appManager.register(createTestApp("clock", "时钟"));
     const session = new RootAgentSession({ context, appManager });
 
     // 模拟恢复路径：上下文已含上一会话的 portal reminder（这里用一条占位消息代表旧前缀）。
@@ -92,7 +92,7 @@ describe("RootAgentSession (App 启动器)", () => {
   it("reset re-enables initialization so the portal reminder is re-appended", async () => {
     const context = createContext();
     const appManager = new AppManager();
-    appManager.register(createTestApp("qq", "QQ"));
+    appManager.register(createTestApp("clock", "时钟"));
     const session = new RootAgentSession({ context, appManager });
 
     await session.initializeContext();
@@ -114,8 +114,8 @@ describe("RootAgentSession (App 启动器)", () => {
       appManager: new AppManager(),
     });
     expect(session.getCurrentApp()).toBeUndefined();
-    session.setCurrentApp("qq");
-    expect(session.getCurrentApp()).toBe("qq");
+    session.setCurrentApp("clock");
+    expect(session.getCurrentApp()).toBe("clock");
     // Portal 离开后不可返回；只有 reset() 能把 currentApp 归位到初始状态。
     session.reset();
     expect(session.getCurrentApp()).toBeUndefined();
@@ -163,13 +163,13 @@ describe("RootAgentSession (App 启动器)", () => {
       context: createContext(),
       appManager: new AppManager(),
     });
-    expect(session.hasEnteredApp("qq")).toBe(false);
-    session.markAppEntered("qq");
-    expect(session.hasEnteredApp("qq")).toBe(true);
-    expect(session.hasEnteredApp("calc")).toBe(false);
+    expect(session.hasEnteredApp("clock")).toBe(false);
+    session.markAppEntered("clock");
+    expect(session.hasEnteredApp("clock")).toBe(true);
+    expect(session.hasEnteredApp("todo")).toBe(false);
     // 压缩边界：clearEnteredApps 让压缩后首进重新吐 help。
     session.clearEnteredApps();
-    expect(session.hasEnteredApp("qq")).toBe(false);
+    expect(session.hasEnteredApp("clock")).toBe(false);
   });
 
   it("clears entered apps on reset and markRestored", () => {
@@ -178,9 +178,9 @@ describe("RootAgentSession (App 启动器)", () => {
       appManager: new AppManager(),
     });
 
-    session.markAppEntered("qq");
+    session.markAppEntered("clock");
     session.reset();
-    expect(session.hasEnteredApp("qq")).toBe(false);
+    expect(session.hasEnteredApp("clock")).toBe(false);
 
     session.markAppEntered("hn");
     session.markRestored();

@@ -5,7 +5,6 @@ import { LLM_PROVIDER_IDS, type LlmProviderId } from "@sparkle/llm";
 import { z } from "zod";
 import type { LlmUsageId } from "../contracts/llm.js";
 
-const DEFAULT_NAPCAT_STARTUP_CONTEXT_RECENT_MESSAGE_COUNT = 40;
 const DEFAULT_AGENT_CONTEXT_COMPACTION_TOTAL_TOKEN_THRESHOLD = 150_000;
 const DEFAULT_AGENT_CONTEXT_COMPACTION_IMAGE_COUNT_THRESHOLD = 550;
 const DEFAULT_AGENT_LLM_RETRY_BACKOFF_MS = 30_000;
@@ -13,12 +12,9 @@ const DEFAULT_AGENT_WAIT_TOOL_MAX_WAIT_MS = 10 * 60 * 1000;
 const DEFAULT_AGENT_STATE_SAMPLE_INTERVAL_MS = 2_000;
 const DEFAULT_AGENT_NOTIFICATION_LEADING_WINDOW_MS = 10_000;
 const DEFAULT_AGENT_NOTIFICATION_BATCH_WINDOW_MS = 30_000;
-const DEFAULT_AGENT_MESSAGING_AI_TONE_ENABLED = true;
-const DEFAULT_AGENT_MESSAGING_AI_TONE_BLOCK_THRESHOLD = 0.6;
-// 资源读取/发送的字节上限：read_resource 入上下文 / send_resource 发图共用。
-// 4 MiB 贴合 QQ 图片实际体量，也避免把巨型资源灌进上下文或 napcat WS。
+// 资源读取的字节上限：read_resource 入上下文使用。4 MiB 避免把巨型资源灌进上下文。
 const DEFAULT_AGENT_RESOURCE_MAX_BYTES = 4 * 1024 * 1024;
-// 文件桥（download_resource / upload_resource / 群文件）落盘 / 读盘 / 传输的沙箱根与字节上限。
+// 文件桥（download_resource / upload_resource）落盘 / 读盘 / 传输的沙箱根与字节上限。
 // fileRoot 默认 ~/sparkle，与 terminal initialCwd 默认值重合，落盘后 terminal ls 天然可见。
 // fileMaxBytes 32 MiB 独立于上下文 cap（4 MiB）——文件不进上下文，可更大，但压在 OSS 50MB 请求上限下。
 const DEFAULT_AGENT_RESOURCE_FILE_ROOT = "~/sparkle";
@@ -74,21 +70,6 @@ const PositiveIntSchema = z.preprocess(value => {
 
   return value;
 }, z.number().int().positive());
-const NonNegativeIntSchema = z.preprocess(value => {
-  if (typeof value === "string" && value.trim().length > 0) {
-    const parsed = Number(value);
-    return Number.isNaN(parsed) ? value : parsed;
-  }
-
-  return value;
-}, z.number().int().nonnegative());
-const StringLikeSchema = z.preprocess(value => {
-  if (typeof value === "number") {
-    return String(value);
-  }
-
-  return value;
-}, z.string().trim().min(1));
 const OpenAiDefaultableStringSchema = z.preprocess(value => {
   if (typeof value === "string" && value.trim().length === 0) {
     return undefined;
@@ -150,53 +131,6 @@ const LlmUsageConfigSchema = z.object({
   // 身份，thinking 影响 prompt cache lineage，故收口在 usage 级而非按调用点分叉。
   thinking: z.enum(["low", "medium", "high"]).optional(),
 });
-const NapcatConfigSchema = z.preprocess(
-  value => {
-    if (!value || typeof value !== "object" || Array.isArray(value)) {
-      return value;
-    }
-
-    const record = value as Record<string, unknown>;
-    // QQ 群可见性由白名单反转为黑名单（语义相反：默认参与所有群，仅屏蔽列出的群）。旧白名单
-    // 字段（单数 listenGroupId / 复数 listenGroupIds）若被静默当黑名单沿用，会把「原本要监听
-    // 的群」变成「要屏蔽的群」——危险反转。检测到任一旧字段就标记，交 superRefine 报错强制人工迁移。
-    if (!("listenGroupId" in record) && !("listenGroupIds" in record)) {
-      return value;
-    }
-
-    return { ...record, __legacyWhitelistPresent__: true };
-  },
-  z
-    .object({
-      wsUrl: UrlSchema,
-      reconnectMs: PositiveIntSchema,
-      requestTimeoutMs: PositiveIntSchema,
-      // 黑名单：列出的群号对小镜不可见（含专用告警群）。默认空 = 参与所有被拉入的群。
-      blockedGroupIds: z.array(StringLikeSchema).default([]),
-      startupContextRecentMessageCount: NonNegativeIntSchema.default(
-        DEFAULT_NAPCAT_STARTUP_CONTEXT_RECENT_MESSAGE_COUNT,
-      ),
-      __legacyWhitelistPresent__: z.boolean().optional(),
-    })
-    .superRefine((value, ctx) => {
-      if (value.__legacyWhitelistPresent__) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["blockedGroupIds"],
-          message:
-            "白名单 listenGroupId(s) 已反转为黑名单 blockedGroupIds（语义相反：默认参与所有群，仅屏蔽列出的群）。请删除旧字段、按黑名单语义重新配置 blockedGroupIds 后重启。",
-        });
-      }
-    })
-    .transform(value => ({
-      wsUrl: value.wsUrl,
-      reconnectMs: value.reconnectMs,
-      requestTimeoutMs: value.requestTimeoutMs,
-      blockedGroupIds: value.blockedGroupIds,
-      startupContextRecentMessageCount: value.startupContextRecentMessageCount,
-    })),
-);
-
 /**
  * 单机服务拓扑的唯一事实来源。每个进程从这里读自己的监听端口与依赖服务的地址；
  * `host` 语义是「别的服务/网关如何 reach 它」（reachable host），不是绑定地址（issue #162）。
@@ -231,12 +165,6 @@ const ServicesSchema = z
     // metric 除 host/port 外还持有独立 DuckDB 单文件（#475 P1）：metric 摄取 / 查询落它自己的
     // 列式 .duckdb，不再借主库 server.databaseUrl 反推路径。databaseUrl 非隐私，进 config.yaml。
     metric: ServiceEndpointSchema.extend({
-      databaseUrl: DatabaseUrlSchema,
-    }),
-    // napcat 除 host/port 外还持有独立 Prisma 库（epic #539 子 issue 2）：napcat_event /
-    // napcat_qq_message / napcat_event_outbox / image_asset 落它自己的 SQLite 文件，
-    // 与主库 server.databaseUrl 物理分离。databaseUrl 非隐私，进 config.yaml。
-    napcat: ServiceEndpointSchema.extend({
       databaseUrl: DatabaseUrlSchema,
     }),
     // scheduler 除 host/port 外还持有独立 Prisma 库（issue #493）：TaskRun 执行历史落它自己的
@@ -287,20 +215,6 @@ const ConfigSchema = z.object({
           notificationBatchWindowMs: PositiveIntSchema.default(
             DEFAULT_AGENT_NOTIFICATION_BATCH_WINDOW_MS,
           ),
-          messaging: z
-            .object({
-              aiTone: z
-                .object({
-                  enabled: z.boolean().default(DEFAULT_AGENT_MESSAGING_AI_TONE_ENABLED),
-                  blockThreshold: z
-                    .number()
-                    .min(0)
-                    .max(1)
-                    .default(DEFAULT_AGENT_MESSAGING_AI_TONE_BLOCK_THRESHOLD),
-                })
-                .default({}),
-            })
-            .default({}),
           asyncTask: z
             .object({
               maxTaskDurationMs: PositiveIntSchema.default(
@@ -335,7 +249,6 @@ const ConfigSchema = z.object({
           stateSampleIntervalMs: value.stateSampleIntervalMs,
           notificationLeadingWindowMs: value.notificationLeadingWindowMs,
           notificationBatchWindowMs: value.notificationBatchWindowMs,
-          messaging: value.messaging,
           asyncTask: value.asyncTask,
           resource: value.resource,
         })),
@@ -347,7 +260,6 @@ const ConfigSchema = z.object({
         articleMaxChars: PositiveIntSchema.default(DEFAULT_ITHOME_ARTICLE_MAX_CHARS),
       })
       .default({}),
-    napcat: NapcatConfigSchema,
     llm: z.object({
       timeoutMs: PositiveIntSchema.default(DEFAULT_LLM_TIMEOUT_MS),
       authUsageRefreshIntervalMs: PositiveIntSchema.default(DEFAULT_AUTH_USAGE_REFRESH_INTERVAL_MS),
@@ -439,16 +351,14 @@ const ConfigSchema = z.object({
         .strict(),
     }),
     bot: z.object({
-      qq: StringLikeSchema,
       creator: z.object({
         name: NonEmptyStringSchema,
-        qq: StringLikeSchema,
       }),
     }),
     /**
      * 自建对象存储（@sparkle/oss）的启用开关。地址不在这里——统一来自顶层 `services.oss`，
-     * agent 把 QQ 图片原图 PUT 进去用。整段可省略（=禁用，resid 恒为 null，只走 vision
-     * 文字描述，优雅降级）；写出该块即启用，`enabled: false` 可显式关闭。
+     * agent 把图片原图 PUT 进去用。整段可省略（=禁用，resid 恒为 null，优雅降级）；
+     * 写出该块即启用，`enabled: false` 可显式关闭。
      */
     oss: z
       .object({
@@ -535,12 +445,7 @@ export async function loadStaticConfig(options: LoadStaticConfigOptions = {}): P
         ...data.services.scheduler,
         databaseUrl: resolveSqliteFileUrl(configDir, data.services.scheduler.databaseUrl),
       },
-      // napcat 独立 SQLite 库（#539）：同 scheduler，把相对 file: 路径锚定到仓库根。
-      napcat: {
-        ...data.services.napcat,
-        databaseUrl: resolveSqliteFileUrl(configDir, data.services.napcat.databaseUrl),
-      },
-      // llm 独立 SQLite 库（#539）：同上。
+      // llm 独立 SQLite 库（#539）：同 scheduler，把相对 file: 路径锚定到仓库根。
       llm: {
         ...data.services.llm,
         databaseUrl: resolveSqliteFileUrl(configDir, data.services.llm.databaseUrl),

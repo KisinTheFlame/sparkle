@@ -22,13 +22,13 @@ describe("toHttpErrorResponse", () => {
     expect(
       toHttpErrorResponse(
         new BizError({
-          message: "NapCat 请求超时",
+          message: "上游请求超时",
         }),
       ),
     ).toEqual({
       statusCode: 500,
       body: {
-        message: "NapCat 请求超时",
+        message: "上游请求超时",
       },
     });
   });

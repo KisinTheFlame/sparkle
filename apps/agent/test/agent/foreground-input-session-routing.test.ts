@@ -198,9 +198,9 @@ describe("foreground_input session 路由（前台输入敲门 → 当前 App �
 describe("blurCurrentApp（reset 前失焦广播）", () => {
   it("调用当前 App 的 onBlur 并丢弃其 effects", async () => {
     const onBlur = vi.fn(async () => []);
-    const app: App = { ...createPlainApp("qq"), onBlur };
+    const app: App = { ...createPlainApp("chat"), onBlur };
     const { session } = createSession([app]);
-    session.setCurrentApp("qq");
+    session.setCurrentApp("chat");
 
     await session.blurCurrentApp();
 
@@ -209,13 +209,13 @@ describe("blurCurrentApp（reset 前失焦广播）", () => {
 
   it("onBlur 抛错被吞掉，不阻断 reset 流程", async () => {
     const app: App = {
-      ...createPlainApp("qq"),
+      ...createPlainApp("chat"),
       onBlur: async () => {
         throw new Error("退化补推炸了");
       },
     };
     const { session } = createSession([app]);
-    session.setCurrentApp("qq");
+    session.setCurrentApp("chat");
 
     await expect(session.blurCurrentApp()).resolves.toBeUndefined();
   });
@@ -233,6 +233,6 @@ describe("isForegroundInputSource", () => {
     expect(isForegroundInputSource({ drainForegroundInput: async () => null })).toBe(true);
     expect(isForegroundInputSource({})).toBe(false);
     expect(isForegroundInputSource(null)).toBe(false);
-    expect(isForegroundInputSource("qq")).toBe(false);
+    expect(isForegroundInputSource("chat")).toBe(false);
   });
 });

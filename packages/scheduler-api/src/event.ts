@@ -3,8 +3,8 @@ import { z } from "zod";
 /**
  * 调度器 → 使用方的**入站 tick** wire（SSE 载荷，issue #428）。
  *
- * 与 napcat 的入站事件不同：napcat 事件是**外部事实**、断连必须逐条回放（outbox + seq +
- * Last-Event-ID）。tick 是**派生事实**——"到点了"是算出来的，断连 2 小时不该补 120 次。因此本流
+ * 与外部事实类事件流不同（那类事件断连必须逐条回放：outbox + seq + Last-Event-ID），
+ * tick 是**派生事实**——"到点了"是算出来的，断连 2 小时不该补 120 次。因此本流
  * 故意**不做持久回放**：调度器只在内存按 misfire 策略缓存 pending tick，(重)连时冲一次；**无 seq、
  * 无 Last-Event-ID、无 outbox 表**。诚实的投递保证是"live 尽力而为 + 短断连按策略补 + 调度器重启
  * 期间 pending 丢失"，不是严格 at-least-once。
@@ -31,5 +31,5 @@ export type SchedulerTickEvent = z.infer<typeof SchedulerTickEventSchema>;
  */
 export const SCHEDULER_TICKS_SSE_PATH = "/scheduler/ticks";
 
-/** SSE 心跳：调度器每 15s 发一个注释帧保活；使用方侧超阈值无帧即判半开重连（复刻 napcat）。 */
+/** SSE 心跳：调度器每 15s 发一个注释帧保活；使用方侧超阈值无帧即判半开重连。 */
 export const SCHEDULER_SSE_HEARTBEAT_MS = 15_000;

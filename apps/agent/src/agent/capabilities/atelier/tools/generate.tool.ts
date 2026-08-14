@@ -27,7 +27,7 @@ const GENERATE_PARAMETERS = {
 
 type Deps = {
   imageClient: ImageClient;
-  /** 生成图叠加落 OSS 拿 resid（供之后 send_resource 发群）；缺省（OSS 关闭）时图仍进视野、只是没 resid。 */
+  /** 生成图叠加落 OSS 拿 resid（供后续发送/存档）；缺省（OSS 关闭）时图仍进视野、只是没 resid。 */
   ossClient?: OssClient;
   asyncTaskManager: AsyncTaskManager;
 };
@@ -35,7 +35,7 @@ type Deps = {
 /**
  * 生图（异步）：把 prompt 交给 sparkle-llm 的生图端点（走 codex 订阅额度、后端 gpt-image-2），生成是
  * 多秒操作故做成异步工具——调用立刻回占位、主循环不阻塞，出图后经 `<async_tool_result>` 尾部追加。
- * 完成时**原图直接进你的视野**（多模态块），并叠加落 OSS 拿 resid（之后 switch(qq) 用 send_resource 发群）。
+ * 完成时**原图直接进你的视野**（多模态块），并叠加落 OSS 拿 resid 备用。
  *
  * 只收 prompt：codex 后端忽略 size/quality、固定 1254×1254，暴露尺寸旋钮是误导（见 #503）。
  * 「落 OSS + 图进视野 + OSS 关闭则降级无 resid」，区别只在这里走异步回流路径。

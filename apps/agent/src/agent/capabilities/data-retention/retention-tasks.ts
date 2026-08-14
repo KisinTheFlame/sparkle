@@ -42,9 +42,8 @@ export type RetentionSpec = {
  * - `ledger` (model LinearMessageLedger) — root agent 消息账本，只写不读，留作将来记忆系统的原始素材
  * - `root_agent_runtime_snapshot` — runtime snapshot
  * - `ithome_article` / `ithome_feed_cursor` — RSS articles (see TODOS.md for deferred strategy)
- * - 已随表迁往独立库的清理面（epic #539）：metric（#475，DuckDB 自理）、napcat 两表
- *   （sparkle-napcat 的 prune 定时器）、llm 三表 + oauth（sparkle-llm 的
- *   data-retention-tasks，字段判据说明见彼处）
+ * - 已随表迁往独立库的清理面（epic #539）：metric（#475，DuckDB 自理）、llm 三表 + oauth
+ *   （sparkle-llm 的 data-retention-tasks，字段判据说明见彼处）
  */
 export const RETENTION_TASKS: readonly RetentionSpec[] = [
   {
@@ -54,10 +53,8 @@ export const RETENTION_TASKS: readonly RetentionSpec[] = [
     offsetMinutes: 0,
     getDelegate: db => db.appLog,
   },
-  // napcat_event / napcat_qq_message 自 epic #539 子 issue 2 起归 napcat 独占库，其保留清理
-  // 随表迁入 sparkle-napcat 进程（napcat-runtime 的 prune 定时器）；llm_chat_call /
-  // embedding_cache / oauth_state 自子 issue 3 起归 llm 独占库，清理随表迁入 sparkle-llm
-  // （data-retention-tasks，窗口不变），均不在此清理面。
+  // llm_chat_call / embedding_cache / oauth_state 自 epic #539 子 issue 3 起归 llm 独占库，
+  // 清理随表迁入 sparkle-llm（data-retention-tasks，窗口不变），不在此清理面。
   {
     displayName: "terminal_output",
     field: "createdAt",

@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { CalcApp } from "../../../src/agent/apps/calc/calc.app.js";
 import { ClockApp } from "../../../src/agent/apps/clock/clock.app.js";
 import { AmapApp } from "../../../src/agent/apps/amap/amap.app.js";
 import { BrowserApp } from "../../../src/agent/apps/browser/browser.app.js";
@@ -11,7 +10,7 @@ import type { RootAgentEffect } from "../../../src/agent/runtime/effect/root-age
  * - portal（onFocus 屏）只做「这是什么地方」的定位散文——不含子工具清单、不含
  *   switch / help 导航指引（switch 首进已自动附 <app_help>，见 switch.tool.ts）。
  * - help 是子工具清单与用法要点的唯一来源，保留 switch 指引。
- * calc / clock 无 onFocus，其 help 仍锁逐字输出（含变量插值与条件分支）。
+ * clock 无 onFocus，其 help 仍锁逐字输出。
  * 改模板文案时应连带更新这里的期望值。
  */
 
@@ -69,30 +68,7 @@ async function startedAmapApp(apiKey: string): Promise<AmapApp> {
   return app;
 }
 
-describe("calc / clock — help 逐字锁（无 onFocus，本就只靠 help）", () => {
-  it("calc：无 precision 配置走浮点直返分支", async () => {
-    const app = new CalcApp();
-    expect(await app.help()).toBe(
-      [
-        "你在 calc App 里。当前可调用工具：",
-        "  - calculate(a, op, b): 对两个有限实数做一次二元四则运算。op 取值: +, -, *, /",
-        "  结果不做小数位截断（按 JS 浮点直接返回）。",
-        "",
-        "需要复合运算（例如 1 + 2 * 3）时，按运算优先级分多次调用：",
-        '  1. calculate(a=2, op="*", b=3) → 6',
-        '  2. calculate(a=1, op="+", b=6) → 7',
-        "",
-        "要去别的 App，用 switch(id=...) 切过去。",
-      ].join("\n"),
-    );
-  });
-
-  it("calc：配置 precision 后插值进小数位说明", async () => {
-    const app = new CalcApp();
-    await app.onStartup({ config: { precision: 2 } });
-    expect(await app.help()).toContain("  结果保留 2 位小数。");
-  });
-
+describe("clock — help 逐字锁（无 onFocus，本就只靠 help）", () => {
   it("clock：静态 help", async () => {
     const app = new ClockApp();
     expect(await app.help()).toBe(

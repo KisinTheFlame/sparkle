@@ -1,6 +1,6 @@
 /**
  * LLM 协议层的消息表示。OpenAI 风格的 user / assistant / tool 三态，完全通用，
- * 不含任何具体 provider 的 wire 格式细节，也不含项目（Sparkle / napcat）业务语义。
+ * 不含任何具体 provider 的 wire 格式细节，也不含项目（Sparkle）业务语义。
  * （provider 标识枚举 `LLM_PROVIDER_IDS` 例外：它是协议契约层"接入了哪些 provider"
  * 的清单，属跨前后端/内核共享的契约本身，故收在此最底层包里单源维护。）
  *

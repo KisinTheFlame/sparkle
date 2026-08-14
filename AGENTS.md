@@ -67,7 +67,7 @@ Sparkle **不是一个 QQ 群聊机器人**，而是一个**拥有自己生活�
 
 **1. NotificationCenter —— 追加到尾部，而非插入前缀**
 
-各生活输入（IThome 新文、QQ 未读、todo 提醒）经 `NotificationCenter` 窗口聚合后，作为一条 `notification` 事件进共享事件队列；`RootAgentSession` 在路由时通过 `createNotificationMessage` 装配成一条 `<notification>` user message，**追加到消息尾部**并触发一轮 round。它绝不把通知内容塞到 system prompt 或历史中段。异步工具结果（`<async_tool_result>`）走的是同一条尾部追加路径。
+各生活输入（IThome 新文、todo 提醒等）经 `NotificationCenter` 窗口聚合后，作为一条 `notification` 事件进共享事件队列；`RootAgentSession` 在路由时通过 `createNotificationMessage` 装配成一条 `<notification>` user message，**追加到消息尾部**并触发一轮 round。它绝不把通知内容塞到 system prompt 或历史中段。异步工具结果（`<async_tool_result>`）走的是同一条尾部追加路径。
 
 **教训**：想给 Agent "喂"外部信息（新闻、提醒、周期状态、异步结果、以及将来的记忆召回），一律**往尾部 append**。永远不要为了"让它更显眼"而把动态内容插到 system prompt 或前缀里——那会让整个会话每轮都从零换入。
 
@@ -81,7 +81,7 @@ Sparkle **不是一个 QQ 群聊机器人**，而是一个**拥有自己生活�
 
 **3. Foreground Input —— 不带内容的敲门，drain 时现拉，仍走尾部追加**
 
-QQ 前台当前会话的新消息不经 NotificationCenter，走 `runtime/root-agent/foreground-input.ts` 的敲门路径：App 把消息缓冲在自己内存里，只 enqueue 一个**不带内容**的 `foreground_input` 事件；session drain 时向当前前台 App（实现 `ForegroundInputSource` 的）现拉渲染好的文本，作为一条 user message **追加到尾部**。内容 drain 时才现取所以永不 stale；焦点已切走时拉空 no-op，未投递的未读退化回通知路径，绝不静默丢。
+前台 App 的实时新输入不经 NotificationCenter，走 `runtime/root-agent/foreground-input.ts` 的敲门路径：App 把消息缓冲在自己内存里，只 enqueue 一个**不带内容**的 `foreground_input` 事件；session drain 时向当前前台 App（实现 `ForegroundInputSource` 的）现拉渲染好的文本，作为一条 user message **追加到尾部**。内容 drain 时才现取所以永不 stale；焦点已切走时拉空 no-op，未投递的未读退化回通知路径，绝不静默丢。
 
 **教训**：实时性再高的输入也不需要绕过尾部追加。把「唤醒」和「内容」拆开——事件只当敲门铃，内容在注入时刻向源现拉——既保住稳定前缀，又避免把会过期的数据写死进事件队列。
 
@@ -94,14 +94,14 @@ QQ 前台当前会话的新消息不经 NotificationCenter，走 `runtime/root-a
 - **不要**在压缩之外的地方调用 `replaceMessages`。
 - **fork 型 task agent 一律用 `usage: "agent"`，绝不为它单开一个 usage**：`usage` 是「KV 缓存身份」（决定 provider/model），只有 `agent` / `vision` 两个值。凡是复用主 Agent 前缀（system + tools + 消息历史）的子任务（如 `contextSummarizer`），模型必须与主 Agent 逐字节一致才可能命中 prompt cache——给它单配一个 usage 就是只能配错的脚枪。「哪个业务场景发起的」这类归因走 `LlmClient.chat` 的 `scene` 自由字段（进 metric 标签 + `llm_chat_call.scene` 落库），与选模型解耦。见 issue #555。
 - **system prompt 和工具集的改动要集中提交**：每次改动都会让所有在飞会话的前缀失效一次，小步高频修改是最糟糕的模式。
-- **进上下文的散文一律走模板，禁止在 TS 里内联字面量**：任何最终会进 LLM 上下文的成句文案（system prompt、各类 reminder、`<notification>` / `<async_tool_result>` 等伪标签内容、通知 draft 的渲染文本）都必须落在 `apps/agent/static/` 下的 `.hbs` 模板，经 `renderServerStaticTemplate(import.meta.url, ...)` 渲染。TS 侧只负责算 view-model（计数、数组、布尔 flag、预格式化好的日期/截断文本），不写成句文案。这样调小镜的语气只改 `static/` 一棵树、不碰代码，也让"所有会进上下文的文本"始终收在同一处可审。**例外（留 TS 常量）**：分组 key / 结构标识（如 `"QQ"`、`"IT之家"`、`"待办"`）这类不是语气的标识符；以及工具 description 与工具 result 的 error/status note（前者绑 param schema 属渐进式披露垂直切片，后者进易变尾部且与控制流交织，见 `TODOS.md`）。
+- **进上下文的散文一律走模板，禁止在 TS 里内联字面量**：任何最终会进 LLM 上下文的成句文案（system prompt、各类 reminder、`<notification>` / `<async_tool_result>` 等伪标签内容、通知 draft 的渲染文本）都必须落在 `apps/agent/static/` 下的 `.hbs` 模板，经 `renderServerStaticTemplate(import.meta.url, ...)` 渲染。TS 侧只负责算 view-model（计数、数组、布尔 flag、预格式化好的日期/截断文本），不写成句文案。这样调小镜的语气只改 `static/` 一棵树、不碰代码，也让"所有会进上下文的文本"始终收在同一处可审。**例外（留 TS 常量）**：分组 key / 结构标识（如 `"IT之家"`、`"待办"`）这类不是语气的标识符；以及工具 description 与工具 result 的 error/status note（前者绑 param schema 属渐进式披露垂直切片，后者进易变尾部且与控制流交织，见 `TODOS.md`）。
 - Review 新 capability / task agent / tool 时，把"会不会破坏 KV 缓存命中"以及"进上下文的散文是否走了模板"作为显式检查项写进自检清单。
 
 ## 硬约束
 
 - 除非任务明确要求，否则一切交流与汇报统一使用简体中文。
 - 除非任务明确要求，否则默认在仓库根目录执行命令。
-- 数据库按服务独立（epic #539）：主库（agent 独占）读 `config.yaml` 的 `server.databaseUrl`；napcat / llm / scheduler 各自读 `services.<svc>.databaseUrl`。查哪张表先确认归属库（布局见 docs/configuration.md）。
+- 数据库按服务独立（epic #539）：主库（agent 独占）读 `config.yaml` 的 `server.databaseUrl`；llm / scheduler / oss 各自读 `services.<svc>.databaseUrl`。查哪张表先确认归属库（布局见 docs/configuration.md）。
 - **改配置 schema 必须同步三处**：`packages/kernel/src/config/config.loader.ts`、`config.yaml`（非隐私，纳入版本控制）、`config.secret.yaml.example`（隐私模板，新增隐私字段在这里补占位）。
 - **提交前至少执行**以下五项，且全部成功：
 
@@ -137,10 +137,10 @@ pnpm knip         # 死代码/僵尸依赖审计。CI 门禁分级：孤儿文�
 pnpm --filter @sparkle/agent <script>   # 单包命令，如 test / test:watch / db:*
 
 pnpm app:deploy                        # 全量部署：build → prisma migrate deploy → PM2 reload(全部) → pm2 save
-pnpm app:deploy <agent|console|gateway|web|oss|browser|llm|metric|napcat|scheduler>  # 单服务：只重建重载该服务，不跑迁移、不动其它进程
+pnpm app:deploy <agent|console|gateway|web|oss|browser|llm|metric|scheduler>  # 单服务：只重建重载该服务，不跑迁移、不动其它进程
 
 pnpm app:stop                          # 停掉 ecosystem 里全部进程
-pnpm app:stop <agent|console|gateway|web|oss|browser|llm|metric|napcat|scheduler>    # 只停该服务（与 app:deploy 共用同一套短名别名）
+pnpm app:stop <agent|console|gateway|web|oss|browser|llm|metric|scheduler>    # 只停该服务（与 app:deploy 共用同一套短名别名）
 ```
 
 - 仓库当前**没有**统一的根 `pnpm dev`。前后端联调需按实际分别启动，不要假设有一键 dev。
@@ -174,7 +174,7 @@ pnpm app:stop <agent|console|gateway|web|oss|browser|llm|metric|napcat|scheduler
 进程拓扑与端口见 [ARCHITECTURE.md](./ARCHITECTURE.md)「部署」。操作层面：
 
 - `pnpm app:deploy`（无参）= 全量：build → Prisma 迁移 → PM2 reload/startOrReload → `pm2 save`。**涉及 DB schema 变更必须走这个**（会跑 `prisma migrate deploy`）。
-- `pnpm app:deploy <服务名>` = 单服务：只重建重载该服务。改单个服务时优先用它——重载 `console` / `gateway` / `web` / `browser` / `llm` / `metric` / `napcat` / `scheduler` 不会打断 `sparkle-agent` 的热状态（KV 缓存前缀、HNSW 索引、活内存），符合 KV 缓存优先。
+- `pnpm app:deploy <服务名>` = 单服务：只重建重载该服务。改单个服务时优先用它——重载 `console` / `gateway` / `web` / `browser` / `llm` / `metric` / `scheduler` 不会打断 `sparkle-agent` 的热状态（KV 缓存前缀、活内存），符合 KV 缓存优先。
 - `web` 自 #578 起是**真服务**（`sparkle-web`，管理台前端独立进程，自持静态托管），不再是 `gateway` 的弃用别名。改前端用 `pnpm app:deploy web`，它不动网关；改网关用 `pnpm app:deploy gateway`，它不重建前端。
 - `sparkle-browser` / `sparkle-llm` / `sparkle-metric` 是独立进程，`app:deploy agent` 不触及它们，让「agent 重启不杀浏览器 / 不打断 LLM 服务与登录态 / 不丢 metric 通道」。metric 摄取是 fire-and-forget，服务挂掉只丢点、不影响 agent。
 

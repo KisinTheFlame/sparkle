@@ -38,20 +38,19 @@ There is also a small admin console: a quiet window into her life state — what
 
 ## Running her
 
-Sparkle is a full-stack TypeScript monorepo (`pnpm`). Under the hood she is not one program but a handful of cooperating processes — the agent herself, plus a browser, an object store, the card-game engine, an LLM gateway, and so on — all supervised by PM2. You bring the whole thing up with a single command.
+Sparkle is a full-stack TypeScript monorepo (`pnpm`). Under the hood she is not one program but a handful of cooperating processes — the agent herself, plus a browser, an object store, an LLM gateway, and so on — all supervised by PM2. You bring the whole thing up with a single command.
 
 You'll need:
 
-- Node.js and `pnpm`, and a toolchain that can compile native modules (`better-sqlite3`, `hnswlib-node`) — the database is a plain in-process SQLite file, so there's no external database to run.
+- Node.js and `pnpm`, and a toolchain that can compile native modules (`better-sqlite3`) — the database is a plain in-process SQLite file, so there's no external database to run.
 - An LLM you can log into.
-- [NapCat](https://github.com/NapNeko/NapCatQQ) running on the host, if you want the QQ side of her life.
 
 Then:
 
 ```bash
 # 1. Configuration
 #    config.yaml (non-secret, already in the repo) — edit in place.
-#    Copy the secret template and fill in your keys / QQ ids:
+#    Copy the secret template and fill in your keys:
 cp config.secret.yaml.example config.secret.yaml
 
 # 2. Install and bring her up (build → migrate → start under PM2)

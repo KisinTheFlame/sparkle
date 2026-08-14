@@ -20,16 +20,13 @@ import { NOOP_METRIC_CLIENT, type MetricClient } from "@sparkle/metric-client/cl
 const logger = new AppLogger({ source: "agent.root-session" });
 
 /**
- * 手机 OS 模型下，session 退化为「App 启动器 + 顶层事件路由」：聊天已经 App 化
- * （QqApp 自管会话、订阅 napcat、收消息向 NotificationCenter push 通知），状态树退役。
+ * 手机 OS 模型下，session 退化为「App 启动器 + 顶层事件路由」：外部输入已经 App 化
+ * （各 App 自管会话与外部连接，收消息向 NotificationCenter push 通知），状态树退役。
  *
  * session 只剩：
  * - Portal（桌面）+ currentApp（当前进入的 App）这一个焦点维度；
- * - 顶层事件路由（wake / async_tool_result / notification）——napcat 消息不再走这里，
- *   由 QqApp 直接接收。
- *
- * 聊天目标（send_message 的发送会话）属于 QqApp 的私有概念，由 QqApp 自管，不再经 session
- * 转发。
+ * - 顶层事件路由（wake / async_tool_result / notification）——App 的外部消息不走这里，
+ *   由各 App 直接接收。
  */
 
 export type RootAgentSessionController = {
@@ -191,8 +188,8 @@ export class RootAgentSession implements RootAgentSessionController {
       return { shouldTriggerRound: true };
     }
 
-    // wake：纯唤醒标记，session 不做事。napcat 消息 / friend_list 不再走 session
-    // （由 QqApp 直接接收），万一到这里也忽略。
+    // wake：纯唤醒标记，session 不做事。App 的外部消息不走 session（由各 App 直接接收），
+    // 万一到这里也忽略。
     return { shouldTriggerRound: false };
   }
 

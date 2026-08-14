@@ -13,8 +13,8 @@ export type ResolvedResource = {
 const RESOURCE_ID_PATTERN = /^res-\d+$/;
 
 /**
- * 资源读取的业务层：把 OSS 的「字节 + MIME」翻成带媒体语义的资源。read_resource /
- * send_resource 共用这一层——它负责 resId 格式校验、大小护栏、图片/非图片分类，
+ * 资源读取的业务层：把 OSS 的「字节 + MIME」翻成带媒体语义的资源。read_resource
+ * 走这一层——它负责 resId 格式校验、大小护栏、图片/非图片分类，
  * OSS 关闭时优雅报错。OSS client 只认 bytes/mime，媒体语义不外泄到 oss-client。
  */
 export class ResourceService {

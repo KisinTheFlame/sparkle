@@ -89,7 +89,7 @@ export function createNotificationMessage(lines: string[]): UserMessage {
 
 /**
  * 前台输入消息：当前前台 App drain 出的实时输入，文本已由 App 自己的模板渲染好、
- * 自带伪标签（如 QQ 的 `<qq_conversation_new_messages>`），这里只做薄包装成 user
+ * 自带伪标签，这里只做薄包装成 user
  * message，不再套第二层标签。与 `<notification>` / `<async_tool_result>` 同为
  * 「事件 → 尾部 append」路径的消息装配点，收在同一处可审。
  */

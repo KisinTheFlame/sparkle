@@ -33,16 +33,6 @@ const AppLogHistoryPage = lazy(() =>
     default: module.AppLogHistoryPage,
   })),
 );
-const NapcatEventHistoryPage = lazy(() =>
-  import("@/pages/napcat-event-history/NapcatEventHistoryPage").then(module => ({
-    default: module.NapcatEventHistoryPage,
-  })),
-);
-const NapcatGroupMessageHistoryPage = lazy(() =>
-  import("@/pages/napcat-group-message-history/NapcatGroupMessageHistoryPage").then(module => ({
-    default: module.NapcatGroupMessageHistoryPage,
-  })),
-);
 const TodosPage = lazy(() =>
   import("@/pages/todos/TodosPage").then(module => ({
     default: module.TodosPage,
@@ -68,8 +58,6 @@ function App() {
           <Route path="/scheduler-tasks" element={<SchedulerTasksPage />} />
           <Route path="/llm-history" element={<LlmHistoryPage />} />
           <Route path="/app-log-history" element={<AppLogHistoryPage />} />
-          <Route path="/napcat-event-history" element={<NapcatEventHistoryPage />} />
-          <Route path="/napcat-group-message-history" element={<NapcatGroupMessageHistoryPage />} />
           <Route path="/todos" element={<TodosPage />} />
           <Route path="/oss-objects" element={<OssObjectsPage />} />
         </Route>

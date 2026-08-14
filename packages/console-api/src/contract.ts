@@ -6,11 +6,6 @@ import {
   LlmChatCallListQuerySchema,
   LlmChatCallListResponseSchema,
 } from "./llm-chat-call.js";
-import { NapcatEventListQuerySchema, NapcatEventListResponseSchema } from "./napcat-event.js";
-import {
-  NapcatQqMessageListQuerySchema,
-  NapcatQqMessageListResponseSchema,
-} from "./napcat-group-message.js";
 import { TodoListQuerySchema, TodoListResponseSchema } from "./todo.js";
 
 // === @sparkle/console-api：sparkle-console 服务的 HTTP 契约（issue #279 PR4） ===
@@ -42,18 +37,6 @@ export const consoleApiContract = {
     }),
     input: z.object({}),
     output: LlmChatCallDetailResponseSchema,
-  }),
-  queryNapcatEvents: defineJsonRoute({
-    method: "GET",
-    path: "/napcat-event/query",
-    input: NapcatEventListQuerySchema,
-    output: NapcatEventListResponseSchema,
-  }),
-  queryNapcatQqMessages: defineJsonRoute({
-    method: "GET",
-    path: "/napcat-group-message/query",
-    input: NapcatQqMessageListQuerySchema,
-    output: NapcatQqMessageListResponseSchema,
   }),
   queryTodos: defineJsonRoute({
     method: "GET",

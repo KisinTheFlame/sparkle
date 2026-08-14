@@ -37,11 +37,11 @@ type AsyncToolResultCompletedEvent = {
 };
 
 /**
- * 前台输入敲门事件。当前前台 App 的「屏幕」上出现实时输入（如 QQ 当前会话来了新消息）
+ * 前台输入敲门事件。当前前台 App 的「屏幕」上出现实时输入（如聊天类 App 当前会话来了新消息）
  * 时，App 经注入的敲门端口 enqueue 本事件。刻意**不带内容、不带来源**：内容在 drain 时
  * 由 session 向**当前**前台 App 现拉（永不 stale）；不带来源使 stale 事件天然安全——
  * 焦点已切走时向当前 App 拉空即 no-op，drain 的语义是「拉当前前台的未消费增量」，
- * 不存在错投。事件是通用原语，QQ 只是首个消费者。
+ * 不存在错投。事件是通用原语，不绑定任何具体 App。
  */
 type ForegroundInputEvent = {
   type: "foreground_input";

@@ -4,7 +4,7 @@ import type { LlmChatRequest, LlmMessage, LlmContentPart } from "../types.js";
 
 /**
  * wire 层图片保险丝（#556）：请求发出前把所有超限图片（单边 >7900px 或总像素 >40MP）
- * 确定性降采样进 Anthropic 限制内。这是最后一道防线——入口层（napcat / read_resource）
+ * 确定性降采样进 Anthropic 限制内。这是最后一道防线——入口层（read_resource 等）
  * 的归一化漏掉的任何来源，到这里也不可能再把 400 毒消息送进持久上下文（2026-07-23 事故：
  * 429×8183 长截图每轮 400 死循环 6 小时）。
  *

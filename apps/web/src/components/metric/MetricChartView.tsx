@@ -39,7 +39,7 @@ import { useSeriesVisibility } from "./useSeriesVisibility";
 export type MetricChartType = "line" | "area" | "stacked-area" | "bar" | "stacked" | "pie";
 
 /**
- * 序列 → 展示元数据解析器：给定序列 key（= groupByTag 的 tag 值，如状态名 "qq"/"wait"）与序号，
+ * 序列 → 展示元数据解析器：给定序列 key（= groupByTag 的 tag 值，如状态名 "terminal"/"wait"）与序号，
  * 返回稳定的 label + 颜色。用于「按语义显式配色/命名」而非 seriesColors 的 index 轮转
  * （状态占比图必须显式映射，否则新增状态会让颜色错位）。返回 undefined 时回落到默认。
  */
@@ -106,7 +106,7 @@ export function MetricChartView({
   pinSeriesToTop,
   height = 288,
 }: MetricChartViewProps) {
-  // 显隐走共享 hook（id = series.key，语义 tag 值如 "wait"/"qq"）：纯客户端展示开关、不触发重查，
+  // 显隐走共享 hook（id = series.key，语义 tag 值如 "wait"/"terminal"）：纯客户端展示开关、不触发重查，
   // 跨 range/bucket 保留（key 语义稳定），刷新页面复位。同一套机器缓存图也在用。
   const { hiddenIds, toggle, isHidden } = useSeriesVisibility();
 

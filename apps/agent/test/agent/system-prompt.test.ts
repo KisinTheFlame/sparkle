@@ -3,9 +3,9 @@ import { createAgentSystemPrompt } from "../../src/agent/runtime/root-agent/syst
 
 describe("createAgentSystemPrompt", () => {
   const apps = [
-    { id: "calc", displayName: "计算器", description: "对两个数做一次加减乘除，可设小数精度。" },
+    { id: "clock", displayName: "时钟", description: "查看当前北京时间。" },
     { id: "browser", displayName: "浏览器", description: "完整操作网页，导航、点按、填表、截图。" },
-    { id: "qq", displayName: "QQ", description: "收发 QQ 群聊与私聊消息，发图、传文件。" },
+    { id: "todo", displayName: "待办", description: "管理自己的待办，记事、改状态、设提醒。" },
   ];
 
   it("embeds every registered app as `id：displayName——description` in the prompt", () => {

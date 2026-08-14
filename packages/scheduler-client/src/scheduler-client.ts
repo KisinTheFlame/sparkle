@@ -16,7 +16,7 @@ const logger = new AppLogger({ source: "scheduler-client" });
 const SCHEDULER_UNREACHABLE_MESSAGE = "调度器服务调用失败";
 const INITIAL_BACKOFF_MS = 1_000;
 const MAX_BACKOFF_MS = 30_000;
-// 30s 内无任何帧（含 15s 心跳）判半开：主动 abort 重连。留 2 个心跳周期裕量（复刻 napcat）。
+// 30s 内无任何帧（含 15s 心跳）判半开：主动 abort 重连。留 2 个心跳周期裕量。
 const DEAD_CONNECTION_TIMEOUT_MS = 30_000;
 // 未 ack 的 run 上报缓冲上限（#493 P2）：内存 at-least-once，超量丢最旧并 warn。
 const UNACKED_REPORT_BUFFER_CAP = 100;

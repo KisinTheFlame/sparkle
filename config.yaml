@@ -1,5 +1,5 @@
 # 非隐私配置：纳入版本控制，直接改这个文件即可（不再提供 config.yaml.example）。
-# 隐私配置（密钥 + PII：apiKey / bot QQ / napcat 群号 / 浏览器凭据）在 gitignored 的
+# 隐私配置（密钥 + PII：apiKey / 浏览器凭据）在 gitignored 的
 # config.secret.yaml —— 从 config.secret.yaml.example 复制后填写；启动时深合并进本文件。
 
 # 服务拓扑：单机各进程的监听端口与地址的唯一事实来源（见 issue #162）。
@@ -24,11 +24,7 @@ services:
     host: 127.0.0.1
     port: 20010
     databaseUrl: file:./data/metric/metric.duckdb # metric 独占 DuckDB 单文件（列式，为 p95/分析聚合而生，#475）；与旧反推路径同址，无需迁移
-  napcat: # sparkle-napcat（NapCat 接入独立进程，仅 localhost：agent 经 HttpNapcatClient 出站 + SSE 订阅入站；#347）
-    host: 127.0.0.1
-    port: 20013
-    databaseUrl: file:./data/napcat/napcat.db # napcat 独占 SQLite 库（napcat_event / napcat_qq_message / outbox / image_asset，#539）
-  scheduler: # sparkle-scheduler（通用定时调度服务，仅 localhost：agent 经 SchedulerClient 注册 + SSE 收 tick；#428。20013 napcat 已占）
+  scheduler: # sparkle-scheduler（通用定时调度服务，仅 localhost：agent 经 SchedulerClient 注册 + SSE 收 tick；#428）
     host: 127.0.0.1
     port: 20014
     databaseUrl: file:./data/scheduler/scheduler.db # scheduler 独占 SQLite 库（TaskRun 执行历史，#493）
@@ -45,25 +41,16 @@ server:
     stateSampleIntervalMs: 2000 # 状态心跳采样间隔：每这么久采一次「小镜此刻处于哪个 App / wait / portal」，打 agent.state.sample metric
     notificationLeadingWindowMs: 1000 # 空闲来第一条通知时先开这么长的前沿短窗聚合首批，窗结束才 flush（不再前沿立即发）
     notificationBatchWindowMs: 30000
-    messaging:
-      aiTone:
-        enabled: true # 发言 AI 味门控；置 false 完全退化为原发送行为
-        blockThreshold: 0.6 # P(AI) >= 该值则拦下不发，等 confirm_last 二次确认
     asyncTask:
       maxTaskDurationMs: 600000 # 异步工具任务的 manager 级安全超时；超过则以超时结果回流（底层可能仍在跑）
     resource:
-      maxBytes: 4194304 # read_resource 入上下文 / send_resource 发图的字节上限（4 MiB）
-      fileRoot: ~/sparkle # download_resource/upload_resource/群文件 落盘/读盘沙箱根（默认与 terminal initialCwd 重合）
+      maxBytes: 4194304 # read_resource 入上下文的字节上限（4 MiB）
+      fileRoot: ~/sparkle # download_resource/upload_resource 落盘/读盘沙箱根（默认与 terminal initialCwd 重合）
       fileMaxBytes: 33554432 # 文件桥字节上限（32 MiB，独立于 4 MiB 上下文 cap）
   ithome:
     pollIntervalMs: 300000
     recentArticleLimit: 8
     articleMaxChars: 8000
-  napcat:
-    reconnectMs: 3000
-    requestTimeoutMs: 10000
-    startupContextRecentMessageCount: 40
-    # blockedGroupIds（屏蔽的 QQ 群号，含专用告警群）是 PII，放 config.secret.yaml；默认参与所有群
   llm:
     timeoutMs: 300000
     authUsageRefreshIntervalMs: 600000
@@ -129,7 +116,8 @@ server:
         fileCacheGcEnabled: true # kill-switch；false 则不注册 GC task（急停用）
         fileCacheGcMaxIdleDays: 3 # 连续多少天未被使用即回收
         fileCacheGcMaxDeletionsPerRun: 2000 # 单轮删除上限，超出的次日续删
-    # 只配 agent / vision 两个 KV 缓存身份。fork 型 task agent（contextSummarizer）
+    # 只配 agent / vision 两个 KV 缓存身份（vision 当前无调用方，预留给将来的图片理解能力）。
+    # fork 型 task agent（contextSummarizer）
     # 在调用点直接用 usage=agent，复用主 Agent 前缀命中 prompt cache，故不在此
     # 单独配置；调用归因走 scene 字段（见 issue #555）。
     usages:
@@ -146,18 +134,15 @@ server:
           - provider: claude-code
             model: claude-sonnet-5
             times: 2
-  # bot.qq / bot.creator 是密钥 / PII，放 config.secret.yaml
+  # bot.creator 是 PII，放 config.secret.yaml
   # 自建对象存储（@sparkle/oss）启用开关。地址不在这里——统一来自顶层 services.oss。
-  # 整段可省略 → 关闭图片存档（resid 恒为 null，只走 vision 文字描述，优雅降级）；
+  # 整段可省略 → 关闭图片存档（resid 恒为 null，优雅降级）；
   # 写出该块即启用，enabled: false 可显式关闭。
   oss:
     enabled: true
   # 每个 App 的配置切片。key 是 App.id，结构由各 App 自己的 configSchema 校验。
   # 没列出来的 App 走 schema 默认值；schema 不接受的字段会在启动时报错。
   apps:
-    calc:
-      # 计算结果保留的小数位数（0–20）。省略 / null 表示不做四舍五入。
-      precision: 6
     terminal:
       # 终端 App。小镜的"家"默认在 ~/sparkle/（由 os.homedir() 解析）。
       # initialCwd: ~/sparkle         # 可选；不填则使用 os.homedir() + "/sparkle"

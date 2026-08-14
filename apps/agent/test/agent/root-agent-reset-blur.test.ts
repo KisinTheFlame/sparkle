@@ -5,7 +5,7 @@ import { RootAgentHost } from "../../src/agent/runtime/root-agent/root-agent-run
  * reset 第四退化出口的集成层守护（issue #251 高危验收前提之一）：
  *
  * resetContext 是五个「计划性重建」入口里唯一会清事件队列的；若不向 App 层广播失焦，
- * 依赖 App 私有焦点态的机制（QQ 的 focused）会悬空——此后前台消息继续走实时路径却永远
+ * 依赖 App 私有焦点态的机制会悬空——此后前台消息继续走实时路径却永远
  * drain 不到、center 又没有 draft，静默丢消息。session.blurCurrentApp 自身有单测，但
  * 「reset 会调它、且顺序为 eventQueue.clear → blurCurrentApp → context.reset →
  * session.reset」这条接线契约此前零覆盖：删掉那行或重排到 clear 之前，全部单测仍绿。

@@ -61,12 +61,12 @@ describe("NotificationCenter (前沿短窗 + 节流)", () => {
     const onFlush = vi.fn();
     const c = center(scheduler, onFlush);
 
-    c.push(new FakeDraft("a", "QQ", "A", "1"));
+    c.push(new FakeDraft("a", "资讯", "A", "1"));
     expect(onFlush).not.toHaveBeenCalled(); // 短窗内攒着，不前沿立即发
 
     scheduler.fireWindowEnd();
     expect(onFlush).toHaveBeenCalledTimes(1);
-    expect(onFlush.mock.calls[0][0]).toEqual(["QQ:", "A: 1"]);
+    expect(onFlush.mock.calls[0][0]).toEqual(["资讯:", "A: 1"]);
   });
 
   it("把前沿短窗内到达的通知聚合，窗结束一并 flush", () => {
@@ -74,14 +74,14 @@ describe("NotificationCenter (前沿短窗 + 节流)", () => {
     const onFlush = vi.fn();
     const c = center(scheduler, onFlush);
 
-    c.push(new FakeDraft("a", "QQ", "A", "1")); // 开前沿短窗
-    c.push(new FakeDraft("b", "QQ", "B", "2")); // 窗内攒着
-    c.push(new FakeDraft("c", "QQ", "C", "3")); // 窗内攒着
+    c.push(new FakeDraft("a", "资讯", "A", "1")); // 开前沿短窗
+    c.push(new FakeDraft("b", "资讯", "B", "2")); // 窗内攒着
+    c.push(new FakeDraft("c", "资讯", "C", "3")); // 窗内攒着
     expect(onFlush).not.toHaveBeenCalled();
 
     scheduler.fireWindowEnd();
     expect(onFlush).toHaveBeenCalledTimes(1);
-    expect(onFlush.mock.calls[0][0]).toEqual(["QQ:", "A: 1", "B: 2", "C: 3"]);
+    expect(onFlush.mock.calls[0][0]).toEqual(["资讯:", "A: 1", "B: 2", "C: 3"]);
   });
 
   it("空窗后回到空闲，下一条重新走前沿短窗", () => {
@@ -89,19 +89,19 @@ describe("NotificationCenter (前沿短窗 + 节流)", () => {
     const onFlush = vi.fn();
     const c = center(scheduler, onFlush);
 
-    c.push(new FakeDraft("a", "QQ", "A", "1")); // 开前沿短窗
+    c.push(new FakeDraft("a", "资讯", "A", "1")); // 开前沿短窗
     scheduler.fireWindowEnd(); // 短窗结束 → flush 首批（call 1），开节流窗
     expect(onFlush).toHaveBeenCalledTimes(1);
-    expect(onFlush.mock.calls[0][0]).toEqual(["QQ:", "A: 1"]);
+    expect(onFlush.mock.calls[0][0]).toEqual(["资讯:", "A: 1"]);
 
     scheduler.fireWindowEnd(); // 节流窗内空 → 回空闲，不 flush
     expect(onFlush).toHaveBeenCalledTimes(1);
 
-    c.push(new FakeDraft("b", "QQ", "B", "2")); // 又空闲 → 开新前沿短窗，不立即发
+    c.push(new FakeDraft("b", "资讯", "B", "2")); // 又空闲 → 开新前沿短窗，不立即发
     expect(onFlush).toHaveBeenCalledTimes(1);
     scheduler.fireWindowEnd();
     expect(onFlush).toHaveBeenCalledTimes(2);
-    expect(onFlush.mock.calls[1][0]).toEqual(["QQ:", "B: 2"]);
+    expect(onFlush.mock.calls[1][0]).toEqual(["资讯:", "B: 2"]);
   });
 
   it("折叠前沿短窗内的同源消息", () => {
@@ -109,12 +109,12 @@ describe("NotificationCenter (前沿短窗 + 节流)", () => {
     const onFlush = vi.fn();
     const c = center(scheduler, onFlush);
 
-    c.push(new FakeDraft("a", "QQ", "A", "1")); // 开前沿短窗
-    c.push(new FakeDraft("a", "QQ", "A", "2")); // 窗内，与上一条折叠 → "1+2"
-    c.push(new FakeDraft("a", "QQ", "A", "3")); // 窗内，再折叠 → "1+2+3"
+    c.push(new FakeDraft("a", "资讯", "A", "1")); // 开前沿短窗
+    c.push(new FakeDraft("a", "资讯", "A", "2")); // 窗内，与上一条折叠 → "1+2"
+    c.push(new FakeDraft("a", "资讯", "A", "3")); // 窗内，再折叠 → "1+2+3"
     scheduler.fireWindowEnd();
     expect(onFlush).toHaveBeenCalledTimes(1);
-    expect(onFlush.mock.calls[0][0]).toEqual(["QQ:", "A: 1+2+3"]);
+    expect(onFlush.mock.calls[0][0]).toEqual(["资讯:", "A: 1+2+3"]);
   });
 
   it("把同一批 draft 按 group 分段", () => {
@@ -122,12 +122,12 @@ describe("NotificationCenter (前沿短窗 + 节流)", () => {
     const onFlush = vi.fn();
     const c = center(scheduler, onFlush);
 
-    c.push(new FakeDraft("seed", "QQ", "Seed", "0")); // 开前沿短窗
-    c.push(new FakeDraft("a", "QQ", "A", "1")); // 窗内
+    c.push(new FakeDraft("seed", "资讯", "Seed", "0")); // 开前沿短窗
+    c.push(new FakeDraft("a", "资讯", "A", "1")); // 窗内
     c.push(new FakeDraft("ithome", "IT之家", "IT之家", "x")); // 窗内
     scheduler.fireWindowEnd();
     expect(onFlush.mock.calls[0][0]).toEqual([
-      "QQ:",
+      "资讯:",
       "Seed: 0",
       "A: 1",
       "",
@@ -141,12 +141,12 @@ describe("NotificationCenter (前沿短窗 + 节流)", () => {
     const onFlush = vi.fn();
     const c = center(scheduler, onFlush);
 
-    c.push(new FakeDraft("seed", "QQ", "Seed", "0")); // 开前沿短窗
-    c.push(new FakeDraft("a", "QQ", "A", "1")); // 窗内
+    c.push(new FakeDraft("seed", "资讯", "Seed", "0")); // 开前沿短窗
+    c.push(new FakeDraft("a", "资讯", "A", "1")); // 窗内
     c.clearForSource("a"); // 丢掉 a，只剩 seed
     scheduler.fireWindowEnd();
     expect(onFlush).toHaveBeenCalledTimes(1);
-    expect(onFlush.mock.calls[0][0]).toEqual(["QQ:", "Seed: 0"]);
+    expect(onFlush.mock.calls[0][0]).toEqual(["资讯:", "Seed: 0"]);
   });
 
   it("防御性：某个 draft 的 render 抛错只跳过它，其余照常 flush", () => {
@@ -154,10 +154,10 @@ describe("NotificationCenter (前沿短窗 + 节流)", () => {
     const onFlush = vi.fn();
     const c = center(scheduler, onFlush);
 
-    c.push(new FakeDraft("seed", "QQ", "Seed", "0")); // 开前沿短窗
-    c.push(new FakeDraft("x", "QQ", "X", "1", true)); // 窗内，render 抛错
-    c.push(new FakeDraft("y", "QQ", "Y", "2")); // 窗内
+    c.push(new FakeDraft("seed", "资讯", "Seed", "0")); // 开前沿短窗
+    c.push(new FakeDraft("x", "资讯", "X", "1", true)); // 窗内，render 抛错
+    c.push(new FakeDraft("y", "资讯", "Y", "2")); // 窗内
     scheduler.fireWindowEnd();
-    expect(onFlush.mock.calls[0][0]).toEqual(["QQ:", "Seed: 0", "Y: 2"]);
+    expect(onFlush.mock.calls[0][0]).toEqual(["资讯:", "Seed: 0", "Y: 2"]);
   });
 });

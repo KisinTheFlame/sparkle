@@ -30,12 +30,11 @@ describe("context-message-factory", () => {
   it("should pass foreground input text through as-is (App 已自带伪标签，不套第二层)", () => {
     expect(
       createForegroundInputMessage(
-        '<qq_conversation_new_messages name="产品群">\n群友 (1): 在吗\n</qq_conversation_new_messages>',
+        '<chat_new_messages name="产品群">\n群友 (1): 在吗\n</chat_new_messages>',
       ),
     ).toEqual({
       role: "user",
-      content:
-        '<qq_conversation_new_messages name="产品群">\n群友 (1): 在吗\n</qq_conversation_new_messages>',
+      content: '<chat_new_messages name="产品群">\n群友 (1): 在吗\n</chat_new_messages>',
     });
   });
 

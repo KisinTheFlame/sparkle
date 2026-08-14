@@ -58,7 +58,7 @@ export class SwitchTool extends ZodToolComponent<typeof SwitchArgumentsSchema> {
       id: {
         type: "string",
         description:
-          '要进入 / 切换到的目标 App 的 id，例如 "qq"、"calc"、"terminal"、"ithome"、"hn"。',
+          '要进入 / 切换到的目标 App 的 id，例如 "terminal"、"browser"、"todo"、"ithome"。',
       },
     },
   } as const;

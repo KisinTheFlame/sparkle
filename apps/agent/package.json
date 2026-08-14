@@ -21,7 +21,6 @@
     "@sparkle/llm-api": "workspace:*",
     "@sparkle/llm-client": "workspace:*",
     "@sparkle/metric-client": "workspace:*",
-    "@sparkle/napcat-api": "workspace:*",
     "@sparkle/oss-api": "workspace:*",
     "@sparkle/persistence": "workspace:*",
     "@sparkle/rpc-client": "workspace:*",

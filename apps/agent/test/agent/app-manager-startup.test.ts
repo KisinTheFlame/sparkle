@@ -2,22 +2,22 @@ import { AppManager, type App, type AppStartupContext } from "@sparkle/agent-run
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-const CalcLikeConfigSchema = z
+const FakeAppConfigSchema = z
   .object({
     precision: z.number().int().min(0).max(20).optional(),
   })
   .default({});
 
-type CalcLikeConfig = z.infer<typeof CalcLikeConfigSchema>;
+type FakeAppConfig = z.infer<typeof FakeAppConfigSchema>;
 
-class FakeConfiguredApp implements App<CalcLikeConfig> {
+class FakeConfiguredApp implements App<FakeAppConfig> {
   public readonly id: string;
   public readonly displayName: string;
   public readonly description = "测试用途";
   public readonly tools = [] as const;
-  public readonly configSchema = CalcLikeConfigSchema;
+  public readonly configSchema = FakeAppConfigSchema;
 
-  public received: CalcLikeConfig | "not-called" = "not-called";
+  public received: FakeAppConfig | "not-called" = "not-called";
 
   public constructor(id: string) {
     this.id = id;
@@ -32,7 +32,7 @@ class FakeConfiguredApp implements App<CalcLikeConfig> {
     return "";
   }
 
-  public async onStartup(ctx: AppStartupContext<CalcLikeConfig>): Promise<void> {
+  public async onStartup(ctx: AppStartupContext<FakeAppConfig>): Promise<void> {
     this.received = ctx.config;
   }
 }
@@ -66,17 +66,17 @@ class FakeUnconfiguredApp implements App {
 describe("AppManager.startupAll", () => {
   it("passes parsed config slice to onStartup when schema present", async () => {
     const manager = new AppManager();
-    const app = new FakeConfiguredApp("calc-like");
+    const app = new FakeConfiguredApp("configured-app");
     manager.register(app);
 
-    await manager.startupAll({ "calc-like": { precision: 4 } });
+    await manager.startupAll({ "configured-app": { precision: 4 } });
 
     expect(app.received).toEqual({ precision: 4 });
   });
 
   it("falls back to schema defaults when raw slice is missing", async () => {
     const manager = new AppManager();
-    const app = new FakeConfiguredApp("calc-like");
+    const app = new FakeConfiguredApp("configured-app");
     manager.register(app);
 
     await manager.startupAll({});
@@ -96,16 +96,16 @@ describe("AppManager.startupAll", () => {
 
   it("throws with App id when raw slice violates schema", async () => {
     const manager = new AppManager();
-    manager.register(new FakeConfiguredApp("calc-like"));
+    manager.register(new FakeConfiguredApp("configured-app"));
 
-    await expect(manager.startupAll({ "calc-like": { precision: -1 } })).rejects.toThrow(
-      /calc-like/,
+    await expect(manager.startupAll({ "configured-app": { precision: -1 } })).rejects.toThrow(
+      /configured-app/,
     );
   });
 
   it("works with default empty rawAppsConfig", async () => {
     const manager = new AppManager();
-    const app = new FakeConfiguredApp("calc-like");
+    const app = new FakeConfiguredApp("configured-app");
     manager.register(app);
 
     await manager.startupAll();

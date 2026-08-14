@@ -23,13 +23,7 @@ export function selectFrontDoor(pathname: string): FrontDoorTarget {
 export type UpstreamKey = "metric" | "llm" | "console" | "oss" | "scheduler" | "agent";
 
 // 这些前缀的 /api 请求路由到 console 进程（管理台后端，纯 DB 查询）；其余仍到 agent。
-const CONSOLE_PATH_PREFIXES = [
-  "/app-log",
-  "/llm-chat-call",
-  "/napcat-event",
-  "/napcat-group-message",
-  "/todo",
-];
+const CONSOLE_PATH_PREFIXES = ["/app-log", "/llm-chat-call", "/todo"];
 // 这些前缀路由到 sparkle-llm 进程：/auth 是 OAuth 凭据中心（认证管理端点随 LLM 服务外移），
 // /llm/providers 是管理台「LLM 调用历史」的 provider 列举（console-facing view，前端直连、不经 agent
 // 中转）。llm 的内部 RPC 在 `/internal/*`，刻意不进网关前缀，浏览器经网关够不到。

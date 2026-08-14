@@ -24,7 +24,6 @@
       "@sparkle/oss-api/*": ["./../../packages/oss-api/src/*"],
       "@sparkle/rpc-client/*": ["./../../packages/rpc-client/src/*"],
       "@sparkle/metric-api/*": ["./../../packages/metric-api/src/*"],
-      "@sparkle/napcat-api/*": ["./../../packages/napcat-api/src/*"],
       "@sparkle/agent-api/*": ["./../../packages/agent-api/src/*"]
     }
   },

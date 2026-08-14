@@ -15,7 +15,6 @@ import type { Config } from "@sparkle/kernel/config/config.loader";
 import type { Database } from "@sparkle/persistence/db/client";
 import type { LlmClient } from "@sparkle/llm-client";
 import type { MetricClient } from "@sparkle/metric-client/client";
-import type { NapcatClient } from "../acl/napcat-client.js";
 import type { IthomeService } from "../agent/capabilities/ithome/application/ithome.service.js";
 import type { MainAgentContextQueryService } from "../ops/application/main-agent-context-query.service.js";
 import { DefaultMainAgentContextQueryService } from "../ops/application/main-agent-context-query.impl.service.js";
@@ -28,7 +27,6 @@ import { ROOT_AGENT_RUNTIME_SNAPSHOT_RUNTIME_KEY } from "../agent/runtime/root-a
 import { createAgentSystemPrompt } from "../agent/runtime/root-agent/system-prompt.js";
 import { RootAgentSession } from "../agent/runtime/root-agent/session/root-agent-session.js";
 import { StateSampler } from "../agent/runtime/root-agent/state-sampler.js";
-import { FOREGROUND_METRIC_KNOCK } from "../agent/runtime/root-agent/foreground-input.js";
 import { SwitchTool, SWITCH_TOOL_NAME } from "../agent/runtime/root-agent/tools/switch.tool.js";
 import { InvokeTool, INVOKE_TOOL_NAME } from "../agent/runtime/root-agent/tools/invoke.tool.js";
 import { WaitTool } from "../agent/runtime/root-agent/tools/wait.tool.js";
@@ -51,26 +49,19 @@ import { ReadResourceTool } from "../agent/capabilities/resource/tools/read-reso
 import { DownloadResourceTool } from "../agent/capabilities/resource/tools/download-resource.tool.js";
 import { UploadResourceTool } from "../agent/capabilities/resource/tools/upload-resource.tool.js";
 import type { OssClient } from "../acl/oss-client.js";
-import { CalcApp } from "../agent/apps/calc/calc.app.js";
 import { ClockApp } from "../agent/apps/clock/clock.app.js";
 import { AmapApp } from "../agent/apps/amap/amap.app.js";
 import { AtelierApp } from "../agent/apps/atelier/atelier.app.js";
 import type { ImageClient } from "../acl/image-client.js";
-import type { QqApp } from "../agent/apps/qq/qq.app.js";
-import { buildQqApp } from "../agent/apps/qq/qq-app.factory.js";
 import { PrismaAppStateStore } from "../agent/runtime/app-state/prisma-app-state-store.js";
-import type { NotificationCenter } from "../agent/runtime/root-agent/notification/notification-center.js";
 
 type BuildAgentRuntimeInput = {
   config: Config;
   database: Database;
   llmClient: LlmClient;
   metricService: MetricClient;
-  /** QQ 出站门面：打到独立的 sparkle-napcat 进程（issue #347）。入站由 server-runtime 的订阅者注入。 */
-  napcatClient: NapcatClient;
   ithomeService: IthomeService;
   todoService: TodoService;
-  notificationCenter: NotificationCenter;
   eventQueue: Queue<Event>;
   /** 自建对象存储客户端；缺省（server.oss 未配）时资源读取/发送/截图落 OSS 优雅降级。 */
   ossClient?: OssClient;
@@ -83,14 +74,12 @@ type BuildAgentRuntimeInput = {
 export type AgentRuntimeBundle = {
   rootAgentRuntime: RootLoopAgent;
   mainAgentContextQueryService: MainAgentContextQueryService;
-  /** QQ App：手机 OS 模型下聊天的承载者，已收纳 napcat 网关（自管生命周期 + 入站事件）。 */
-  qqApp: QqApp;
   /**
    * 状态心跳采样器：随 run loop 生命周期 start()（不在 loop 未活时打点，避免虚假 portal 样本），
    * 服务关停时 stop()。见 index.ts / server-shutdown.ts。
    */
   stateSampler: StateSampler;
-  /** 反序关停所有 App 的 onShutdown（含 QQ App 停网关）。由服务关停链调用。 */
+  /** 反序关停所有 App 的 onShutdown。由服务关停链调用。 */
   shutdownApps: () => Promise<void>;
 };
 
@@ -168,10 +157,8 @@ export async function buildAgentRuntime({
   database,
   llmClient,
   metricService,
-  napcatClient,
   ithomeService,
   todoService,
-  notificationCenter,
   eventQueue,
   ossClient,
   browserClient,
@@ -185,8 +172,7 @@ export async function buildAgentRuntime({
   const terminalStateDao = new PrismaTerminalStateDao({ database });
   const terminalOutputDao = new PrismaTerminalOutputDao({ database });
 
-  // 资源读取层：read_resource（全局工具）与 send_resource（QQ 子工具）共用。OSS 关闭时
-  // 调用层报错，构造本身不依赖 OSS 在线。
+  // 资源读取层：read_resource 全局工具使用。OSS 关闭时调用层报错，构造本身不依赖 OSS 在线。
   const resourceService = new ResourceService({
     ossClient,
     maxBytes: config.server.agent.resource.maxBytes,
@@ -199,42 +185,14 @@ export async function buildAgentRuntime({
     fileMaxBytes: config.server.agent.resource.fileMaxBytes,
   });
 
-  // QQ App 装配：手机 OS 模型下聊天的承载者，已「收纳」napcat 网关——网关在 buildQqApp
-  // 内构造并由 QqApp 独占持有，入站事件直达 handleNapcatEvent（不走共享事件队列），出站
-  // 统一走 outboundService（收口）。这里不再见到裸网关。
-  const { qqApp } = buildQqApp({
-    napcatClient,
-    notificationCenter,
-    // 前台输入敲门端口：knock 计数（fire-and-forget）+ enqueue 不带内容的敲门事件。
-    // 与 inject / drain_empty（session 侧）合成前台路径的三计数观测。
-    notifyForegroundInput: () => {
-      void metricService
-        .record({ metricName: FOREGROUND_METRIC_KNOCK, value: 1, tags: { runtime: "agent" } })
-        .catch(() => undefined);
-      eventQueue.enqueue({ type: "foreground_input" });
-    },
-    botQQ: config.server.bot.qq,
-    creatorName: config.server.bot.creator.name,
-    creatorQQ: config.server.bot.creator.qq,
-    blockedGroupIds: config.server.napcat.blockedGroupIds,
-    recentMessageLimit: config.server.napcat.startupContextRecentMessageCount,
-    aiTone: {
-      enabled: config.server.agent.messaging.aiTone.enabled,
-      blockThreshold: config.server.agent.messaging.aiTone.blockThreshold,
-    },
-    resourceService,
-    ossClient,
-    fileMaxBytes: config.server.agent.resource.fileMaxBytes,
-  });
-
   // App 框架：先建 AppManager 并注册 Apps，再按各 App 的 configSchema 校验
   // config.server.apps 切片并 onStartup；createAppSubtoolOwner 在内部摊平 App 工具
   // 挂到主 Agent 的 InvokeTool 上。注入 App 状态持久化能力：startup 时恢复、shutdown
-  // 时存档各 App 自己的状态（如 QQ 未读红点），走 app_state 通用表。
+  // 时存档各 App 自己的状态，走 app_state 通用表。
   const appManager = new AppManager({
     stateStore: new PrismaAppStateStore({ database }),
     onStateError: ({ appId, phase, error }) => {
-      // 状态恢复/存档失败虽不阻断启停，但绝不静默：跨重启状态（如 QQ 未读红点）无声丢失
+      // 状态恢复/存档失败虽不阻断启停，但绝不静默：跨重启状态无声丢失
       // 会让运维完全无从察觉，故落结构化日志。
       const phaseLabel =
         phase === "restore" ? "恢复" : phase === "shutdown" ? "启动回滚关停" : "存档";
@@ -245,7 +203,6 @@ export async function buildAgentRuntime({
       });
     },
   });
-  appManager.register(new CalcApp());
   appManager.register(new TerminalApp({ terminalStateDao, terminalOutputDao }));
   appManager.register(new IthomeApp({ ithomeService }));
   appManager.register(new TodoApp({ todoService }));
@@ -260,7 +217,6 @@ export async function buildAgentRuntime({
     maxTaskDurationMs: config.server.agent.asyncTask.maxTaskDurationMs,
   });
   appManager.register(new AtelierApp({ imageClient, ossClient, asyncTaskManager }));
-  appManager.register(qqApp);
   await appManager.startupAll(config.server.apps);
 
   const agentSystemPromptFactory = async () => {
@@ -294,8 +250,7 @@ export async function buildAgentRuntime({
     appNotFoundHint: (appId: string) =>
       `当前所在 App "${appId}" 已找不到。可能被卸载或重启过，现在有哪些 App 见系统说明里的 App 列表。`,
   });
-  // 主 Agent 的 invoke 子工具所有者：全部 App 工具（含 QQ 的 send_message）由
-  // AppManager 把握所有权与 gate。状态树时代的 owner 已退役。
+  // 主 Agent 的 invoke 子工具所有者：全部 App 工具由 AppManager 把握所有权与 gate。
   const mainSubtoolOwners = [
     createAppSubtoolOwner({
       appManager,
@@ -384,7 +339,6 @@ export async function buildAgentRuntime({
   return {
     rootAgentRuntime,
     mainAgentContextQueryService,
-    qqApp,
     stateSampler,
     shutdownApps: () => appManager.shutdownAll(),
   };

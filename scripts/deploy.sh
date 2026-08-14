@@ -6,9 +6,9 @@ cd "$ROOT_DIR"
 
 SERVICE="${1:-}"
 
-# ── 单服务模式：pnpm app:deploy <agent|console|gateway|web|oss|browser|llm|metric|napcat|scheduler> ─────
+# ── 单服务模式：pnpm app:deploy <agent|console|gateway|web|oss|browser|llm|metric|scheduler> ─────
 # 只重建并重载指定服务（含其依赖包），不跑迁移、不动其它进程。改了某个服务时用它即可——
-# 尤其重载 console / gateway 不会打断 sparkle-agent 的热状态（KV 缓存前缀、HNSW 索引、活内存
+# 尤其重载 console / gateway 不会打断 sparkle-agent 的热状态（KV 缓存前缀、活内存
 # 上下文），符合「KV 缓存命中率优先」原则。涉及 DB schema 变更请用无参 `pnpm app:deploy`
 # （它会跑迁移）。
 if [ -n "$SERVICE" ]; then
@@ -22,10 +22,9 @@ if [ -n "$SERVICE" ]; then
     browser) PKG="@sparkle/browser"; PM2_NAME="sparkle-browser" ;;
     llm) PKG="@sparkle/llm-service"; PM2_NAME="sparkle-llm" ;;
     metric) PKG="@sparkle/metric"; PM2_NAME="sparkle-metric" ;;
-    napcat) PKG="@sparkle/napcat"; PM2_NAME="sparkle-napcat" ;;
     scheduler) PKG="@sparkle/scheduler-service"; PM2_NAME="sparkle-scheduler" ;;
     *)
-      echo "用法: pnpm app:deploy [<agent|console|gateway|web|oss|browser|llm|metric|napcat|scheduler>]" >&2
+      echo "用法: pnpm app:deploy [<agent|console|gateway|web|oss|browser|llm|metric|scheduler>]" >&2
       echo "  无参：全量构建 + Prisma 迁移 + 重载所有进程。" >&2
       echo "  带服务名：只重建并重载该服务，不跑迁移、不动其它进程。" >&2
       exit 1
@@ -54,9 +53,9 @@ if pnpm db:migrate:status >/dev/null 2>&1; then
   echo "[app:deploy]   schema 已最新，跳过迁移（避免与运行进程争锁）。"
 else
   echo "[app:deploy]   检测到待应用迁移，暂停 sparkle-agent 后迁移..."
-  # 主库 agent.db 自 #539 起由 sparkle-agent 独占（browser/napcat/llm 已拆库、console 零 DB
+  # 主库 agent.db 自 #539 起由 sparkle-agent 独占（browser/llm 已拆库、console 零 DB
   # 且均已在生产落地），迁移只需停 agent 一个进程——这正是 epic #539 的核心收益：
-  # 主库 schema 变更不再打断浏览器登录态 / QQ 长连接 / OAuth 刷新等卫星进程热状态。
+  # 主库 schema 变更不再打断浏览器登录态 / OAuth 刷新等卫星进程热状态。
   pnpm exec pm2 stop sparkle-agent >/dev/null 2>&1 || true
   if pnpm db:migrate:deploy; then
     echo "[app:deploy]   迁移完成，进程将在 Step 3 重新拉起。"
@@ -67,26 +66,7 @@ else
   fi
 fi
 
-echo "[app:deploy] Step 2b/4: Applying napcat Prisma migrations..."
-# napcat 有独立 SQLite 库（napcat_event / napcat_qq_message / outbox / image_asset，#539），
-# 只被 sparkle-napcat 单进程持有——迁移只需暂停这一个进程腾出独占锁。
-if pnpm --filter @sparkle/napcat db:migrate:status >/dev/null 2>&1; then
-  echo "[app:deploy]   napcat schema 已最新，跳过迁移。"
-else
-  echo "[app:deploy]   检测到 napcat 待应用迁移，暂停 sparkle-napcat 后迁移..."
-  pnpm exec pm2 stop sparkle-napcat >/dev/null 2>&1 || true
-  if pnpm --filter @sparkle/napcat db:migrate:deploy; then
-    echo "[app:deploy]   napcat 迁移完成，进程将在 Step 3 重新拉起。"
-  else
-    # 拉回本步之前（含 Step 2 主库分支）停过的全部进程：中止部署绝不能把 agent 晾在停机态
-    #（对已运行进程 pm2 start 是 no-op，安全）。
-    echo "[app:deploy]   napcat 迁移失败！立即拉回全部已停进程避免停机，然后中止部署。" >&2
-    pnpm exec pm2 start sparkle-agent sparkle-napcat >/dev/null 2>&1 || true
-    exit 1
-  fi
-fi
-
-echo "[app:deploy] Step 2c/4: Applying llm Prisma migrations..."
+echo "[app:deploy] Step 2b/4: Applying llm Prisma migrations..."
 # llm 有独立 SQLite 库（llm_chat_call / embedding_cache / claude_file_cache / oauth_*，#539），
 # 只被 sparkle-llm 单进程持有——迁移只需暂停这一个进程腾出独占锁。
 if pnpm --filter @sparkle/llm-service db:migrate:status >/dev/null 2>&1; then
@@ -99,12 +79,12 @@ else
   else
     # 拉回此前所有步骤停过的进程，绝不把 agent 晾在停机态。
     echo "[app:deploy]   llm 迁移失败！立即拉回全部已停进程避免停机，然后中止部署。" >&2
-    pnpm exec pm2 start sparkle-agent sparkle-napcat sparkle-llm >/dev/null 2>&1 || true
+    pnpm exec pm2 start sparkle-agent sparkle-llm >/dev/null 2>&1 || true
     exit 1
   fi
 fi
 
-echo "[app:deploy] Step 2d/4: Applying scheduler Prisma migrations..."
+echo "[app:deploy] Step 2c/4: Applying scheduler Prisma migrations..."
 # scheduler 有独立 SQLite 库（TaskRun 执行历史，#493），只被 sparkle-scheduler 单进程持有——
 # 迁移只需暂停这一个进程腾出独占锁，与主库那批多进程互不相干。无待应用迁移时（status 只读）跳过。
 if pnpm --filter @sparkle/scheduler-service db:migrate:status >/dev/null 2>&1; then
@@ -117,12 +97,12 @@ else
   else
     # 同 Step 2b：拉回此前所有步骤停过的进程，绝不把 agent 晾在停机态。
     echo "[app:deploy]   scheduler 迁移失败！立即拉回全部已停进程避免停机，然后中止部署。" >&2
-    pnpm exec pm2 start sparkle-agent sparkle-napcat sparkle-llm sparkle-scheduler >/dev/null 2>&1 || true
+    pnpm exec pm2 start sparkle-agent sparkle-llm sparkle-scheduler >/dev/null 2>&1 || true
     exit 1
   fi
 fi
 
-echo "[app:deploy] Step 2e/4: Applying oss Prisma migrations..."
+echo "[app:deploy] Step 2d/4: Applying oss Prisma migrations..."
 # oss 有独立 SQLite 库（blob / object 对象元数据），只被 sparkle-oss 单进程持有——迁移只需暂停
 # 这一个进程腾出独占锁。无待应用迁移时（status 只读）跳过。首次 prisma 化前，存量库需先做一次
 # baseline（`pnpm --filter @sparkle/oss db:migrate:resolve --applied <init>`）标记初始迁移已应用，
@@ -136,7 +116,7 @@ else
     echo "[app:deploy]   oss 迁移完成，进程将在 Step 3 重新拉起。"
   else
     echo "[app:deploy]   oss 迁移失败！立即拉回全部已停进程避免停机，然后中止部署。" >&2
-    pnpm exec pm2 start sparkle-agent sparkle-napcat sparkle-llm sparkle-scheduler sparkle-oss >/dev/null 2>&1 || true
+    pnpm exec pm2 start sparkle-agent sparkle-llm sparkle-scheduler sparkle-oss >/dev/null 2>&1 || true
     exit 1
   fi
 fi

@@ -38,20 +38,19 @@ Sparkle（小镜）不是一个聊天机器人，她是一个**活着的程序**
 
 ## 把她跑起来
 
-Sparkle 是一个全栈 TypeScript Monorepo（`pnpm`）。在底层，她不是一个程序，而是一组协作的独立进程——她本体，加上一个浏览器、一个对象存储、卡牌游戏引擎、一个 LLM 网关等等——统一由 PM2 托管。一条命令就能把整套拉起来。
+Sparkle 是一个全栈 TypeScript Monorepo（`pnpm`）。在底层，她不是一个程序，而是一组协作的独立进程——她本体，加上一个浏览器、一个对象存储、一个 LLM 网关等等——统一由 PM2 托管。一条命令就能把整套拉起来。
 
 你需要准备：
 
-- Node.js 和 `pnpm`，以及一套能编译原生模块（`better-sqlite3`、`hnswlib-node`）的工具链——数据库就是一个进程内的 SQLite 文件，不用另外跑外部数据库。
+- Node.js 和 `pnpm`，以及一套能编译原生模块（`better-sqlite3`）的工具链——数据库就是一个进程内的 SQLite 文件，不用另外跑外部数据库。
 - 一个你能登录的 LLM。
-- 如果你想要她生活里 QQ 的那一部分，宿主机上要跑一个 [NapCat](https://github.com/NapNeko/NapCatQQ)。
 
 然后：
 
 ```bash
 # 1. 配置
 #    config.yaml（非隐私，已在仓库里）——直接改。
-#    复制隐私模板，填入你的密钥 / QQ 号：
+#    复制隐私模板，填入你的密钥：
 cp config.secret.yaml.example config.secret.yaml
 
 # 2. 装依赖并把她拉起来（构建 → 迁移 → 由 PM2 启动）

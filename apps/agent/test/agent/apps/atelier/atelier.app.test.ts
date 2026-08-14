@@ -26,10 +26,10 @@ describe("AtelierApp", () => {
     expect(app.tools.map(t => t.name)).toEqual(["generate"]);
   });
 
-  it("help 披露 generate + send_resource 交付 + switch 指引", async () => {
+  it("help 披露 generate + resid 交付 + switch 指引", async () => {
     const help = await stubApp().help();
     expect(help).toContain("generate");
-    expect(help).toContain("send_resource");
+    expect(help).toContain("resid");
     expect(help).toContain("switch");
   });
 

@@ -15,7 +15,7 @@ export interface NotificationDraft {
   /** 不透明源标识（每个会话 / app 一个）。NotificationCenter 按它折叠、清空。 */
   readonly sourceId: string;
   /**
-   * 通知里的分组段名（如 "QQ"、"IT之家"）。NotificationCenter flush 时按 group
+   * 通知里的分组段名（如 "IT之家"、"待办"）。NotificationCenter flush 时按 group
    * 把各源的 render() 行归到同一段标题下，输出 `{group}:` + 每行。
    */
   readonly group: string;

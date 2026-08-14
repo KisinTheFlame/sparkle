@@ -23,12 +23,6 @@ export const queryKeys = {
   appLog: {
     historyList: (params: QueryParams) => ["app-log", "list", params] as const,
   },
-  napcatEvent: {
-    historyList: (params: QueryParams) => ["napcat-event", "list", params] as const,
-  },
-  napcatGroupMessage: {
-    historyList: (params: QueryParams) => ["napcat-group-message", "list", params] as const,
-  },
   todo: {
     historyList: (params: QueryParams) => ["todo", "list", params] as const,
   },

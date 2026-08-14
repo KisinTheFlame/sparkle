@@ -51,34 +51,6 @@ CREATE TABLE "metric_chart" (
 );
 
 -- CreateTable
-CREATE TABLE "napcat_event" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "post_type" TEXT NOT NULL,
-    "message_type" TEXT,
-    "sub_type" TEXT,
-    "user_id" TEXT,
-    "group_id" TEXT,
-    "event_time" DATETIME,
-    "payload" JSONB NOT NULL,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- CreateTable
-CREATE TABLE "napcat_qq_message" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "message_type" TEXT NOT NULL,
-    "sub_type" TEXT NOT NULL,
-    "group_id" TEXT,
-    "user_id" TEXT,
-    "nickname" TEXT,
-    "message_id" INTEGER,
-    "message" JSONB NOT NULL,
-    "event_time" DATETIME,
-    "payload" JSONB NOT NULL,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- CreateTable
 CREATE TABLE "oauth_session" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "provider" TEXT NOT NULL,
@@ -254,33 +226,6 @@ CREATE INDEX "metric_created_at_idx" ON "metric"("created_at");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "metric_chart_chart_name_uq" ON "metric_chart"("chart_name");
-
--- CreateIndex
-CREATE INDEX "napcat_event_created_at_idx" ON "napcat_event"("created_at");
-
--- CreateIndex
-CREATE INDEX "napcat_event_post_type_created_at_idx" ON "napcat_event"("post_type", "created_at");
-
--- CreateIndex
-CREATE INDEX "napcat_event_message_type_created_at_idx" ON "napcat_event"("message_type", "created_at");
-
--- CreateIndex
-CREATE INDEX "napcat_event_user_id_created_at_idx" ON "napcat_event"("user_id", "created_at");
-
--- CreateIndex
-CREATE INDEX "napcat_qq_message_created_at_idx" ON "napcat_qq_message"("created_at");
-
--- CreateIndex
-CREATE INDEX "napcat_qq_message_message_type_created_at_idx" ON "napcat_qq_message"("message_type", "created_at");
-
--- CreateIndex
-CREATE INDEX "napcat_qq_message_group_id_created_at_idx" ON "napcat_qq_message"("group_id", "created_at");
-
--- CreateIndex
-CREATE INDEX "napcat_qq_message_nickname_created_at_idx" ON "napcat_qq_message"("nickname", "created_at");
-
--- CreateIndex
-CREATE INDEX "napcat_qq_message_user_id_created_at_idx" ON "napcat_qq_message"("user_id", "created_at");
 
 -- CreateIndex
 CREATE INDEX "oauth_session_status_updated_at_idx" ON "oauth_session"("status", "updated_at");

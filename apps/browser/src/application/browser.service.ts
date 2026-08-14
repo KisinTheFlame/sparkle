@@ -27,7 +27,7 @@ const VIEWPORT = { width: 1024, height: 768 };
 const NAVIGATION_TIMEOUT_MS = 30_000;
 /** 死等（waitFor ms）上限：防止超大 ms 永久占住串行动作队列。 */
 const MAX_WAIT_MS = 30_000;
-/** 单步动作超时收紧到 10s：浏览器动作阻塞单线程主循环，超时上限即 QQ 最坏延迟（T2）。 */
+/** 单步动作超时收紧到 10s：浏览器动作阻塞单线程主循环，超时上限即主循环最坏阻塞时长（T2）。 */
 const ACTION_TIMEOUT_MS = 10_000;
 const SCREENSHOT_JPEG_QUALITY = 85;
 

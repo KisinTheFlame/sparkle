@@ -41,7 +41,7 @@ describe("DefaultAgentContext", () => {
       createWakeReminderMessage(new Date("2026-03-09T10:21:00.000Z")),
       {
         role: "user",
-        content: "<qq_message>\n测试昵称 (654321):\nhello\n</qq_message>",
+        content: "<chat_message>\n测试昵称 (654321):\nhello\n</chat_message>",
       },
     ]);
 
@@ -51,7 +51,7 @@ describe("DefaultAgentContext", () => {
         createWakeReminderMessage(new Date("2026-03-09T10:21:00.000Z")),
         {
           role: "user",
-          content: "<qq_message>\n测试昵称 (654321):\nhello\n</qq_message>",
+          content: "<chat_message>\n测试昵称 (654321):\nhello\n</chat_message>",
         },
       ],
     });
@@ -123,7 +123,7 @@ describe("DefaultAgentContext", () => {
       createWakeReminderMessage(new Date("2026-03-09T10:21:00.000Z")),
       {
         role: "user",
-        content: "<qq_message>\n测试昵称 (654321):\nhello\n</qq_message>",
+        content: "<chat_message>\n测试昵称 (654321):\nhello\n</chat_message>",
       },
     ]);
     // count=2 覆盖全部 message，等价于整条重建。
@@ -226,7 +226,7 @@ describe("DefaultAgentContext", () => {
       createWakeReminderMessage(new Date("2026-03-09T10:21:00.000Z")),
       {
         role: "user",
-        content: "<qq_message>\n测试昵称 (654321):\nhello\n</qq_message>",
+        content: "<chat_message>\n测试昵称 (654321):\nhello\n</chat_message>",
       },
     ]);
 
@@ -238,7 +238,7 @@ describe("DefaultAgentContext", () => {
         createWakeReminderMessage(new Date("2026-03-09T10:21:00.000Z")),
         {
           role: "user",
-          content: "<qq_message>\n测试昵称 (654321):\nhello\n</qq_message>",
+          content: "<chat_message>\n测试昵称 (654321):\nhello\n</chat_message>",
         },
       ],
     });
@@ -261,7 +261,7 @@ describe("DefaultAgentContext", () => {
         createWakeReminderMessage(new Date("2026-03-09T10:21:00.000Z")),
         {
           role: "user",
-          content: "<qq_message>\n测试昵称 (654321):\nhello\n</qq_message>",
+          content: "<chat_message>\n测试昵称 (654321):\nhello\n</chat_message>",
         },
         {
           role: "tool",
@@ -276,7 +276,7 @@ describe("DefaultAgentContext", () => {
         createWakeReminderMessage(new Date("2026-03-09T10:21:00.000Z")),
         {
           role: "user",
-          content: "<qq_message>\n测试昵称 (654321):\nhello\n</qq_message>",
+          content: "<chat_message>\n测试昵称 (654321):\nhello\n</chat_message>",
         },
         {
           role: "assistant",

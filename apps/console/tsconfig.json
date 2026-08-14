@@ -13,7 +13,6 @@
       "@sparkle/http/*": ["./../../packages/http/src/*"],
       "@sparkle/console-api/*": ["./../../packages/console-api/src/*"],
       "@sparkle/llm-api/*": ["./../../packages/llm-api/src/*"],
-      "@sparkle/napcat-api/*": ["./../../packages/napcat-api/src/*"],
       "@sparkle/rpc-client/*": ["./../../packages/rpc-client/src/*"]
     }
   },

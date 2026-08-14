@@ -45,26 +45,26 @@ describe("switch tool", () => {
   it("首进 App A -> App B：onBlur, switch_app, onFocus，再自动追加 app_help", async () => {
     const appManager = new AppManager();
     appManager.register(
-      createFakeApp("calc", { onBlurEffects: [{ type: "append_message", content: "bye calc" }] }),
+      createFakeApp("clock", { onBlurEffects: [{ type: "append_message", content: "bye clock" }] }),
     );
     appManager.register(
-      createFakeApp("hn", { onFocusEffects: [{ type: "append_message", content: "hi hn" }] }),
+      createFakeApp("todo", { onFocusEffects: [{ type: "append_message", content: "hi todo" }] }),
     );
     const tool = new SwitchTool({ appManager });
 
-    const result = await tool.execute({ id: "hn" }, {
-      rootAgentSession: fakeSession({ currentApp: "calc" }),
+    const result = await tool.execute({ id: "todo" }, {
+      rootAgentSession: fakeSession({ currentApp: "clock" }),
     } as Parameters<typeof tool.execute>[1]);
 
     // Effect 模型：先源 App.onBlur，再 switch_app 切焦点，再目标 App.onFocus，最后首进 app_help。
     expect(result.effects).toEqual([
-      { type: "append_message", content: "bye calc" },
-      { type: "switch_app", appId: "hn" },
-      { type: "append_message", content: "hi hn" },
-      { type: "append_message", content: '<app_help app="hn">\nyou are in hn\n</app_help>' },
+      { type: "append_message", content: "bye clock" },
+      { type: "switch_app", appId: "todo" },
+      { type: "append_message", content: "hi todo" },
+      { type: "append_message", content: '<app_help app="todo">\nyou are in todo\n</app_help>' },
     ]);
     const parsed = JSON.parse(result.content);
-    expect(parsed).toMatchObject({ ok: true, fromApp: "calc", toApp: "hn" });
+    expect(parsed).toMatchObject({ ok: true, fromApp: "clock", toApp: "todo" });
     // 首进已自带 help，不再提示手动 help。
     expect(parsed.message).not.toContain("调用 help");
   });
@@ -72,59 +72,59 @@ describe("switch tool", () => {
   it("从 Portal 首进目标 App（无 onBlur），自动追加 app_help", async () => {
     const appManager = new AppManager();
     appManager.register(
-      createFakeApp("hn", { onFocusEffects: [{ type: "append_message", content: "hi hn" }] }),
+      createFakeApp("todo", { onFocusEffects: [{ type: "append_message", content: "hi todo" }] }),
     );
     const tool = new SwitchTool({ appManager });
 
-    const result = await tool.execute({ id: "hn" }, {
+    const result = await tool.execute({ id: "todo" }, {
       rootAgentSession: fakeSession({ currentApp: undefined }),
     } as Parameters<typeof tool.execute>[1]);
 
     expect(result.effects).toEqual([
-      { type: "switch_app", appId: "hn" },
-      { type: "append_message", content: "hi hn" },
-      { type: "append_message", content: '<app_help app="hn">\nyou are in hn\n</app_help>' },
+      { type: "switch_app", appId: "todo" },
+      { type: "append_message", content: "hi todo" },
+      { type: "append_message", content: '<app_help app="todo">\nyou are in todo\n</app_help>' },
     ]);
-    expect(JSON.parse(result.content)).toMatchObject({ ok: true, fromApp: null, toApp: "hn" });
+    expect(JSON.parse(result.content)).toMatchObject({ ok: true, fromApp: null, toApp: "todo" });
   });
 
   it("并存：有 onFocus 屏的 App 首进时，屏在前、app_help 在后", async () => {
     const appManager = new AppManager();
     appManager.register(
-      createFakeApp("qq", {
+      createFakeApp("chat", {
         onFocusEffects: [
-          { type: "append_message", content: "<qq_conversation_list>…</qq_conversation_list>" },
+          { type: "append_message", content: "<chat_conversation_list>…</chat_conversation_list>" },
         ],
-        help: async () => "QQ 能力说明",
+        help: async () => "聊天能力说明",
       }),
     );
     const tool = new SwitchTool({ appManager });
 
-    const result = await tool.execute({ id: "qq" }, {
+    const result = await tool.execute({ id: "chat" }, {
       rootAgentSession: fakeSession({ currentApp: undefined }),
     } as Parameters<typeof tool.execute>[1]);
 
     expect(result.effects).toEqual([
-      { type: "switch_app", appId: "qq" },
-      { type: "append_message", content: "<qq_conversation_list>…</qq_conversation_list>" },
-      { type: "append_message", content: '<app_help app="qq">\nQQ 能力说明\n</app_help>' },
+      { type: "switch_app", appId: "chat" },
+      { type: "append_message", content: "<chat_conversation_list>…</chat_conversation_list>" },
+      { type: "append_message", content: '<app_help app="chat">\n聊天能力说明\n</app_help>' },
     ]);
   });
 
   it("非首进（本桶已进入过）：不再追加 app_help，保留手动 help 提示", async () => {
     const appManager = new AppManager();
     appManager.register(
-      createFakeApp("hn", { onFocusEffects: [{ type: "append_message", content: "hi hn" }] }),
+      createFakeApp("todo", { onFocusEffects: [{ type: "append_message", content: "hi todo" }] }),
     );
     const tool = new SwitchTool({ appManager });
 
-    const result = await tool.execute({ id: "hn" }, {
-      rootAgentSession: fakeSession({ currentApp: "calc", entered: ["hn"] }),
+    const result = await tool.execute({ id: "todo" }, {
+      rootAgentSession: fakeSession({ currentApp: "clock", entered: ["todo"] }),
     } as Parameters<typeof tool.execute>[1]);
 
     expect(result.effects).toEqual([
-      { type: "switch_app", appId: "hn" },
-      { type: "append_message", content: "hi hn" },
+      { type: "switch_app", appId: "todo" },
+      { type: "append_message", content: "hi todo" },
     ]);
     expect(JSON.parse(result.content).message).toContain("调用 help");
   });
@@ -182,11 +182,11 @@ describe("switch tool", () => {
 
   it("should reject an unknown target App id", async () => {
     const appManager = new AppManager();
-    appManager.register(createFakeApp("calc"));
+    appManager.register(createFakeApp("clock"));
     const tool = new SwitchTool({ appManager });
 
     const result = await tool.execute({ id: "nope" }, {
-      rootAgentSession: fakeSession({ currentApp: "calc" }),
+      rootAgentSession: fakeSession({ currentApp: "clock" }),
     } as Parameters<typeof tool.execute>[1]);
 
     expect(JSON.parse(result.content)).toMatchObject({
@@ -198,11 +198,11 @@ describe("switch tool", () => {
 
   it("should reject switching to the App you are already in", async () => {
     const appManager = new AppManager();
-    appManager.register(createFakeApp("calc"));
+    appManager.register(createFakeApp("clock"));
     const tool = new SwitchTool({ appManager });
 
-    const result = await tool.execute({ id: "calc" }, {
-      rootAgentSession: fakeSession({ currentApp: "calc" }),
+    const result = await tool.execute({ id: "clock" }, {
+      rootAgentSession: fakeSession({ currentApp: "clock" }),
     } as Parameters<typeof tool.execute>[1]);
 
     expect(JSON.parse(result.content)).toMatchObject({

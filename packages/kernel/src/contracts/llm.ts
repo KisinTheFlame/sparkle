@@ -6,7 +6,8 @@
 // - `agent`：主 Agent 及一切 fork 出去、字节级复用主 Agent 消息前缀的 task agent
 //   （contextSummarizer）。它们必须与主 Agent 走同一份
 //   模型配置，否则前缀 cache 必 miss——所以共享同一个缓存身份，而非各配一份。
-// - `vision`：napcat 图片理解，独立的小 prompt，可独立选模型。
+// - `vision`：图片理解，独立的小 prompt，可独立选模型。当前无调用方，预留给
+//   将来需要「图片转文字描述」的能力（接入新消息渠道时的图片理解等）。
 //
 // 调用「归因」（哪个业务场景发起的）不再由 usage 承担，改由 `LlmClient.chat` 的 `scene`
 // 自由字段承接（metric 标签 + llm_chat_call 落库），见 issue #555。

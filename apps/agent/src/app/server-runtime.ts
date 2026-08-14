@@ -14,8 +14,6 @@ import { PrismaTodoItemDao } from "@sparkle/persistence/dao/impl/todo-item.impl.
 import { HealthHandler } from "@sparkle/kernel/http/health.handler";
 import { HttpLlmClient } from "../acl/http-llm-client.js";
 import { HttpImageClient } from "../acl/image-client.js";
-import { HttpNapcatClient } from "../acl/napcat-client.js";
-import { NapcatEventSubscriber, type NapcatCursorStore } from "../acl/napcat-event-subscriber.js";
 import { PrismaAppStateStore } from "../agent/runtime/app-state/prisma-app-state-store.js";
 import type { LlmProviderOption } from "@sparkle/llm-api/llm-chat";
 import { AppLogger } from "@sparkle/kernel/logger/logger";
@@ -57,7 +55,7 @@ type AppRouteHandler = {
 export type ServerRuntime = {
   app: FastifyInstance;
   database: Database;
-  /** 停入站 SSE 订阅后反序关停所有 App（napcat WS 生命周期已外移到 sparkle-napcat 进程）。 */
+  /** 反序关停所有 App。 */
   shutdownApps: () => Promise<void>;
   schedulerClient: SchedulerClient;
   rootAgentRuntime: RootLoopAgent;
@@ -65,8 +63,6 @@ export type ServerRuntime = {
   /** 状态心跳采样器：由 index.ts 在 run loop 启动后 start()、server-shutdown 时 stop()。 */
   stateSampler: { start(): void; stop(): void };
   port: number;
-  blockedGroupIds: string[];
-  startupContextRecentMessageCount: number;
   listAvailableAgentProviders: () => Promise<LlmProviderOption[]>;
 };
 
@@ -98,20 +94,14 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
 
   // LLM provider + OAuth 凭据中心已外移到独立 sparkle-llm 进程（issue：多 Agent 共享网关）。
   // agent 经 HttpLlmClient 直连它（地址从顶层 services.llm 派生），实现现有 LlmClient
-  // 接口——下游 root-agent/vision/... 零改动。llm_chat_call 落库、auth callback/刷新全在
+  // 接口——下游 root-agent 等零改动。llm_chat_call 落库、auth callback/刷新全在
   // 服务侧，agent 不再碰。embedding 能力也在服务侧（将来记忆系统接线时按需在 agent 侧新建 client）。
   const llmServiceBaseUrl = `http://${config.services.llm.host}:${config.services.llm.port}`;
   const llmClient = new HttpLlmClient({ baseUrl: llmServiceBaseUrl });
   // 生图走同一个 sparkle-llm 进程的 /internal/generate-image（issue #508）。专用薄 client，不塞进
   // chat 语义的 LlmClient。给 atelier App 用。
   const imageClient = new HttpImageClient({ baseUrl: llmServiceBaseUrl });
-  // NapCat 拆成独立 sparkle-napcat 进程（issue #347）：agent 经 HttpNapcatClient 出站（发消息 /
-  // 群文件 / 群信息 / 禁言查询），地址从顶层 services.napcat 派生。入站事件走下面的 SSE 订阅者。
-  // vision / OSS 图片存档 / 落库全在 napcat 侧，agent 不再持有。
-  const napcatClient = new HttpNapcatClient({
-    baseUrl: `http://${config.services.napcat.host}:${config.services.napcat.port}`,
-  });
-  // server.oss 缺失/禁用即关闭图片存档（resid 恒为 null，只走 vision 文字描述，优雅降级）。
+  // server.oss 缺失/禁用即关闭图片存档（resid 恒为 null，优雅降级）。
   // 启用时地址统一从顶层 services.oss 派生（host 是 reachable host，agent 据此 PUT）。
   const ossClient = config.server.oss?.enabled
     ? new HttpOssClient({
@@ -149,31 +139,17 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
     },
   });
   const todoService = new TodoService({ todoDao });
-  // QQ App 经注入的 napcatClient 出站；入站事件由下面的 NapcatEventSubscriber 订阅后喂给
-  // qqApp.handleNapcatEvent（napcat 拆独立进程，issue #347）。
   const agentRuntime = await buildAgentRuntime({
     config,
     database,
     llmClient,
     metricService,
-    napcatClient,
     ithomeService,
     todoService,
-    notificationCenter,
     eventQueue,
     ossClient,
     browserClient,
     imageClient,
-  });
-
-  // 入站事件订阅：长连 sparkle-napcat 的 SSE 流，解析事件喂 qqApp.handleNapcatEvent，处理成功后
-  // 落持久游标（跨 agent 重启记住已消费到的 seq，重连带 Last-Event-ID 回放缺口）。游标复用
-  // app_state 表（appId=napcat.cursor 存 { lastConsumedSeq }）。
-  const napcatCursorStore = createNapcatCursorStore(new PrismaAppStateStore({ database }));
-  const napcatEventSubscriber = new NapcatEventSubscriber({
-    baseUrl: `http://${config.services.napcat.host}:${config.services.napcat.port}`,
-    onEvent: event => agentRuntime.qqApp.handleNapcatEvent(event),
-    cursorStore: napcatCursorStore,
   });
 
   // 提醒/汇总以纯数据回调，draft 在这层（wiring 边界）构造并 push，capabilities 层不依赖 apps 层。
@@ -226,48 +202,17 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
     ],
   });
 
-  // 启动入站事件订阅（后台重连循环，不阻塞）。qqApp 已装配，handleNapcatEvent 随时可调。
-  void napcatEventSubscriber.start();
-
   return {
     app,
     database,
-    // 关停：先停入站订阅（不再有新事件进来），再反序关停各 App。
-    shutdownApps: async () => {
-      napcatEventSubscriber.stop();
-      await agentRuntime.shutdownApps();
-    },
+    shutdownApps: () => agentRuntime.shutdownApps(),
     schedulerClient,
     rootAgentRuntime: agentRuntime.rootAgentRuntime,
     metricService,
     stateSampler: agentRuntime.stateSampler,
     port: config.services.agent.port,
-    blockedGroupIds: config.server.napcat.blockedGroupIds,
-    startupContextRecentMessageCount: config.server.napcat.startupContextRecentMessageCount,
     listAvailableAgentProviders: async () => {
       return await llmClient.listAvailableProviders({ usage: "agent" });
-    },
-  };
-}
-
-/** app_state 里 napcat 入站游标的 appId。存 `{ lastConsumedSeq }`。 */
-const NAPCAT_CURSOR_APP_ID = "napcat.cursor";
-
-/** 把通用 app_state 存储适配成 NapcatEventSubscriber 要的 { load, save } 游标口。 */
-function createNapcatCursorStore(appStateStore: PrismaAppStateStore): NapcatCursorStore {
-  return {
-    async load(): Promise<number> {
-      const state = await appStateStore.load(NAPCAT_CURSOR_APP_ID);
-      if (state !== null && typeof state === "object" && !Array.isArray(state)) {
-        const seq = (state as Record<string, unknown>).lastConsumedSeq;
-        if (typeof seq === "number" && Number.isInteger(seq) && seq >= 0) {
-          return seq;
-        }
-      }
-      return 0;
-    },
-    async save(seq: number): Promise<void> {
-      await appStateStore.save(NAPCAT_CURSOR_APP_ID, { lastConsumedSeq: seq });
     },
   };
 }

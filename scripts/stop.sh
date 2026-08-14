@@ -12,7 +12,7 @@ if [ -z "$SERVICE" ]; then
   exit 0
 fi
 
-# ── 单服务模式：pnpm app:stop <agent|console|gateway|web|oss|browser|llm|metric|napcat|scheduler> ──
+# ── 单服务模式：pnpm app:stop <agent|console|gateway|web|oss|browser|llm|metric|scheduler> ──
 # 别名 → PM2 进程名。与 scripts/deploy.sh 的别名表保持一致，让 stop / deploy 用同一套短名。
 case "$SERVICE" in
   agent) PM2_NAME="sparkle-agent" ;;
@@ -24,10 +24,9 @@ case "$SERVICE" in
   browser) PM2_NAME="sparkle-browser" ;;
   llm) PM2_NAME="sparkle-llm" ;;
   metric) PM2_NAME="sparkle-metric" ;;
-  napcat) PM2_NAME="sparkle-napcat" ;;
   scheduler) PM2_NAME="sparkle-scheduler" ;;
   *)
-    echo "用法: pnpm app:stop [<agent|console|gateway|web|oss|browser|llm|metric|napcat|scheduler>]" >&2
+    echo "用法: pnpm app:stop [<agent|console|gateway|web|oss|browser|llm|metric|scheduler>]" >&2
     echo "  无参：停掉所有进程。" >&2
     echo "  带服务名：只停该服务。" >&2
     exit 1

@@ -164,7 +164,7 @@ describe("RootAgentHost.commitRoundResult — assistant text 保留与纯文本�
     const assistantMessage = {
       role: "assistant" as const,
       content: "切个 App。",
-      toolCalls: [{ id: "tc1", name: "switch", arguments: { app: "qq" } }],
+      toolCalls: [{ id: "tc1", name: "switch", arguments: { app: "terminal" } }],
     };
 
     await host.commitRoundResult(

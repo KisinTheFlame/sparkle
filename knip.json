@@ -21,8 +21,7 @@
     "**/prisma/schema.prisma",
     "apps/web/src/components/ui/**",
     "**/test/helpers/**",
-    "**/*.test-helper.ts",
-    "apps/agent/src/acl/napcat-client.ts"
+    "**/*.test-helper.ts"
   ],
   "workspaces": {
     ".": {
@@ -34,7 +33,6 @@
     "apps/gateway": { "entry": ["src/index.ts"] },
     "apps/llm": { "entry": ["src/index.ts"] },
     "apps/metric": { "entry": ["src/index.ts"] },
-    "apps/napcat": { "entry": ["src/index.ts"] },
     "apps/oss": { "entry": ["src/index.ts"] },
     "apps/scheduler": { "entry": ["src/index.ts"] },
     "apps/web": {

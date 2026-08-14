@@ -44,7 +44,7 @@
 
 - **Priority:** P3
 - **Status:** open
-- **Context:** "进上下文散文收口到 static/ 模板"第一批只收了 prose（factory 手拼壳 + 通知 draft），**显式排除了两类也会进上下文的文本**，留待以后：①工具 description（如 `send-message.tool.ts:27`）——它是稳定前缀的一部分、绑 param schema、属渐进式披露的垂直切片，收进中央会打破 App 自持工具文档的内聚；②工具 result 里的 error/status note（如 `send-message.tool.ts:90-172`）——进易变尾部非前缀、与控制流交织、是给小镜看的内部状态字。这两类分散在几十个 `.tool.ts` 里，改一处语气仍要满仓库找。
+- **Context:** "进上下文散文收口到 static/ 模板"第一批只收了 prose（factory 手拼壳 + 通知 draft），**显式排除了两类也会进上下文的文本**，留待以后：①工具 description（如 `view-time.tool.ts` 一类 `.tool.ts` 里的 description）——它是稳定前缀的一部分、绑 param schema、属渐进式披露的垂直切片，收进中央会打破 App 自持工具文档的内聚；②工具 result 里的 error/status note——进易变尾部非前缀、与控制流交织、是给 Agent 看的内部状态字。这两类分散在几十个 `.tool.ts` 里，改一处语气仍要满仓库找。
 - **Notes:** 以后若真要动，先想清楚代价：description 搬中央 = 破坏垂直切片 + 每加工具改中央；error note 搬常量层 = 每工具多一层 `MESSAGES.X` 间接引用、可读性下降。当前判断是收益 < 代价，故本轮不收。参照第一批的原则：TS 只算 view-model、文案走模板；但 description 与前缀/schema 强绑，未必适用同一机制，需单独设计。
 
 ### App 首次进入自动吐 help 后，entered-set 是否需要持久化进 snapshot
@@ -67,17 +67,6 @@
 
 ---
 
-## napcat
-
-### 合并转发里小镜看不到自己的消息（NapCat / NTQQ 上游限制）
-
-- **Priority:** P3
-- **Status:** open
-- **Context:** 在「和小镜的私聊」里选中**包含小镜自己发出的消息**生成合并转发、再发给小镜，小镜用 `view_forward` 展开时**看不到其中自己（本账号 `714457117`）的那部分消息**，只看得到对方的消息。已 live 实测确诊：转发 `7656887019929762382` 实际含 4 条（闻震 2 条 + 小镜 2 条），但 NapCat 经 `get_msg` 与 `get_forward_msg` **都只返回 2 条对方消息，小镜自己的 2 条彻底不在返回里**（无隐藏节点、无 `user_id=0` 占位）。根因在 NapCat / NTQQ 数据层：按 `resId` 重建合并转发时，本账号自己发出的消息在进入 NapCat 解析**之前**就已不存在——NapCat 源码 `parseMultiMessageContent` / `parseMessageV2` 并不过滤 self（self 消息只会被打 `post_type: message_sent` 照常返回），所以不是 NapCat 故意过滤，而是上游 NTQQ 没把 self 节点交出来。**客户端无解**：数据从源头就没到我们手里，换任何 OneBot 接口结果一致。与我们的 `view_forward` 实现无关（[0.3.1.6] 的 node-napcat-ts 对齐、[0.3.1.10] 的 get_msg 主路径都已确认无关）。
-- **Notes:** 对路的修法是**上报 NapCat**（NTQQ 重建合并转发时丢本账号自己的消息）。本地不要做脆弱的兜底拼接：缺失节点完全空白，转发段只给 `{id}` 不带条数摘要，我们既拿不到小镜消息的 message_id / 时间戳，也没有"少了几条"的信号，无法可靠还原，靠时间戳穿插猜测极易张冠李戴。相关 live 验证：forward `7656887019929762382` 实测返回 2 / 实际 4。
-
----
-
 ## oss
 
 ### OSS 并发/内存上限 + slowloris 防护
@@ -91,7 +80,7 @@
 
 - **Priority:** P3
 - **Status:** open
-- **Context:** `apps/oss/src/store/object-store.ts` 的 `ensureBlobFileFromTemp` 只把流式落好的临时文件 `rename` 转正，未 fsync 文件与目录。断电/内核崩溃后可能 SQLite 事务已提交（库说有）但文件内容/目录项未落盘（文件空或丢失），`sweepOrphans` 只回收"文件在、行不在"，不修复"行在、文件没内容"。Codex 对抗式评审发现。概率低且内容可重新拉取（QQ 图片源可重取 + put 自愈），故定 P3。
+- **Context:** `apps/oss/src/store/object-store.ts` 的 `ensureBlobFileFromTemp` 只把流式落好的临时文件 `rename` 转正，未 fsync 文件与目录。断电/内核崩溃后可能 SQLite 事务已提交（库说有）但文件内容/目录项未落盘（文件空或丢失），`sweepOrphans` 只回收"文件在、行不在"，不修复"行在、文件没内容"。Codex 对抗式评审发现。概率低且内容可重新拉取（图片源可重取 + put 自愈），故定 P3。
 - **Notes:** 修法：写完 tmp 后 fd.sync()，rename 后再 fsync 父目录。
 
 ---
@@ -145,14 +134,14 @@
 
 - **Priority:** P3
 - **Status:** in-progress（2026-07-01 /design-review DR-4 已做大部分）
-- **Context:** 已改填实语义变体：app-log 级别、scheduler 状态、llm-history 状态。**剩余**：NapCat 事件 / QQ 消息行**没有**类型徽章（要新增 event=signal/message=llm 的填实行标，属 additive）；llm-history 详情的 message role badge 仍 `secondary`（role→语义映射偏主观，待定）。
-- **Notes:** 后端没起时无法逐页视觉验证，本轮按 enum 映射 + build/类型校验为准；跑通后端后再目检。napcat 行标是新增控件，单独评估。
+- **Context:** 已改填实语义变体：app-log 级别、scheduler 状态、llm-history 状态。**剩余**：llm-history 详情的 message role badge 仍 `secondary`（role→语义映射偏主观，待定）。
+- **Notes:** 后端没起时无法逐页视觉验证，本轮按 enum 映射 + build/类型校验为准；跑通后端后再目检。
 
 ### 历史表格行键盘可达（a11y）
 
 - **Priority:** P2
 - **Status:** open
-- **Context:** llm-history / app-log / napcat-event / napcat-group-message / oss / todos 六个页面用 `<TableRow onClick>` 做行选择，无 `role`/`tabIndex`/`onKeyDown`/focus-visible，键盘用户不可达（Codex 指出；2026-07-25 复核仍为这 6 处）。属交互行为改动，超出本轮 CSS-first 范围。
+- **Context:** llm-history / app-log / oss / todos 四个页面用 `<TableRow onClick>` 做行选择，无 `role`/`tabIndex`/`onKeyDown`/focus-visible，键盘用户不可达（Codex 指出；2026-07-25 复核）。属交互行为改动，超出本轮 CSS-first 范围。
 - **Notes:** 给行加 `role="button" tabIndex=0`，回车/空格触发，补 focus-visible ring；或抽成可复用的可点击行组件。
 
 ### 抽共享 Input 基元
