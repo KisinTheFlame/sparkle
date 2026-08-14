@@ -38,7 +38,7 @@ server:
     contextCompactionImageCountThreshold: 550 # 上下文图片总数超过该值也触发摘要压缩（图片按张吃上下文，与 token 阈值并列的第二触发条件）
     llmRetryBackoffMs: 30000
     waitToolMaxWaitMs: 600000
-    stateSampleIntervalMs: 2000 # 状态心跳采样间隔：每这么久采一次「小镜此刻处于哪个 App / wait / portal」，打 agent.state.sample metric
+    stateSampleIntervalMs: 2000 # 状态心跳采样间隔：每这么久采一次「Sparkle 此刻处于哪个 App / wait / portal」，打 agent.state.sample metric
     notificationLeadingWindowMs: 1000 # 空闲来第一条通知时先开这么长的前沿短窗聚合首批，窗结束才 flush（不再前沿立即发）
     notificationBatchWindowMs: 30000
     asyncTask:
@@ -134,7 +134,7 @@ server:
           - provider: claude-code
             model: claude-sonnet-5
             times: 2
-  # bot.creator 是 PII，放 config.secret.yaml
+  # employer.name（雇主名字）是 PII，放 config.secret.yaml
   # 自建对象存储（@sparkle/oss）启用开关。地址不在这里——统一来自顶层 services.oss。
   # 整段可省略 → 关闭图片存档（resid 恒为 null，优雅降级）；
   # 写出该块即启用，enabled: false 可显式关闭。
@@ -144,7 +144,7 @@ server:
   # 没列出来的 App 走 schema 默认值；schema 不接受的字段会在启动时报错。
   apps:
     terminal:
-      # 终端 App。小镜的"家"默认在 ~/sparkle/（由 os.homedir() 解析）。
+      # 终端 App。Sparkle 的工作目录默认在 ~/sparkle/（由 os.homedir() 解析）。
       # initialCwd: ~/sparkle         # 可选；不填则使用 os.homedir() + "/sparkle"
       commandTimeoutMs: 60000 # 单条命令超时，超时后进程组被强杀，partial 输出仍保留
       previewBytes: 2048 # 工具返回的 stdout/stderr preview 上限，每条独立

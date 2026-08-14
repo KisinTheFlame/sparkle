@@ -7,7 +7,7 @@ import { TODO_NOTIFICATION_GROUP } from "./todo-reminder-draft.js";
  *
  * 单一 `sourceId="todo:digest"`，每次回顾一条；items 已由 service 封顶。渲染分两段：
  *   1. 未完成项汇总（空待办时给兜底文案）；
- *   2. 固定提示小镜去 todo App 按自己打算做的事添新待办。
+ *   2. 固定提示 Sparkle 去 todo App 按自己打算做的事添新待办。
  * 两次回顾间隔 12h、互不重叠，merge 取最新即可。
  */
 export class TodoDigestDraft implements NotificationDraft {

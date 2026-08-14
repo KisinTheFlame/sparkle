@@ -17,7 +17,7 @@ describe("TodoReminderDraft", () => {
   });
 });
 
-const NUDGE = "顺便想想接下来打算做什么，去 todo App 按自己的计划添几条新待办吧。";
+const NUDGE = "顺手盘一下接下来要做的事，去 todo App 把该记的待办补上。";
 
 describe("TodoDigestDraft", () => {
   it("无截断：列出全部，附创建提示", () => {

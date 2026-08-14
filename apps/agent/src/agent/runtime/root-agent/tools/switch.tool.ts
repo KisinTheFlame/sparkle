@@ -115,12 +115,12 @@ export class SwitchTool extends ZodToolComponent<typeof SwitchArgumentsSchema> {
       ...(onFocusEffects as readonly RootAgentEffect[]),
     ];
 
-    // 首次进入（本桶上下文）自动把 App 的 help 追加到尾部，省掉小镜再花一整轮去调 help 工具。
+    // 首次进入（本桶上下文）自动把 App 的 help 追加到尾部，省掉 Sparkle 再花一整轮去调 help 工具。
     // help 只读 hasEnteredApp 决策；真正的 markAppEntered 由 switch_app effect 在解释期落，保持
     // 工具无副作用（与既有 setCurrentApp 同语义）。部分 App 的 help 有 I/O（如 browser 走 GET
     // /location）、且正文可能内嵌外部内容，故：help 抛错绝不连累 switch——降级为不追加 app_help、
     // 退回「自己调 help」提示；正文里的伪闭合标签由 renderAppHelp 中和。首进标记照常（即便本次
-    // help 失败），避免下一轮又试又失败刷屏；失败模式良性——小镜可手动调 help 兜底。
+    // help 失败），避免下一轮又试又失败刷屏；失败模式良性——Sparkle 可手动调 help 兜底。
     let helpEmitted = false;
     if (!rootAgentSession.hasEnteredApp(targetApp.id)) {
       try {

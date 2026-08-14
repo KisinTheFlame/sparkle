@@ -376,7 +376,7 @@ export class SchedulerClient {
         const succeeded = await this.runHandler(entry, next);
         // handler 成功后才落"已处理到此 scheduledAt"：失败**不**推进游标，留给重连补发重试
         // （at-least-once）。补偿型 dedupe 任务（如 todo:daily-digest）宁可极罕见重推一次，也不能因
-        // 一次 handler 抛错就把整次派生生活输入静默吞掉。
+        // 一次 handler 抛错就把整次派生输入静默吞掉。
         if (succeeded) {
           await this.markSeen(entry, next);
         }

@@ -221,7 +221,7 @@ export async function buildAgentRuntime({
 
   const agentSystemPromptFactory = async () => {
     return createAgentSystemPrompt({
-      creatorName: config.server.bot.creator.name,
+      employerName: config.server.employer.name,
       apps: appManager
         .getAllApps()
         .map(app => ({ id: app.id, displayName: app.displayName, description: app.description })),

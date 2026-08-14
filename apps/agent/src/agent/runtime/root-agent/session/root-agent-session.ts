@@ -33,7 +33,7 @@ export type RootAgentSessionController = {
   getCurrentApp(): AppId | undefined;
   setCurrentApp(appId: AppId): void;
   /**
-   * 标记 root loop 是否已挂起（阻塞在事件队列等下一个生活输入）。由两条挂起路径
+   * 标记 root loop 是否已挂起（阻塞在事件队列等下一个工作输入）。由两条挂起路径
    * （wait_for_event effect、纯文本零工具轮）在 await 前后置位，供状态心跳采样读取。
    */
   setSuspended(suspended: boolean): void;
@@ -80,7 +80,7 @@ export class RootAgentSession implements RootAgentSessionController {
    */
   private currentApp: AppId | undefined = undefined;
   /**
-   * root loop 是否挂起（阻塞在 eventQueue.waitNonEmpty() 等下一个生活输入 = 空闲）。仅内存
+   * root loop 是否挂起（阻塞在 eventQueue.waitNonEmpty() 等下一个工作输入 = 空闲）。仅内存
    * 持有；不进 snapshot。两条挂起路径在 await 前后置位（见 root-effect-interpreter 的
    * WaitForEventHandler、root-agent-runtime 的 suspendUntilNextEvent）。reset/markRestored 归位为
    * false（重启后主循环从活跃态重放）。

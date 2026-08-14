@@ -1,6 +1,6 @@
 # Architecture
 
-本文档描述 Sparkle 仓库的代码组织、模块依赖与关键设计决策。项目理念（Agent as a life）见 [README](./README.md)；面向 LLM agent 的协作指引见 [AGENTS.md](./AGENTS.md)。
+本文档描述 Sparkle 仓库的代码组织、模块依赖与关键设计决策。项目理念（同事式 Agent）见 [README](./README.md)；面向 LLM agent 的协作指引见 [AGENTS.md](./AGENTS.md)。
 
 ## Workspace 拓扑
 
@@ -146,9 +146,9 @@ apps/web/src/
 
 ## 数据流与生命周期
 
-### 输入：生活输入 → 事件队列（横幅经 NotificationCenter，屏幕经 foreground_input）
+### 输入：工作输入 → 事件队列（横幅经 NotificationCenter，屏幕经 foreground_input）
 
-Agent 不区分输入来源；所有外部信号都是「生活输入」。手机 OS 模型下，后台 / 非焦点信号折叠成通知（「横幅」），由被动的 `NotificationCenter` 聚合后投入共享事件队列；前台当前会话的实时输入走 `foreground_input` 直达（「屏幕」）：
+Agent 不区分输入来源；所有外部信号都是「工作输入」。手机 OS 模型下，后台 / 非焦点信号折叠成通知（「横幅」），由被动的 `NotificationCenter` 聚合后投入共享事件队列；前台当前会话的实时输入走 `foreground_input` 直达（「屏幕」）：
 
 ```
 IThome RSS 轮询 ─→ IThome poller ─┬─→ NotificationCenter ─→ notification 事件

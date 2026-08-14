@@ -36,7 +36,7 @@ async function startAgentLoop(runtime: {
   try {
     await runtime.rootAgentRuntime.initialize();
   } catch (error) {
-    // 「Agent as a life」的硬底线：主循环是小镜"活着"的唯一形态。初始化失败绝不能让进程带着一个
+    // 硬底线：主循环是 Sparkle 在岗的唯一形态。初始化失败绝不能让进程带着一个
     // 死循环继续在线（PM2 看进程健康、/health 照样 200、监控无感），那是"看着正常其实已经死了"。
     // fail-fast：best-effort 关停资源后非零退出，交给 PM2 拉起一个干净新进程（快照持久化扩展会在
     // 重启后重放历史、回填 KV 前缀）。

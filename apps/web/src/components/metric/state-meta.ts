@@ -1,10 +1,10 @@
 import type { SeriesMetaResolver } from "./MetricChartView";
 
 /**
- * 小镜「状态时间占比」图里两个语义状态的展示 pin（label + 颜色）。
+ * Sparkle「状态时间占比」图里两个语义状态的展示 pin（label + 颜色）。
  *
  * 只钉 DESIGN.md 要求显式配色的两个语义状态：
- * - `wait` = root loop 挂起（空闲等下一个生活输入），语义黄（--scheduler = 等待/pending），
+ * - `wait` = root loop 挂起（空闲等下一个工作输入），语义黄（--scheduler = 等待/pending），
  *   是最该被一眼扫到的空闲带（也恒堆在最顶，见 DashboardPage 的 pinSeriesToTop）；
  * - `portal` = 桌面初始态（未进任何 App），中性弱色。
  *

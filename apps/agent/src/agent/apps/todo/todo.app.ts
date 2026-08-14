@@ -18,7 +18,7 @@ type TodoAppDeps = {
 };
 
 /**
- * 待办 App。小镜自己的中立待办本：CRUD + 到点/每日提醒（提醒线由 capabilities 层的
+ * 待办 App。Sparkle 自己的中立待办本：CRUD + 到点/每日提醒（提醒线由 capabilities 层的
  * TodoReminderPoller 经 NotificationCenter 走，不在 App 内）。
  *
  * - 工具：add_todo / list_todos / complete_todo / snooze_todo / update_todo / remove_todo

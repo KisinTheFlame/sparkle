@@ -350,10 +350,8 @@ const ConfigSchema = z.object({
         })
         .strict(),
     }),
-    bot: z.object({
-      creator: z.object({
-        name: NonEmptyStringSchema,
-      }),
+    employer: z.object({
+      name: NonEmptyStringSchema,
     }),
     /**
      * 自建对象存储（@sparkle/oss）的启用开关。地址不在这里——统一来自顶层 `services.oss`，

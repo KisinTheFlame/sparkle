@@ -21,14 +21,12 @@
 
 ## 项目理念（必读）
 
-Sparkle **不是一个 QQ 群聊机器人**，而是一个**拥有自己生活的 Agent**。
+Sparkle **不是一个聊天机器人**，而是一个**同事式 Agent（Agent as a colleague）**：一名为雇主工作的 AI 员工，接任务、排优先级、交付、汇报，也会自己发现值得做的事并提议。领域术语见 [CONTEXT.md](./CONTEXT.md)。
 
-群聊只是她生活的一部分，就像一个人不会把自己定义为"聊天的人"。只要给她足够多的能力（capability），她就可以像一个真正的人那样，去读新闻、去记住发生过的事、去主动做自己感兴趣的事。项目的核心概念是 **Agent as a life**：
-
-- QQ 群消息只是她接收到的一种事件，与 RSS 轮询、定时任务、系统通知在架构上是平级的"生活输入"。
-- 她有自己的兴趣（IThome 轮询、主动发言）、自己的节奏（事件队列、空闲时刻的后台动作）；长期记忆系统正在重新设计（原 Story 记忆已拆除，仅保留 `ledger` 消息账本作原始素材）。
-- 新增 capability 时，应该问自己："这是在给 Agent 的生活加一种新的存在方式吗？"，而不是"这是在给聊天机器人加一个功能吗？"。
-- 不要把 NapCat、群聊相关的概念泄漏到 `agent/runtime` 的核心抽象里。它只是众多外部事件源之一。
+- 消息渠道里的消息只是她接收到的一种事件，与 RSS 轮询、定时任务、系统通知在架构上是平级的"工作输入"。
+- 她有主动性（空闲自唤醒、自主决定空闲时做什么）、自己的节奏（事件队列、空闲时刻的后台动作）；长期记忆走自维护的工作笔记方向（原始素材另有 `ledger` 消息账本，只写不读）。
+- 新增 capability 时，应该问自己："这是在给这名员工加一种新的工作能力吗？"，而不是"这是在给聊天机器人加一个功能吗？"。
+- 不要把任何具体消息平台的概念泄漏到 `agent/runtime` 的核心抽象里。消息渠道只是众多外部事件源之一。
 
 任何架构决策、模块划分、命名，如果与这个定位冲突，定位优先。
 
@@ -46,7 +44,7 @@ Sparkle **不是一个 QQ 群聊机器人**，而是一个**拥有自己生活�
 
 对应到运行时，`AgentContext` 只暴露两个会改动 message 列表的操作：`appendMessages`（保留前缀）与 `replaceMessages`（明确破坏并重建前缀）。新功能如果既不是追加也不是压缩，就要警惕。
 
-另外两条与 ReAct 循环相关的既定语义（#268，text 保留语义经后续修订）：主 Agent 每轮 `toolChoice: auto`，assistant 的纯文本输出**保留进上下文**——持久化边界连同 content 一起随消息尾部追加（早期曾剥掉 content 只留 tool_use，现已改为保留，让小镜后续轮次能回看自己这一轮的思考；control 工具调用仍不留痕，wait 除外）；纯文本轮（零工具调用）同样把 text 写进上下文，代价是上下文更快增长、压缩更频繁。因为纯文本轮会把 assistant 消息留在尾部，`appendWakeReminderIfNeeded` 起轮前若发现尾部是 assistant 就无条件补一条 user 角色 wake-reminder 收尾——assistant 不能作为发给 provider 的最后一条（会被当 assistant prefill 续写，且触发 400、每轮复发），这条不变量避免「纯文本轮 + 空闲自唤醒」把 assistant 留在尾部。模型某轮零工具调用时主循环**挂起等下一个事件**，不会立即再起一轮。thinking 已开启 adaptive（effort 档位由 `config.yaml` 的 `usages.agent.thinking` 配置，现为 `low`；#573）：thinking 块随 assistant 消息进上下文全保留、原样回放——实测 thinking 块参与 prompt cache hash，全量回放是保住缓存连续性的唯一策略，发送侧裁剪会断链；thinking 参数值本身分割缓存 lineage，故镜像主上下文的 fork task agent 走同一个 `usage=agent` 随之一起开启。未开 thinking 的请求（vision、强制 tool_choice 场景）由 provider 渲染层剥除 thinking 块；config 删掉 `thinking` 行即整体关回 disabled（kill-switch，已持久化块由剥离规则兜住）。
+另外两条与 ReAct 循环相关的既定语义（#268，text 保留语义经后续修订）：主 Agent 每轮 `toolChoice: auto`，assistant 的纯文本输出**保留进上下文**——持久化边界连同 content 一起随消息尾部追加（早期曾剥掉 content 只留 tool_use，现已改为保留，让 Sparkle 后续轮次能回看自己这一轮的思考；control 工具调用仍不留痕，wait 除外）；纯文本轮（零工具调用）同样把 text 写进上下文，代价是上下文更快增长、压缩更频繁。因为纯文本轮会把 assistant 消息留在尾部，`appendWakeReminderIfNeeded` 起轮前若发现尾部是 assistant 就无条件补一条 user 角色 wake-reminder 收尾——assistant 不能作为发给 provider 的最后一条（会被当 assistant prefill 续写，且触发 400、每轮复发），这条不变量避免「纯文本轮 + 空闲自唤醒」把 assistant 留在尾部。模型某轮零工具调用时主循环**挂起等下一个事件**，不会立即再起一轮。thinking 已开启 adaptive（effort 档位由 `config.yaml` 的 `usages.agent.thinking` 配置，现为 `low`；#573）：thinking 块随 assistant 消息进上下文全保留、原样回放——实测 thinking 块参与 prompt cache hash，全量回放是保住缓存连续性的唯一策略，发送侧裁剪会断链；thinking 参数值本身分割缓存 lineage，故镜像主上下文的 fork task agent 走同一个 `usage=agent` 随之一起开启。未开 thinking 的请求（vision、强制 tool_choice 场景）由 provider 渲染层剥除 thinking 块；config 删掉 `thinking` 行即整体关回 disabled（kill-switch，已持久化块由剥离规则兜住）。
 
 ### 工具组织：InvokeTool 是顶层工具集的稳定壳
 
@@ -94,7 +92,7 @@ Sparkle **不是一个 QQ 群聊机器人**，而是一个**拥有自己生活�
 - **不要**在压缩之外的地方调用 `replaceMessages`。
 - **fork 型 task agent 一律用 `usage: "agent"`，绝不为它单开一个 usage**：`usage` 是「KV 缓存身份」（决定 provider/model），只有 `agent` / `vision` 两个值。凡是复用主 Agent 前缀（system + tools + 消息历史）的子任务（如 `contextSummarizer`），模型必须与主 Agent 逐字节一致才可能命中 prompt cache——给它单配一个 usage 就是只能配错的脚枪。「哪个业务场景发起的」这类归因走 `LlmClient.chat` 的 `scene` 自由字段（进 metric 标签 + `llm_chat_call.scene` 落库），与选模型解耦。见 issue #555。
 - **system prompt 和工具集的改动要集中提交**：每次改动都会让所有在飞会话的前缀失效一次，小步高频修改是最糟糕的模式。
-- **进上下文的散文一律走模板，禁止在 TS 里内联字面量**：任何最终会进 LLM 上下文的成句文案（system prompt、各类 reminder、`<notification>` / `<async_tool_result>` 等伪标签内容、通知 draft 的渲染文本）都必须落在 `apps/agent/static/` 下的 `.hbs` 模板，经 `renderServerStaticTemplate(import.meta.url, ...)` 渲染。TS 侧只负责算 view-model（计数、数组、布尔 flag、预格式化好的日期/截断文本），不写成句文案。这样调小镜的语气只改 `static/` 一棵树、不碰代码，也让"所有会进上下文的文本"始终收在同一处可审。**例外（留 TS 常量）**：分组 key / 结构标识（如 `"IT之家"`、`"待办"`）这类不是语气的标识符；以及工具 description 与工具 result 的 error/status note（前者绑 param schema 属渐进式披露垂直切片，后者进易变尾部且与控制流交织，见 `TODOS.md`）。
+- **进上下文的散文一律走模板，禁止在 TS 里内联字面量**：任何最终会进 LLM 上下文的成句文案（system prompt、各类 reminder、`<notification>` / `<async_tool_result>` 等伪标签内容、通知 draft 的渲染文本）都必须落在 `apps/agent/static/` 下的 `.hbs` 模板，经 `renderServerStaticTemplate(import.meta.url, ...)` 渲染。TS 侧只负责算 view-model（计数、数组、布尔 flag、预格式化好的日期/截断文本），不写成句文案。这样调 Sparkle 的语气只改 `static/` 一棵树、不碰代码，也让"所有会进上下文的文本"始终收在同一处可审。**例外（留 TS 常量）**：分组 key / 结构标识（如 `"IT之家"`、`"待办"`）这类不是语气的标识符；以及工具 description 与工具 result 的 error/status note（前者绑 param schema 属渐进式披露垂直切片，后者进易变尾部且与控制流交织，见 `TODOS.md`）。
 - Review 新 capability / task agent / tool 时，把"会不会破坏 KV 缓存命中"以及"进上下文的散文是否走了模板"作为显式检查项写进自检清单。
 
 ## 硬约束

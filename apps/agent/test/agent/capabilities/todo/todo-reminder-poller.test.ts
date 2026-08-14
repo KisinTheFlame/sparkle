@@ -71,7 +71,7 @@ describe("TodoReminderPoller.runDigest", () => {
     expect(digests[0].totalCount).toBe(1);
   });
 
-  it("零未完成项 → 仍回调一次（无条件触发，用于推动小镜创建新待办）", async () => {
+  it("零未完成项 → 仍回调一次（无条件触发，用于推动 Sparkle 创建新待办）", async () => {
     const { poller, digests } = setup();
     await poller.runDigest();
     expect(digests).toHaveLength(1);

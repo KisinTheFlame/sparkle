@@ -54,7 +54,7 @@ export class TodoReminderPoller {
   /**
    * 待办回顾：每天两次（09:00 / 21:00）无条件回调一次。
    *
-   * 即使当前没有未完成项也照样回调——这条 App 级提醒除了汇总未完成项，还要顺带推动小镜去
+   * 即使当前没有未完成项也照样回调——这条 App 级提醒除了汇总未完成项，还要顺带推动 Sparkle 去
    * todo App 按自己打算做的事添新待办，所以空待办时也得发（由 TodoDigestDraft 渲染兜底文案）。
    *
    * buildDigest / onDigest 的真实失败会 rethrow：dedupe 任务靠抛错让调度器不推进游标、重连补发重试，

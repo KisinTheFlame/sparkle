@@ -17,7 +17,7 @@ type StateSamplerDeps = {
 };
 
 /**
- * 状态心跳采样器（sampling profiler）：进程内定时器每 intervalMs 采一次「小镜此刻处于
+ * 状态心跳采样器（sampling profiler）：进程内定时器每 intervalMs 采一次「Sparkle 此刻处于
  * 哪个状态」，打一条 value=1 的 metric。占比图 = 查询期按状态归一化。
  *
  * 为何是采样而非在状态切换边界算 dwell 时长：崩溃/重启只丢几个采样点、天然自愈，

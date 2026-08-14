@@ -841,7 +841,7 @@ export class RootLoopAgent extends BaseLoopAgent<
    * 纯文本轮后的挂起，语义对齐 wait 工具的 wait_for_event：
    * - stopRequested 先行复查：stop() 注入的那个 wake 可能已被本轮 step-1 的
    *   consumePendingEvents 吃掉，不复查会在空队列上永久阻塞，关停死锁。
-   * - 自唤醒 timer 兜底：与 wait 工具同一个 maxWaitMs 上限，保证生活完全安静时
+   * - 自唤醒 timer 兜底：与 wait 工具同一个 maxWaitMs 上限，保证外界完全安静时
    *   Agent 也会按自己的节奏醒来（空闲时刻的自主行动心跳），不会无限期沉睡。
    *   timer unref，不阻进程退出；无论谁唤醒都清 timer，避免 stale wake。
    */
@@ -916,7 +916,7 @@ function failMissingTools(): never {
 
 /**
  * assistant turn 的持久化形态：text 现在保留进上下文（不再剥离），与 tool_use 一起随消息
- * 尾部追加，让后续轮次能回看小镜自己这一轮的思考；control 工具调用仍不留痕（wait 除外）。
+ * 尾部追加，让后续轮次能回看 Sparkle 自己这一轮的思考；control 工具调用仍不留痕（wait 除外）。
  * 追加发生在写入时——已写入的历史只追加不改写，不违反 KV 缓存的只追加原则（代价是上下文更快
  * 增长、压缩更频繁，见 issue #268 的语义修订）。
  */

@@ -32,7 +32,7 @@ export class DefaultAgentContext implements AgentContext {
       systemPromptFactory ??
       systemPrompt ??
       createAgentSystemPrompt({
-        creatorName: "unknown",
+        employerName: "unknown",
         apps: [],
       });
     this.systemPrompt = this.defaultSystemPrompt;

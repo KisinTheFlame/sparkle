@@ -152,7 +152,7 @@ export class TerminalService {
    * - `cd <dir>` 单条命令被拦截，直接更新 cwd 并返回空输出
    * - 其他命令 spawn 到配置的 shell，捕获 stdout/stderr 直到 maxOutputBytes 或 timeout
    * - timeout 会终止本次 shell 所在进程组，避免后台子进程残留
-   * - 完整输出写入 DB（若任一 stream 非空），返回 output_id 供小镜分页读取
+   * - 完整输出写入 DB（若任一 stream 非空），返回 output_id 供 Sparkle 分页读取
    */
   public async runBash(input: { command: string }): Promise<RunBashResult> {
     if (!this.initialized) {

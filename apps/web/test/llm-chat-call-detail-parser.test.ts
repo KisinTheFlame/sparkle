@@ -41,7 +41,7 @@ describe("parseLlmChatCallDetail", () => {
   it("带 thinkingBlocks 与 root thinking 的 payload 解析无 schemaError", () => {
     const parsed = parseLlmChatCallDetail(
       buildItem({
-        system: "你是小镜",
+        system: "你是 Sparkle",
         model: "claude-sonnet-4",
         messages: [
           { role: "user", content: "在吗" },
