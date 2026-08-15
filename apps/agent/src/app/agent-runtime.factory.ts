@@ -41,6 +41,9 @@ import { BrowserApp } from "../agent/apps/browser/browser.app.js";
 import type { BrowserClient } from "../acl/browser-client.js";
 import { TodoApp } from "../agent/apps/todo/todo.app.js";
 import type { TodoService } from "../agent/capabilities/todo/application/todo.service.js";
+import { NoteApp } from "../agent/apps/note/note.app.js";
+import { NoteService } from "../agent/capabilities/note/application/note.service.js";
+import { PrismaNoteDao } from "../agent/capabilities/note/infra/prisma-note.dao.js";
 import { PrismaLinearMessageLedgerDao } from "../agent/capabilities/ledger/infra/impl/prisma-linear-message-ledger.impl.dao.js";
 import { AppEntryResetExtension } from "../agent/runtime/root-agent/extensions/app-entry-reset.extension.js";
 import { ResourceService } from "../agent/capabilities/resource/application/resource.service.js";
@@ -206,6 +209,11 @@ export async function buildAgentRuntime({
   appManager.register(new TerminalApp({ terminalStateDao, terminalOutputDao }));
   appManager.register(new IthomeApp({ ithomeService }));
   appManager.register(new TodoApp({ todoService }));
+  // 笔记 App：Sparkle 自维护的长期记忆（页 = 主题，纯追加，见 docs/adr/0001）。
+  // service 只被本 App 消费，就地装配。
+  appManager.register(
+    new NoteApp({ noteService: new NoteService({ noteDao: new PrismaNoteDao({ database }) }) }),
+  );
   appManager.register(new ClockApp());
   appManager.register(new AmapApp({ ossClient }));
   appManager.register(new BrowserApp({ browserClient, ossClient }));

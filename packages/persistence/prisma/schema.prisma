@@ -119,3 +119,26 @@ model TodoItem {
 
   @@map("todo_item")
 }
+
+// 工作笔记（Sparkle 自维护的长期记忆）：页 = 主题，页内条目纯追加、不改不删。
+// 搜索走 LIKE 子串扫描（个人规模足够；数据量大了再升级 FTS，见 docs/adr/0001）。
+model NotePage {
+  id        Int         @id @default(autoincrement())
+  title     String      @unique
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @default(now()) @updatedAt @map("updated_at")
+  entries   NoteEntry[]
+
+  @@map("note_page")
+}
+
+model NoteEntry {
+  id        Int      @id @default(autoincrement())
+  pageId    Int      @map("page_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  page      NotePage @relation(fields: [pageId], references: [id])
+
+  @@index([pageId, id])
+  @@map("note_entry")
+}

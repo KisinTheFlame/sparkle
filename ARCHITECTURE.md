@@ -106,7 +106,8 @@ apps/agent/src/agent/
 │   ├── event/          事件队列与事件类型
 │   └── app-state/      App 状态持久化的 SQLite 实现（PrismaAppStateStore）
 ├── capabilities/     按能力聚合的实现
-│   ├── ledger/         root agent 消息账本（只写不读，留作将来记忆系统的原始素材）
+│   ├── ledger/         root agent 消息账本（只写不读，留作记忆演进的原始素材）
+│   ├── note/           工作笔记能力本体（长期记忆：页 = 主题，纯追加 + 搜索，见 docs/adr/0001）
 │   ├── ithome/         IThome RSS 抓取与文章阅读（能力本体）
 │   ├── browser/        浏览器工具（8 个）；本体 BrowserService 已拆到独立进程 `apps/browser`，经 `apps/agent/src/acl/browser-client.ts` 驱动（#173）
 │   ├── context-summary/ 上下文压缩 task agent（唯一允许 replaceMessages 的路径）
@@ -115,6 +116,7 @@ apps/agent/src/agent/
 │   └── todo/           待办本能力本体（到点提醒经通知中心）
 └── apps/             手机 OS 的 App（Portal 下可 enter 的地点）
     ├── ithome/         IThome App：RSS 未读推送
+    ├── note/           笔记 App：自维护长期记忆（开页、追加、全文搜索）
     ├── clock/          小工具 App
     ├── browser/        Browser App：有头浏览器登录 + 交互式逛网站
     ├── amap/           高德地图 App：地点搜索 / 路线规划 / 静态地图出图（#182）

@@ -39,7 +39,8 @@ export type RetentionSpec = {
  * which tables are logs/metrics/caches and which are Agent memory.
  *
  * Intentionally NOT cleaned up (not in this list):
- * - `ledger` (model LinearMessageLedger) — root agent 消息账本，只写不读，留作将来记忆系统的原始素材
+ * - `ledger` (model LinearMessageLedger) — root agent 消息账本，只写不读，留作记忆演进的原始素材
+ * - `note_page` / `note_entry` — 工作笔记（长期记忆），永不过期
  * - `root_agent_runtime_snapshot` — runtime snapshot
  * - `ithome_article` / `ithome_feed_cursor` — RSS articles (see TODOS.md for deferred strategy)
  * - 已随表迁往独立库的清理面（epic #539）：metric（#475，DuckDB 自理）、llm 三表 + oauth
