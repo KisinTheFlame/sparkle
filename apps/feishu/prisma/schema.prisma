@@ -1,0 +1,23 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// 归一化后的入站消息事件（外部事实，append-only）。seq（自增主键）即 SSE 帧 id 与
+// agent 侧消费游标；message_id 唯一索引承担事件级幂等（飞书可能重投递）。
+// payload 是 @sparkle/feishu-api 的 FeishuMessageEvent 去掉 seq 后的 JSON。
+model FeishuEvent {
+  seq       Int      @id @default(autoincrement())
+  messageId String   @unique @map("message_id")
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("feishu_event")
+}

@@ -6,7 +6,7 @@ cd "$ROOT_DIR"
 
 SERVICE="${1:-}"
 
-# ── 单服务模式：pnpm app:deploy <agent|console|gateway|web|oss|browser|llm|metric|scheduler> ─────
+# ── 单服务模式：pnpm app:deploy <agent|console|gateway|web|oss|browser|llm|metric|feishu|scheduler> ─────
 # 只重建并重载指定服务（含其依赖包），不跑迁移、不动其它进程。改了某个服务时用它即可——
 # 尤其重载 console / gateway 不会打断 sparkle-agent 的热状态（KV 缓存前缀、活内存
 # 上下文），符合「KV 缓存命中率优先」原则。涉及 DB schema 变更请用无参 `pnpm app:deploy`
@@ -22,9 +22,10 @@ if [ -n "$SERVICE" ]; then
     browser) PKG="@sparkle/browser"; PM2_NAME="sparkle-browser" ;;
     llm) PKG="@sparkle/llm-service"; PM2_NAME="sparkle-llm" ;;
     metric) PKG="@sparkle/metric"; PM2_NAME="sparkle-metric" ;;
+    feishu) PKG="@sparkle/feishu"; PM2_NAME="sparkle-feishu" ;;
     scheduler) PKG="@sparkle/scheduler-service"; PM2_NAME="sparkle-scheduler" ;;
     *)
-      echo "用法: pnpm app:deploy [<agent|console|gateway|web|oss|browser|llm|metric|scheduler>]" >&2
+      echo "用法: pnpm app:deploy [<agent|console|gateway|web|oss|browser|llm|metric|feishu|scheduler>]" >&2
       echo "  无参：全量构建 + Prisma 迁移 + 重载所有进程。" >&2
       echo "  带服务名：只重建并重载该服务，不跑迁移、不动其它进程。" >&2
       exit 1
@@ -117,6 +118,23 @@ else
   else
     echo "[app:deploy]   oss 迁移失败！立即拉回全部已停进程避免停机，然后中止部署。" >&2
     pnpm exec pm2 start sparkle-agent sparkle-llm sparkle-scheduler sparkle-oss >/dev/null 2>&1 || true
+    exit 1
+  fi
+fi
+
+echo "[app:deploy] Step 2e/4: Applying feishu Prisma migrations..."
+# feishu 有独立 SQLite 库（feishu_event 入站事件），只被 sparkle-feishu 单进程持有——
+# 迁移只需暂停这一个进程腾出独占锁。无待应用迁移时（status 只读）跳过。
+if pnpm --filter @sparkle/feishu db:migrate:status >/dev/null 2>&1; then
+  echo "[app:deploy]   feishu schema 已最新，跳过迁移。"
+else
+  echo "[app:deploy]   检测到 feishu 待应用迁移，暂停 sparkle-feishu 后迁移..."
+  pnpm exec pm2 stop sparkle-feishu >/dev/null 2>&1 || true
+  if pnpm --filter @sparkle/feishu db:migrate:deploy; then
+    echo "[app:deploy]   feishu 迁移完成，进程将在 Step 3 重新拉起。"
+  else
+    echo "[app:deploy]   feishu 迁移失败！立即拉回全部已停进程避免停机，然后中止部署。" >&2
+    pnpm exec pm2 start sparkle-agent sparkle-llm sparkle-scheduler sparkle-oss sparkle-feishu >/dev/null 2>&1 || true
     exit 1
   fi
 fi

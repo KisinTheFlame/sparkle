@@ -13,6 +13,7 @@ coverage
 packages/persistence/src/generated/prisma
 apps/scheduler/src/generated/prisma
 apps/llm/src/generated/prisma
+apps/feishu/src/generated/prisma
 apps/oss/src/generated/prisma
 .claude/worktrees
 .gstack

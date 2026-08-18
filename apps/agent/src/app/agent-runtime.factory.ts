@@ -27,6 +27,7 @@ import { ROOT_AGENT_RUNTIME_SNAPSHOT_RUNTIME_KEY } from "../agent/runtime/root-a
 import { createAgentSystemPrompt } from "../agent/runtime/root-agent/system-prompt.js";
 import { RootAgentSession } from "../agent/runtime/root-agent/session/root-agent-session.js";
 import { StateSampler } from "../agent/runtime/root-agent/state-sampler.js";
+import { FOREGROUND_METRIC_KNOCK } from "../agent/runtime/root-agent/foreground-input.js";
 import { SwitchTool, SWITCH_TOOL_NAME } from "../agent/runtime/root-agent/tools/switch.tool.js";
 import { InvokeTool, INVOKE_TOOL_NAME } from "../agent/runtime/root-agent/tools/invoke.tool.js";
 import { WaitTool } from "../agent/runtime/root-agent/tools/wait.tool.js";
@@ -56,15 +57,21 @@ import { ClockApp } from "../agent/apps/clock/clock.app.js";
 import { AmapApp } from "../agent/apps/amap/amap.app.js";
 import { AtelierApp } from "../agent/apps/atelier/atelier.app.js";
 import type { ImageClient } from "../acl/image-client.js";
+import type { FeishuClient } from "../acl/feishu-client.js";
+import { FeishuApp } from "../agent/apps/feishu/feishu.app.js";
 import { PrismaAppStateStore } from "../agent/runtime/app-state/prisma-app-state-store.js";
+import type { NotificationCenter } from "../agent/runtime/root-agent/notification/notification-center.js";
 
 type BuildAgentRuntimeInput = {
   config: Config;
   database: Database;
   llmClient: LlmClient;
   metricService: MetricClient;
+  /** 飞书出站门面：打到独立的 sparkle-feishu 进程。入站由 server-runtime 的 SSE 订阅者注入。 */
+  feishuClient: FeishuClient;
   ithomeService: IthomeService;
   todoService: TodoService;
+  notificationCenter: NotificationCenter;
   eventQueue: Queue<Event>;
   /** 自建对象存储客户端；缺省（server.oss 未配）时资源读取/发送/截图落 OSS 优雅降级。 */
   ossClient?: OssClient;
@@ -77,6 +84,8 @@ type BuildAgentRuntimeInput = {
 export type AgentRuntimeBundle = {
   rootAgentRuntime: RootLoopAgent;
   mainAgentContextQueryService: MainAgentContextQueryService;
+  /** 飞书 App：消息渠道的承载者。入站事件由 server-runtime 的 SSE 订阅者喂给它。 */
+  feishuApp: FeishuApp;
   /**
    * 状态心跳采样器：随 run loop 生命周期 start()（不在 loop 未活时打点，避免虚假 portal 样本），
    * 服务关停时 stop()。见 index.ts / server-shutdown.ts。
@@ -160,8 +169,10 @@ export async function buildAgentRuntime({
   database,
   llmClient,
   metricService,
+  feishuClient,
   ithomeService,
   todoService,
+  notificationCenter,
   eventQueue,
   ossClient,
   browserClient,
@@ -225,6 +236,21 @@ export async function buildAgentRuntime({
     maxTaskDurationMs: config.server.agent.asyncTask.maxTaskDurationMs,
   });
   appManager.register(new AtelierApp({ imageClient, ossClient, asyncTaskManager }));
+  // 飞书 App 装配：入站事件经 server-runtime 的 SSE 订阅者直达 handleInboundMessage
+  // （不走共享事件队列），出站统一走注入的 feishuClient。
+  const feishuApp = new FeishuApp({
+    feishuClient,
+    notificationCenter,
+    // 前台输入敲门端口：knock 计数（fire-and-forget）+ enqueue 不带内容的敲门事件。
+    // 与 inject / drain_empty（session 侧）合成前台路径的三计数观测。
+    notifyForegroundInput: () => {
+      void metricService
+        .record({ metricName: FOREGROUND_METRIC_KNOCK, value: 1, tags: { runtime: "agent" } })
+        .catch(() => undefined);
+      eventQueue.enqueue({ type: "foreground_input" });
+    },
+  });
+  appManager.register(feishuApp);
   await appManager.startupAll(config.server.apps);
 
   const agentSystemPromptFactory = async () => {
@@ -347,6 +373,7 @@ export async function buildAgentRuntime({
   return {
     rootAgentRuntime,
     mainAgentContextQueryService,
+    feishuApp,
     stateSampler,
     shutdownApps: () => appManager.shutdownAll(),
   };

@@ -24,6 +24,10 @@ services:
     host: 127.0.0.1
     port: 20010
     databaseUrl: file:./data/metric/metric.duckdb # metric 独占 DuckDB 单文件（列式，为 p95/分析聚合而生，#475）；与旧反推路径同址，无需迁移
+  feishu: # sparkle-feishu（飞书接入独立进程，仅 localhost：agent 经 HttpFeishuClient 出站 + SSE 订阅入站）
+    host: 127.0.0.1
+    port: 20013
+    databaseUrl: file:./data/feishu/feishu.db # feishu 独占 SQLite 库（feishu_event 入站事件，append-only 供 SSE 回放）
   scheduler: # sparkle-scheduler（通用定时调度服务，仅 localhost：agent 经 SchedulerClient 注册 + SSE 收 tick；#428）
     host: 127.0.0.1
     port: 20014
@@ -135,6 +139,7 @@ server:
             model: claude-sonnet-5
             times: 2
   # employer.name（雇主名字）是 PII，放 config.secret.yaml
+  # feishu.appId / appSecret（飞书自建应用凭据）是密钥，放 config.secret.yaml
   # 自建对象存储（@sparkle/oss）启用开关。地址不在这里——统一来自顶层 services.oss。
   # 整段可省略 → 关闭图片存档（resid 恒为 null，优雅降级）；
   # 写出该块即启用，enabled: false 可显式关闭。

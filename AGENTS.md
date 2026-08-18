@@ -99,7 +99,7 @@ Sparkle **不是一个聊天机器人**，而是一个**同事式 Agent（Agent 
 
 - 除非任务明确要求，否则一切交流与汇报统一使用简体中文。
 - 除非任务明确要求，否则默认在仓库根目录执行命令。
-- 数据库按服务独立（epic #539）：主库（agent 独占）读 `config.yaml` 的 `server.databaseUrl`；llm / scheduler / oss 各自读 `services.<svc>.databaseUrl`。查哪张表先确认归属库（布局见 docs/configuration.md）。
+- 数据库按服务独立（epic #539）：主库（agent 独占）读 `config.yaml` 的 `server.databaseUrl`；feishu / llm / scheduler / oss 各自读 `services.<svc>.databaseUrl`。查哪张表先确认归属库（布局见 docs/configuration.md）。
 - **改配置 schema 必须同步三处**：`packages/kernel/src/config/config.loader.ts`、`config.yaml`（非隐私，纳入版本控制）、`config.secret.yaml.example`（隐私模板，新增隐私字段在这里补占位）。
 - **提交前至少执行**以下五项，且全部成功：
 
@@ -116,7 +116,7 @@ pnpm knip
 完整的包拓扑与模块 DAG 见 [ARCHITECTURE.md](./ARCHITECTURE.md)。写代码时守住这几条边界：
 
 - 后端 `apps/agent` 用「扁平模块 + 模块内分层」（`domain / application / infra / http`）。新代码放进所属模块，从模块根入口或分层路径导入；**不要**新增全局 `handler / service / dao / event / tools / rag` 风格目录。
-- 通用 Agent Runtime 内核放 `packages/agent-runtime`（`TaskAgent` / `Tool` / `App` 框架；原 `Operation` 概念已退役，一次性子任务一律做成 TaskAgent + 终止工具）；**不要**把 NapCat 事件模型、Sparkle system prompt、`RootAgentRuntime`、具体 capability 塞进去。Sparkle 项目语义放 `apps/agent/src/agent`。
+- 通用 Agent Runtime 内核放 `packages/agent-runtime`（`TaskAgent` / `Tool` / `App` 框架；原 `Operation` 概念已退役，一次性子任务一律做成 TaskAgent + 终止工具）；**不要**把具体消息平台的事件模型、Sparkle system prompt、`RootAgentRuntime`、具体 capability 塞进去。Sparkle 项目语义放 `apps/agent/src/agent`。
 - `apps/agent/src/agent` 按 `runtime / capabilities / apps` 分层；新实现只进 `runtime/` 或 `capabilities/`，不要回填旧风格的 `agents / service / dao / tools/*` 目录。
 - `Tool` 只是上层调用入口，不承载能力本体；业务语义放 capability service / task-agent。
 - 群聊相关逻辑只属于 `messaging` capability，不要扩散到 runtime 或其他 capability。
@@ -135,10 +135,10 @@ pnpm knip         # 死代码/僵尸依赖审计。CI 门禁分级：孤儿文�
 pnpm --filter @sparkle/agent <script>   # 单包命令，如 test / test:watch / db:*
 
 pnpm app:deploy                        # 全量部署：build → prisma migrate deploy → PM2 reload(全部) → pm2 save
-pnpm app:deploy <agent|console|gateway|web|oss|browser|llm|metric|scheduler>  # 单服务：只重建重载该服务，不跑迁移、不动其它进程
+pnpm app:deploy <agent|console|gateway|web|oss|browser|llm|metric|feishu|scheduler>  # 单服务：只重建重载该服务，不跑迁移、不动其它进程
 
 pnpm app:stop                          # 停掉 ecosystem 里全部进程
-pnpm app:stop <agent|console|gateway|web|oss|browser|llm|metric|scheduler>    # 只停该服务（与 app:deploy 共用同一套短名别名）
+pnpm app:stop <agent|console|gateway|web|oss|browser|llm|metric|feishu|scheduler>    # 只停该服务（与 app:deploy 共用同一套短名别名）
 ```
 
 - 仓库当前**没有**统一的根 `pnpm dev`。前后端联调需按实际分别启动，不要假设有一键 dev。
@@ -172,9 +172,9 @@ pnpm app:stop <agent|console|gateway|web|oss|browser|llm|metric|scheduler>    # 
 进程拓扑与端口见 [ARCHITECTURE.md](./ARCHITECTURE.md)「部署」。操作层面：
 
 - `pnpm app:deploy`（无参）= 全量：build → Prisma 迁移 → PM2 reload/startOrReload → `pm2 save`。**涉及 DB schema 变更必须走这个**（会跑 `prisma migrate deploy`）。
-- `pnpm app:deploy <服务名>` = 单服务：只重建重载该服务。改单个服务时优先用它——重载 `console` / `gateway` / `web` / `browser` / `llm` / `metric` / `scheduler` 不会打断 `sparkle-agent` 的热状态（KV 缓存前缀、活内存），符合 KV 缓存优先。
+- `pnpm app:deploy <服务名>` = 单服务：只重建重载该服务。改单个服务时优先用它——重载 `console` / `gateway` / `web` / `browser` / `llm` / `metric` / `feishu` / `scheduler` 不会打断 `sparkle-agent` 的热状态（KV 缓存前缀、活内存），符合 KV 缓存优先。
 - `web` 自 #578 起是**真服务**（`sparkle-web`，管理台前端独立进程，自持静态托管），不再是 `gateway` 的弃用别名。改前端用 `pnpm app:deploy web`，它不动网关；改网关用 `pnpm app:deploy gateway`，它不重建前端。
-- `sparkle-browser` / `sparkle-llm` / `sparkle-metric` 是独立进程，`app:deploy agent` 不触及它们，让「agent 重启不杀浏览器 / 不打断 LLM 服务与登录态 / 不丢 metric 通道」。metric 摄取是 fire-and-forget，服务挂掉只丢点、不影响 agent。
+- `sparkle-browser` / `sparkle-llm` / `sparkle-metric` / `sparkle-feishu` 是独立进程，`app:deploy agent` 不触及它们，让「agent 重启不杀浏览器 / 不打断 LLM 服务与登录态 / 不丢 metric 通道 / 不断飞书长连接」。metric 摄取是 fire-and-forget，服务挂掉只丢点、不影响 agent。
 
 ## 部署红线（用户硬约束）
 

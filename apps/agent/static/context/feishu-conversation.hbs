@@ -1,0 +1,9 @@
+<feishu_conversation name="{{label}}" id="{{chatId}}">
+{{#if isEmpty}}
+（还没有消息记录）
+{{else}}
+{{#each lines}}
+{{{this}}}
+{{/each}}
+{{/if}}
+</feishu_conversation>

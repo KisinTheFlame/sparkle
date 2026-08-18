@@ -17,6 +17,7 @@
     "@sparkle/http": "workspace:*",
     "@sparkle/image": "workspace:*",
     "@sparkle/kernel": "workspace:*",
+    "@sparkle/feishu-api": "workspace:*",
     "@sparkle/llm": "workspace:*",
     "@sparkle/llm-api": "workspace:*",
     "@sparkle/llm-client": "workspace:*",

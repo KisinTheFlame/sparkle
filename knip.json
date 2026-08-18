@@ -30,6 +30,7 @@
     "apps/agent": { "entry": ["src/index.ts", "scripts/*.mjs"] },
     "apps/browser": { "entry": ["src/index.ts"] },
     "apps/console": { "entry": ["src/index.ts"] },
+    "apps/feishu": { "entry": ["src/index.ts"] },
     "apps/gateway": { "entry": ["src/index.ts"] },
     "apps/llm": { "entry": ["src/index.ts"] },
     "apps/metric": { "entry": ["src/index.ts"] },

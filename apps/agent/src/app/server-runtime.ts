@@ -14,6 +14,8 @@ import { PrismaTodoItemDao } from "@sparkle/persistence/dao/impl/todo-item.impl.
 import { HealthHandler } from "@sparkle/kernel/http/health.handler";
 import { HttpLlmClient } from "../acl/http-llm-client.js";
 import { HttpImageClient } from "../acl/image-client.js";
+import { HttpFeishuClient } from "../acl/feishu-client.js";
+import { FeishuEventSubscriber, type FeishuCursorStore } from "../acl/feishu-event-subscriber.js";
 import { PrismaAppStateStore } from "../agent/runtime/app-state/prisma-app-state-store.js";
 import type { LlmProviderOption } from "@sparkle/llm-api/llm-chat";
 import { AppLogger } from "@sparkle/kernel/logger/logger";
@@ -101,6 +103,11 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
   // 生图走同一个 sparkle-llm 进程的 /internal/generate-image（issue #508）。专用薄 client，不塞进
   // chat 语义的 LlmClient。给 atelier App 用。
   const imageClient = new HttpImageClient({ baseUrl: llmServiceBaseUrl });
+  // 飞书接入是独立 sparkle-feishu 进程：agent 经 HttpFeishuClient 出站（发消息），地址从顶层
+  // services.feishu 派生。入站事件走下面的 SSE 订阅者。WS 长连接 / 落库全在 feishu 侧。
+  const feishuClient = new HttpFeishuClient({
+    baseUrl: `http://${config.services.feishu.host}:${config.services.feishu.port}`,
+  });
   // server.oss 缺失/禁用即关闭图片存档（resid 恒为 null，优雅降级）。
   // 启用时地址统一从顶层 services.oss 派生（host 是 reachable host，agent 据此 PUT）。
   const ossClient = config.server.oss?.enabled
@@ -144,12 +151,24 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
     database,
     llmClient,
     metricService,
+    feishuClient,
     ithomeService,
     todoService,
+    notificationCenter,
     eventQueue,
     ossClient,
     browserClient,
     imageClient,
+  });
+
+  // 入站事件订阅：长连 sparkle-feishu 的 SSE 流，解析事件喂 feishuApp.handleInboundMessage，
+  // 处理成功后落持久游标（跨 agent 重启记住已消费到的 seq，重连带 Last-Event-ID 回放缺口）。
+  // 游标复用 app_state 表（appId=feishu.cursor 存 { lastConsumedSeq }）。
+  const feishuCursorStore = createFeishuCursorStore(new PrismaAppStateStore({ database }));
+  const feishuEventSubscriber = new FeishuEventSubscriber({
+    baseUrl: `http://${config.services.feishu.host}:${config.services.feishu.port}`,
+    onEvent: event => agentRuntime.feishuApp.handleInboundMessage(event),
+    cursorStore: feishuCursorStore,
   });
 
   // 提醒/汇总以纯数据回调，draft 在这层（wiring 边界）构造并 push，capabilities 层不依赖 apps 层。
@@ -202,10 +221,17 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
     ],
   });
 
+  // 启动入站事件订阅（后台重连循环，不阻塞）。feishuApp 已装配，handleInboundMessage 随时可调。
+  void feishuEventSubscriber.start();
+
   return {
     app,
     database,
-    shutdownApps: () => agentRuntime.shutdownApps(),
+    // 关停：先停入站订阅（不再有新事件进来），再反序关停各 App。
+    shutdownApps: async () => {
+      feishuEventSubscriber.stop();
+      await agentRuntime.shutdownApps();
+    },
     schedulerClient,
     rootAgentRuntime: agentRuntime.rootAgentRuntime,
     metricService,
@@ -213,6 +239,28 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
     port: config.services.agent.port,
     listAvailableAgentProviders: async () => {
       return await llmClient.listAvailableProviders({ usage: "agent" });
+    },
+  };
+}
+
+/** app_state 里 feishu 入站游标的 appId。存 `{ lastConsumedSeq }`。 */
+const FEISHU_CURSOR_APP_ID = "feishu.cursor";
+
+/** 把通用 app_state 存储适配成 FeishuEventSubscriber 要的 { load, save } 游标口。 */
+function createFeishuCursorStore(appStateStore: PrismaAppStateStore): FeishuCursorStore {
+  return {
+    async load(): Promise<number> {
+      const state = await appStateStore.load(FEISHU_CURSOR_APP_ID);
+      if (state !== null && typeof state === "object" && !Array.isArray(state)) {
+        const seq = (state as Record<string, unknown>).lastConsumedSeq;
+        if (typeof seq === "number" && Number.isInteger(seq) && seq >= 0) {
+          return seq;
+        }
+      }
+      return 0;
+    },
+    async save(seq: number): Promise<void> {
+      await appStateStore.save(FEISHU_CURSOR_APP_ID, { lastConsumedSeq: seq });
     },
   };
 }

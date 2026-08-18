@@ -25,16 +25,17 @@ Sparkle 的配置读取、配置分区、SQLite 存储布局与 Prisma 迁移流
 - `server.llm.timeoutMs`、`authUsageRefreshIntervalMs`、`embedding`（文本向量化，LLM 网关持有、agent 经 HTTP 调用）、`codexAuth`、`claudeCodeAuth`
 - `server.llm.providers.{deepseek,openai,openaiCodex,claudeCode}`
 - `server.llm.usages.{agent,vision}`（usage = KV 缓存身份，可配的仅这两个。fork 型 task agent `contextSummarizer` 在调用点用 `usage=agent` 复用主 Agent 前缀命中 prompt cache，不单独配置；调用归因走 `scene` 自由字段，见 #555。每个 usage 可选 `thinking: low|medium|high` 开启 adaptive thinking（#573，现 `agent` 配 `low`）——thinking 参数分割 prompt cache lineage，属 KV 缓存身份的一部分，故收口在 usage 级；删掉该行即关回 disabled）
-- 顶层 `services`（与 `server` 平级）：各服务监听端口与地址的唯一事实来源，`services.{agent,console,gateway,web,oss,browser,llm,metric,scheduler}.{host,port}`，所有进程读它寻址；`services.{web,oss,browser,llm,metric,scheduler}` 仅 localhost（`web` 自 #578 起是管理台前端的独立进程，只由 gateway 反代，不对外）。
+- 顶层 `services`（与 `server` 平级）：各服务监听端口与地址的唯一事实来源，`services.{agent,console,gateway,web,oss,browser,llm,metric,feishu,scheduler}.{host,port}`，所有进程读它寻址；`services.{web,oss,browser,llm,metric,feishu,scheduler}` 仅 localhost（`web` 自 #578 起是管理台前端的独立进程，只由 gateway 反代，不对外）。
 - `server.oss.enabled`（对象存储启用开关；地址来自 `services.oss`，整段省略 = 禁用、优雅降级）
 - `server.apps.*`（App 级配置，如 `terminal.*`、`amap.*`；`amap.apiKey` 为凭据，走 `config.secret.yaml`）
-- `server.bot.creator`
+- `server.employer.name`（雇主名字，PII）
+- `server.feishu.appId` / `appSecret`（飞书自建应用凭据）
 
 ## 数据库与存储布局
 
 - 数据库为**进程内 SQLite 文件**，不依赖外部 PostgreSQL；ORM 仍是 Prisma，driver adapter 为 `@prisma/adapter-better-sqlite3`。
 - 直接查库用 `sqlite3` CLI；库文件路径以 `config.yaml` 的 `server.databaseUrl`（`file:` 路径，运行时解析为绝对路径）为准。
-- **`data/` 按服务分目录**（epic #539「每个持库服务独立数据库」，统一 `data/<服务>/<服务>.db` 范式）：agent 独占 `data/agent/agent.db`（`server.databaseUrl`）；llm 独占 `data/llm/llm.db`、scheduler 独占 `data/scheduler/scheduler.db`、oss 独占 `data/oss/oss.db`（对象元数据；blob 字节在 `data/oss/blobs/`。各自 `services.<svc>.databaseUrl`，schema 在各 `apps/<svc>/prisma/`）；metric 独占 `data/metric/metric.duckdb`（#475，唯一非 SQLite，走裸 DuckDB 驱动）。console 零 DB（#539，经各服务查询路由聚合）。所有用 SQLite 的服务一律经 Prisma（`@prisma/adapter-better-sqlite3`）接入，不再有裸 better-sqlite3。
+- **`data/` 按服务分目录**（epic #539「每个持库服务独立数据库」，统一 `data/<服务>/<服务>.db` 范式）：agent 独占 `data/agent/agent.db`（`server.databaseUrl`）；feishu 独占 `data/feishu/feishu.db`、llm 独占 `data/llm/llm.db`、scheduler 独占 `data/scheduler/scheduler.db`、oss 独占 `data/oss/oss.db`（对象元数据；blob 字节在 `data/oss/blobs/`。各自 `services.<svc>.databaseUrl`，schema 在各 `apps/<svc>/prisma/`）；metric 独占 `data/metric/metric.duckdb`（#475，唯一非 SQLite，走裸 DuckDB 驱动）。console 零 DB（#539，经各服务查询路由聚合）。所有用 SQLite 的服务一律经 Prisma（`@prisma/adapter-better-sqlite3`）接入，不再有裸 better-sqlite3。
 - 所有持久化数据放在仓库根 `data/` 下按服务分子目录；整个 `data/` 已在 `.gitignore` 中。
 
 ## Prisma 迁移
@@ -54,7 +55,7 @@ pnpm db:migrate:resolve -- --applied <migration_id> # 标记迁移已应用
 3. 提交 schema 变更和 `packages/persistence/prisma/migrations/*`。
 4. 在目标环境执行 `pnpm db:migrate:deploy`，或通过 `pnpm app:deploy` 一并完成。
 
-独立库服务（scheduler / llm / oss）的迁移走各自包内的同名脚本（同一 `scripts/prisma.sh` 参数化复用），如 `pnpm --filter @sparkle/llm-service db:migrate:dev -- --name <name>`；`pnpm app:deploy` 的 Step 2b–2d 会分别应用，且各只停对应单进程。
+独立库服务（scheduler / llm / oss / feishu）的迁移走各自包内的同名脚本（同一 `scripts/prisma.sh` 参数化复用），如 `pnpm --filter @sparkle/feishu db:migrate:dev -- --name <name>`；`pnpm app:deploy` 的 Step 2b–2e 会分别应用，且各只停对应单进程。
 
 已有数据库接入 Prisma Migrate（基线）：
 

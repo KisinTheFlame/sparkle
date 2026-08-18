@@ -10,6 +10,7 @@ pnpm workspace 由 `apps/*`（各为独立进程）与 `packages/*` 组成，依
 apps/agent  ──→ packages/agent-runtime ──→ packages/llm
       ├────────→ packages/persistence ──→ packages/kernel
       └────────→ packages/http + 各 *-api 契约包（llm/browser/oss/metric/agent-api）
+apps/feishu  ──→ packages/kernel / http / feishu-api  （独立进程，飞书接入：WS 长连接 + 事件落库/SSE，独占 feishu.db，自有 prisma、不碰 persistence）
 apps/console ──→ packages/kernel / http / console-api + agent-api / llm-api / rpc-client  （#539 起零 DB：全部数据经各属主服务的契约查询路由聚合）
 apps/llm     ──→ packages/llm-client + packages/auth ──→ packages/kernel / llm-api  （独立进程，LLM + OAuth 网关；#539 起独占 llm.db，自有 prisma、不碰 persistence）
 apps/metric  ──→ packages/kernel / http / metric-api  （独立进程，metric 摄取 + 图表查询；#475 起独占 DuckDB、不碰 persistence）
@@ -47,6 +48,7 @@ apps/scheduler ──→ packages/kernel / http / scheduler-api  （独立进程
 | `@sparkle/scheduler-api`     | sparkle-scheduler 进程契约包（#428）：register（幂等 replace-all）/ status 两条 JSON 路由 + SSE tick 事件（`SchedulerTickEvent` / `SCHEDULER_TICKS_SSE_PATH`）+ 通用调度 schema（`ScheduleSpec` / misfire 策略 / TaskRun）；零业务语义                                                                                                                                         |
 | `@sparkle/scheduler-client`  | 定时调度使用方 SDK（消费端，#428/#493）：注册任务集 + 长连 SSE tick 流自动派发到本地 handler + 本地 per-task 并发锁 + occurrence 去重 + 执行结果两阶段回报（running→终态）给 scheduler 落库 + 反向触发受理（`triggerNowDetached`）；`SchedulerClient`，agent（ithome/todo/data-retention）与 sparkle-llm（Claude Files 缓存每日 GC，#433）装配                                 |
 | `@sparkle/console-api`       | sparkle-console 进程契约包：app-log / llm-chat-call（含 `:id` 路径参数）/ todo 四条管理台查询路由（web 消费）                                                                                                                                                                                                                                                                  |
+| `@sparkle/feishu-api`        | sparkle-feishu 进程契约包：出站发消息路由 + SSE 入站事件 wire（`FeishuMessageEvent`：seq / chatId / 归一化文本）                                                                                                                                                                                                                                                               |
 | `@sparkle/agent-api`         | sparkle-agent 进程面向管理台的契约包：main-agent-context ×2（web 消费）+ ops 只读查询 ×2（app-log / todo，console 服务间消费，#539）                                                                                                                                                                                                                                           |
 | `@sparkle/browser-api`       | sparkle-browser 进程对 agent 暴露的动作 RPC 契约包（9 条 JSON 路由；screenshot 以 base64 over JSON，agent 门面解回 Buffer；错误通道独立于 BizErrorWire）                                                                                                                                                                                                                       |
 | `@sparkle/oss-api`           | sparkle-oss 进程的对象存储 RPC 契约包（binary 两形状：putObject 信封路由共享 `{ key }` schema；get/head/delete raw 路由只钉路径与参数，字节流不进 Zod）                                                                                                                                                                                                                        |
@@ -115,6 +117,7 @@ apps/agent/src/agent/
 │   ├── terminal/       终端能力本体
 │   └── todo/           待办本能力本体（到点提醒经通知中心）
 └── apps/             手机 OS 的 App（Portal 下可 enter 的地点）
+    ├── feishu/         飞书 App：会话模型 + 前台实时输入 + 会话级通知（入站经 SSE 订阅者直达）
     ├── ithome/         IThome App：RSS 未读推送
     ├── note/           笔记 App：自维护长期记忆（开页、追加、全文搜索）
     ├── clock/          小工具 App
@@ -153,7 +156,8 @@ apps/web/src/
 Agent 不区分输入来源；所有外部信号都是「工作输入」。手机 OS 模型下，后台 / 非焦点信号折叠成通知（「横幅」），由被动的 `NotificationCenter` 聚合后投入共享事件队列；前台当前会话的实时输入走 `foreground_input` 直达（「屏幕」）：
 
 ```
-IThome RSS 轮询 ─→ IThome poller ─┬─→ NotificationCenter ─→ notification 事件
+飞书群/私聊 ─→ sparkle-feishu(WS) ─SSE→ FeishuApp.handleInboundMessage ─┬（后台/非当前会话）→ NotificationCenter
+IThome RSS 轮询 ─→ IThome poller ────────────────────────────────────────┴─→ NotificationCenter ─→ notification 事件
 待办到点 / 汇总 ─→ Todo poller  ──┘   （前沿触发 + 节流窗口）        │
                                                                     ↓
 前台 App 实时输入 ─→ 敲门 foreground_input 事件（不带内容，drain 时向当前 App 现拉）→ 共享事件队列 ─→ RootAgentRuntime ─→ ReAct 循环
@@ -194,6 +198,7 @@ LLM API 暴露的顶层 tools 集合是少量结构性 / 能力级元工具（`s
 - Schema 源文件 `packages/persistence/prisma/schema.prisma`，迁移落 `packages/persistence/prisma/migrations/`，通过 `pnpm db:migrate:dev` / `db:migrate:deploy` 管理。
 - DAO 按模块内分层组织：port / 接口在 `domain/` 或模块根，Prisma 实现多放在 `infra/`（`infra/impl/`），早期代码也有 `dao/` / `dao/impl/` 的形态。
 - `apps/oss` 自带独立的 `data/oss/oss.db`（Prisma + `@prisma/adapter-better-sqlite3`）与分片 blob 文件；对象元数据入库，blob 字节落分片文件。
+- `apps/feishu` 自带独立的 `data/feishu/feishu.db`（自有 Prisma schema `apps/feishu/prisma/`）：feishu_event 入站事件表（append-only，SSE 按 Last-Event-ID 回放）随进程独占。
 - `apps/llm` 自带独立的 `data/llm/llm.db`（自有 Prisma schema `apps/llm/prisma/`，#539）：llm_chat_call / embedding_cache / claude_file_cache / oauth_session / oauth_state 五表随进程独占，console 查询走 `@sparkle/llm-api` 契约路由。
 
 ## HTTP 接口入口
@@ -211,7 +216,7 @@ LLM API 暴露的顶层 tools 集合是少量结构性 / 能力级元工具（`s
 ## 部署
 
 - PM2（`ecosystem.config.cjs`）托管以下进程：`sparkle-agent`（Fastify，Agent 运行时 + 活内存接口，默认 20003）、`sparkle-console`（管理台后端，前端只读查询聚合，#539 起零 DB 依赖，默认 20006）、`sparkle-gateway`（`apps/gateway`，纯反代：按前缀把 `/api/*` 分流到 console/agent、`/auth/*` 到 llm、`/metric/query` 到 metric，其余转 `sparkle-web`，默认 20004）、`sparkle-web`（`apps/web`，管理台前端独立进程，自持静态托管，默认 20016，仅 localhost；#578 起从 gateway 拆出，前端产物不再于构建期装配进网关，两者生命周期独立——`app:deploy web` 不动网关、`app:deploy gateway` 不动前端）、`sparkle-oss`（对象存储，默认 20005，仅 localhost）、`sparkle-browser`（`apps/browser`，持有 CloakBrowser，默认 20007，仅 localhost；`cwd` 固定仓库根，agent 重启不杀浏览器，`app:deploy agent` 不触及它，见 #173；#539 删 `browser_credential` 废表后零持久化、不开任何 SQLite）、`sparkle-llm`（`apps/llm`，LLM + OAuth 凭据网关，默认 20009，仅 localhost；持有 provider + callback server + 刷新 timer + 经 `SchedulerClient` 跑 Claude Files 缓存每日 GC（`claude_file_cache` 按 `last_used_at` idle 回收远端文件 + 本地行，#433），`app:deploy agent` 不触及它；#539 起独占 `data/llm/llm.db`（自带 retention 清理），不碰主库；llm 库迁移由 deploy.sh 单停 sparkle-llm 执行）、`sparkle-metric`（`apps/metric`，metric 摄取 + metric 图表查询，默认 20010，仅 localhost；agent fire-and-forget HTTP 上报；#475 P1 起独占 `data/metric/metric.duckdb`，不开共享 SQLite，主库迁移不需停它）、`sparkle-scheduler`（`apps/scheduler`，通用定时调度薄时钟，默认 20014，仅 localhost；调度状态纯内存派生态、执行历史独占 `data/scheduler/scheduler.db`（#493），agent 与 sparkle-llm 经 `SchedulerClient` 注册 + SSE 收 tick，`app:deploy agent` 不触及它，agent 重启不打断计时节奏，见 #428）。agent 库 `data/agent/agent.db` 自 #539 起由 **sparkle-agent 独占**（console 零 DB、经各服务查询路由聚合；`apps/scheduler` / `apps/metric` / `apps/browser` / `apps/llm` 不入共享库，scheduler 独占 `data/scheduler/scheduler.db`、metric 独占 DuckDB、browser 零持久化 #539、llm 独占 llm.db #539）。
-- 卫星进程（console / oss / browser / llm / metric / scheduler）统一经 `@sparkle/kernel` 的 `runService` 启动（issue #274）：全局 `uncaughtException` / `unhandledRejection` 兜底（记日志后 exit(1) 交 PM2 重启）、信号驱动优雅关停 + 10s 强退兜底、绑定地址一律 `127.0.0.1`（绑定是代码级安全决策；config 的 `services.*.host` 语义是 reachable host）。gateway 是唯一绑 `0.0.0.0` 的前门（裸 node:http，自带同款兜底）。所有进程的 `GET /health` 统一为 shared 的 `{ status: "ok", timestamp }` 形状。
+- 卫星进程（console / oss / browser / llm / metric / feishu / scheduler）统一经 `@sparkle/kernel` 的 `runService` 启动（issue #274）：全局 `uncaughtException` / `unhandledRejection` 兜底（记日志后 exit(1) 交 PM2 重启）、信号驱动优雅关停 + 10s 强退兜底、绑定地址一律 `127.0.0.1`（绑定是代码级安全决策；config 的 `services.*.host` 语义是 reachable host）。gateway 是唯一绑 `0.0.0.0` 的前门（裸 node:http，自带同款兜底）。所有进程的 `GET /health` 统一为 shared 的 `{ status: "ok", timestamp }` 形状。
 - `pnpm app:deploy` 串起 build → Prisma migrate deploy → PM2 reload → `pm2 save`。
 - 数据库为进程内 SQLite，宿主机无需外部数据库。
 - 部署机需能编译原生模块（better-sqlite3）。

@@ -1,0 +1,9 @@
+<feishu_conversation_list>
+{{#if isEmpty}}
+（还没有任何会话——等消息进来，或让雇主拉你进群、给你发私聊）
+{{else}}
+{{#each conversations}}
+- {{label}}{{#if unread}}（{{unread}} 条未读）{{/if}}  chatId={{chatId}}
+{{/each}}
+{{/if}}
+</feishu_conversation_list>

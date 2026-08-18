@@ -20,6 +20,7 @@
       "@sparkle/kernel/*": ["./../../packages/kernel/src/*"],
       "@sparkle/http/*": ["./../../packages/http/src/*"],
       "@sparkle/llm-api/*": ["./../../packages/llm-api/src/*"],
+      "@sparkle/feishu-api/*": ["./../../packages/feishu-api/src/*"],
       "@sparkle/browser-api/*": ["./../../packages/browser-api/src/*"],
       "@sparkle/oss-api/*": ["./../../packages/oss-api/src/*"],
       "@sparkle/rpc-client/*": ["./../../packages/rpc-client/src/*"],

@@ -167,6 +167,11 @@ const ServicesSchema = z
     metric: ServiceEndpointSchema.extend({
       databaseUrl: DatabaseUrlSchema,
     }),
+    // feishu 除 host/port 外还持有独立 Prisma 库：入站事件（feishu_event，append-only 供 SSE
+    // 回放）落它自己的 SQLite 文件，与主库 server.databaseUrl 物理分离。databaseUrl 非隐私，进 config.yaml。
+    feishu: ServiceEndpointSchema.extend({
+      databaseUrl: DatabaseUrlSchema,
+    }),
     // scheduler 除 host/port 外还持有独立 Prisma 库（issue #493）：TaskRun 执行历史落它自己的
     // SQLite 文件，与主库 server.databaseUrl 物理分离。databaseUrl 非隐私，进 config.yaml。
     // historyRetentionCount / historyRetentionDays 是历史 GC 的保留窗口（#493 P2，取交集=更严）。
@@ -353,6 +358,11 @@ const ConfigSchema = z.object({
     employer: z.object({
       name: NonEmptyStringSchema,
     }),
+    /** 飞书自建应用凭据（sparkle-feishu 进程消费）。appId/appSecret 是密钥，放 config.secret.yaml。 */
+    feishu: z.object({
+      appId: NonEmptyStringSchema,
+      appSecret: NonEmptyStringSchema,
+    }),
     /**
      * 自建对象存储（@sparkle/oss）的启用开关。地址不在这里——统一来自顶层 `services.oss`，
      * agent 把图片原图 PUT 进去用。整段可省略（=禁用，resid 恒为 null，优雅降级）；
@@ -443,7 +453,12 @@ export async function loadStaticConfig(options: LoadStaticConfigOptions = {}): P
         ...data.services.scheduler,
         databaseUrl: resolveSqliteFileUrl(configDir, data.services.scheduler.databaseUrl),
       },
-      // llm 独立 SQLite 库（#539）：同 scheduler，把相对 file: 路径锚定到仓库根。
+      // feishu 独立 SQLite 库：同 scheduler，把相对 file: 路径锚定到仓库根。
+      feishu: {
+        ...data.services.feishu,
+        databaseUrl: resolveSqliteFileUrl(configDir, data.services.feishu.databaseUrl),
+      },
+      // llm 独立 SQLite 库（#539）：同上。
       llm: {
         ...data.services.llm,
         databaseUrl: resolveSqliteFileUrl(configDir, data.services.llm.databaseUrl),
