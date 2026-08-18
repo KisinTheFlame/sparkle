@@ -29,6 +29,8 @@ export class FeishuGateway {
   private readonly broadcaster: FeishuEventBroadcaster;
   private readonly chatNameCache: NameCache = new Map();
   private readonly userNameCache: NameCache = new Map();
+  /** 群成员名单缓存（chatId → open_id→名字）：给通讯录查不到的外部成员兜底。 */
+  private readonly chatMemberCache: RosterCache = new Map();
 
   public constructor({ appId, appSecret, eventStore, broadcaster }: FeishuGatewayDeps) {
     this.client = new Client({ appId, appSecret });
@@ -86,7 +88,7 @@ export class FeishuGateway {
     const normalized = normalizeInboundMessage(parsed.data);
     const [resolvedChatName, senderName] = await Promise.all([
       this.resolveChatName(normalized.chatId),
-      this.resolveUserName(normalized.senderId),
+      this.resolveSenderName(normalized.senderId, normalized.chatId, normalized.chatType),
     ]);
     // 单聊没有"群名"（im.chat.get 对 p2p 通常拿不到 name）：以对方名字作会话名。
     const chatName = resolvedChatName ?? (normalized.chatType === "p2p" ? senderName : null);
@@ -116,6 +118,28 @@ export class FeishuGateway {
     }
   }
 
+  /**
+   * 发送者名字：先查通讯录（内部成员最准），拿不到再回落查所在群的成员名单。
+   *
+   * 回落这一层是给**外部成员**准备的：跨租户联系人不在应用的通讯录可见范围里，
+   * `contact.user.get` 永远查不到，但群成员列表能给出他们在群里的名字（走同一份
+   * `im:chat` 权限）。单聊没有成员名单可查，只能停在通讯录这一步。
+   */
+  private async resolveSenderName(
+    openId: string,
+    chatId: string,
+    chatType: "p2p" | "group",
+  ): Promise<string | null> {
+    const fromDirectory = await this.resolveUserName(openId);
+    if (fromDirectory !== null) {
+      return fromDirectory;
+    }
+    if (chatType !== "group") {
+      return null;
+    }
+    return this.resolveChatMemberName(chatId, openId);
+  }
+
   private async resolveUserName(openId: string): Promise<string | null> {
     if (openId === "unknown") {
       return null;
@@ -133,8 +157,47 @@ export class FeishuGateway {
       cacheSet(this.userNameCache, openId, name);
       return name;
     } catch {
-      // 典型失败：缺 contact:user.base:readonly 权限。短 TTL 负缓存，补权限后自愈。
+      // 典型失败：外部成员（不在通讯录可见范围）或缺 contact 读权限。短 TTL 负缓存
+      // 防打爆 API，同时让权限/范围补齐后自愈；群聊还会走成员名单兜底。
       cacheSet(this.userNameCache, openId, null);
+      return null;
+    }
+  }
+
+  /** 查群成员名单里该 open_id 的名字。整群名单一次拉齐并按 chatId 缓存（分页封顶）。 */
+  private async resolveChatMemberName(chatId: string, openId: string): Promise<string | null> {
+    const cachedRoster = cacheGetRoster(this.chatMemberCache, chatId);
+    if (cachedRoster) {
+      return cachedRoster.get(openId) ?? null;
+    }
+    const roster = new Map<string, string>();
+    try {
+      let pageToken: string | undefined;
+      for (let page = 0; page < CHAT_MEMBER_MAX_PAGES; page++) {
+        const response = await this.client.im.chatMembers.get({
+          path: { chat_id: chatId },
+          params: {
+            member_id_type: "open_id",
+            page_size: CHAT_MEMBER_PAGE_SIZE,
+            ...(pageToken === undefined ? {} : { page_token: pageToken }),
+          },
+        });
+        for (const member of response.data?.items ?? []) {
+          const name = member.name?.trim();
+          if (member.member_id && name) {
+            roster.set(member.member_id, name);
+          }
+        }
+        pageToken = response.data?.page_token;
+        if (response.data?.has_more !== true || pageToken === undefined) {
+          break;
+        }
+      }
+      cacheSetRoster(this.chatMemberCache, chatId, roster);
+      return roster.get(openId) ?? null;
+    } catch {
+      // 名单拉取失败（权限 / 机器人已不在群）：缓存空名单短 TTL，避免每条消息重试。
+      cacheSetRoster(this.chatMemberCache, chatId, roster);
       return null;
     }
   }
@@ -159,4 +222,26 @@ function cacheGet(cache: NameCache, key: string): string | null | undefined {
 function cacheSet(cache: NameCache, key: string, value: string | null): void {
   const ttl = value === null ? NAME_CACHE_MISS_TTL_MS : NAME_CACHE_HIT_TTL_MS;
   cache.set(key, { value, expiresAt: Date.now() + ttl });
+}
+
+/** 群成员名单缓存 10 分钟：成员进出比人名变化频繁，窗口取短些。 */
+const ROSTER_CACHE_TTL_MS = 10 * 60 * 1000;
+/** 单次分页大小与页数上限：大群名单不无限拉（超出的成员回落显示 id）。 */
+const CHAT_MEMBER_PAGE_SIZE = 100;
+const CHAT_MEMBER_MAX_PAGES = 10;
+
+type RosterCacheEntry = { roster: Map<string, string>; expiresAt: number };
+type RosterCache = Map<string, RosterCacheEntry>;
+
+function cacheGetRoster(cache: RosterCache, chatId: string): Map<string, string> | undefined {
+  const entry = cache.get(chatId);
+  if (!entry || entry.expiresAt <= Date.now()) {
+    cache.delete(chatId);
+    return undefined;
+  }
+  return entry.roster;
+}
+
+function cacheSetRoster(cache: RosterCache, chatId: string, roster: Map<string, string>): void {
+  cache.set(chatId, { roster, expiresAt: Date.now() + ROSTER_CACHE_TTL_MS });
 }
