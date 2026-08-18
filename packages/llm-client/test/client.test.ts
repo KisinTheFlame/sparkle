@@ -59,7 +59,6 @@ function recordObservationToDao(
         latencyMs: observation.latencyMs,
         request: observation.request,
         response: observation.response,
-        nativeRequestPayload: observation.nativeRequestPayload,
         nativeResponsePayload: observation.nativeResponsePayload,
       });
       return;
@@ -74,7 +73,6 @@ function recordObservationToDao(
       latencyMs: observation.latencyMs,
       request: observation.request,
       ...(observation.response ? { response: observation.response } : {}),
-      nativeRequestPayload: observation.nativeRequestPayload,
       nativeResponsePayload: observation.nativeResponsePayload,
       nativeError: observation.nativeError,
       error: observation.error,
@@ -183,9 +181,10 @@ describe("createLlmClient single-attempt gateway", () => {
       expect.objectContaining({
         ...trace,
         status: "success",
-        nativeRequestPayload: expect.any(Object),
       }),
     );
+    // native 请求体只是 request 的另一份 wire 序列化，不进 observation → 不落库（kagami #612）。
+    expect(recordObservation.mock.calls[0]?.[0]).not.toHaveProperty("nativeRequestPayload");
     const failure = new Error("upstream failed");
     chat.mockRejectedValueOnce(failure);
     await expect(
@@ -298,15 +297,15 @@ describe("createLlmClient single-attempt gateway", () => {
             actualModel: "gpt-4o-mini",
           },
         },
-        nativeRequestPayload: {
-          model: "gpt-4o-mini",
-          messages: [{ role: "user", content: "ping" }],
-        },
         nativeResponsePayload: {
           id: "chatcmpl_test",
           model: "gpt-4o-mini",
         },
       }),
+    );
+    // native 请求体只出现在 chatDirect 的返回值里（上面已断言），绝不进 observation → 绝不落库（#612）。
+    expect(vi.mocked(llmChatCallDao.recordSuccess).mock.calls[0]?.[0]).not.toHaveProperty(
+      "nativeRequestPayload",
     );
   });
 
@@ -352,10 +351,6 @@ describe("createLlmClient single-attempt gateway", () => {
     expect(llmChatCallDao.recordError).toHaveBeenCalledWith(
       expect.objectContaining({
         extension: null,
-        nativeRequestPayload: {
-          model: "gpt-4o-mini",
-          messages: [{ role: "user", content: "ping" }],
-        },
         nativeResponsePayload: {
           id: "response_partial",
         },

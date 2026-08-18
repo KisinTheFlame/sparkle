@@ -58,7 +58,6 @@ function recordObservationToDao(
         latencyMs: observation.latencyMs,
         request: observation.request,
         response: observation.response,
-        nativeRequestPayload: observation.nativeRequestPayload,
         nativeResponsePayload: observation.nativeResponsePayload,
       });
       return;
@@ -73,7 +72,6 @@ function recordObservationToDao(
       latencyMs: observation.latencyMs,
       request: observation.request,
       ...(observation.response ? { response: observation.response } : {}),
-      nativeRequestPayload: observation.nativeRequestPayload,
       nativeResponsePayload: observation.nativeResponsePayload,
       nativeError: observation.nativeError,
       error: observation.error,
@@ -358,11 +356,9 @@ describe("AgentLlmClient usage policy", () => {
     expect(errorRequestId).toBe(successRequestId);
     expect(vi.mocked(llmChatCallDao.recordError).mock.calls[0]?.[0].seq).toBe(1);
     expect(vi.mocked(llmChatCallDao.recordSuccess).mock.calls[0]?.[0].seq).toBe(2);
-    expect(vi.mocked(llmChatCallDao.recordSuccess).mock.calls[0]?.[0].nativeRequestPayload).toEqual(
-      {
-        model: "deepseek-chat",
-        messages: [],
-      },
+    // native 请求体只出现在 provider 返回值里，绝不进 observation → 绝不落库（kagami #612）。
+    expect(vi.mocked(llmChatCallDao.recordSuccess).mock.calls[0]?.[0]).not.toHaveProperty(
+      "nativeRequestPayload",
     );
     expect(vi.mocked(llmChatCallDao.recordSuccess).mock.calls[0]?.[0].extension).toEqual({
       metadata: {

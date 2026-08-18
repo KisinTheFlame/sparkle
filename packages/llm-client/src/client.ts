@@ -72,8 +72,13 @@ export type LlmChatDirectOptions = {
 
 /**
  * 单次 attempt 的可落库观测事件。字段与 `LlmChatCallDao.recordSuccess/recordError`
- * 的入参一一对应，携带足以完整重放落库的信息（`seq` / native payload / native error /
+ * 的入参一一对应，携带足以完整重放落库的信息（`seq` / native response / native error /
  * configured + actual model 经 extension）。落库映射由 LLM 网关订阅者完成。
+ *
+ * **不带 `nativeRequestPayload`**（issue #612）：它只是 `request` 的另一份 provider wire
+ * 序列化，占了 llm_chat_call 改动前一半的空间，已不再落库。provider 层的
+ * `LlmProviderChatResult` / `LlmChatDirectResult` 仍保留该字段——那是 chatDirect 的**返回值**，
+ * 不进库，与本次瘦身无关。
  */
 export type LlmChatCallSuccessObservation = {
   status: "success";
@@ -89,7 +94,6 @@ export type LlmChatCallSuccessObservation = {
   latencyMs: number;
   request: Record<string, unknown>;
   response: Record<string, unknown>;
-  nativeRequestPayload: Record<string, unknown> | null;
   nativeResponsePayload: Record<string, unknown> | null;
 };
 
@@ -107,7 +111,6 @@ export type LlmChatCallErrorObservation = {
   latencyMs: number;
   request: Record<string, unknown>;
   response?: Record<string, unknown>;
-  nativeRequestPayload: Record<string, unknown> | null;
   nativeResponsePayload: Record<string, unknown> | null;
   nativeError: Record<string, unknown> | null;
   error: unknown;
@@ -211,7 +214,6 @@ async function executeChatAttempt({
         latencyMs,
         request: toRecordableChatRequest(requestWithModel),
         response: toRecordableChatResponse(response),
-        nativeRequestPayload: providerResult.nativeRequestPayload,
         nativeResponsePayload: providerResult.nativeResponsePayload,
       });
     }
@@ -244,8 +246,6 @@ async function executeChatAttempt({
         latencyMs,
         request: toRecordableChatRequest(requestWithModel),
         ...(response ? { response: toRecordableChatResponse(response) } : {}),
-        nativeRequestPayload:
-          providerResult?.nativeRequestPayload ?? failureContext?.nativeRequestPayload ?? null,
         nativeResponsePayload:
           providerResult?.nativeResponsePayload ?? failureContext?.nativeResponsePayload ?? null,
         nativeError: failureContext?.nativeError ?? null,
