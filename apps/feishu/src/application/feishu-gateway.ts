@@ -27,8 +27,8 @@ export class FeishuGateway {
   private readonly wsClient: WSClient;
   private readonly eventStore: FeishuEventStore;
   private readonly broadcaster: FeishuEventBroadcaster;
-  private readonly chatNameCache = new Map<string, string | null>();
-  private readonly userNameCache = new Map<string, string | null>();
+  private readonly chatNameCache: NameCache = new Map();
+  private readonly userNameCache: NameCache = new Map();
 
   public constructor({ appId, appSecret, eventStore, broadcaster }: FeishuGatewayDeps) {
     this.client = new Client({ appId, appSecret });
@@ -84,10 +84,12 @@ export class FeishuGateway {
       return;
     }
     const normalized = normalizeInboundMessage(parsed.data);
-    const [chatName, senderName] = await Promise.all([
+    const [resolvedChatName, senderName] = await Promise.all([
       this.resolveChatName(normalized.chatId),
       this.resolveUserName(normalized.senderId),
     ]);
+    // 单聊没有"群名"（im.chat.get 对 p2p 通常拿不到 name）：以对方名字作会话名。
+    const chatName = resolvedChatName ?? (normalized.chatType === "p2p" ? senderName : null);
     const stored = await this.eventStore.insert({ ...normalized, chatName, senderName });
     if (stored === null) {
       // messageId 撞唯一索引：飞书重投递，静默跳过。
@@ -97,18 +99,19 @@ export class FeishuGateway {
   }
 
   private async resolveChatName(chatId: string): Promise<string | null> {
-    const cached = this.chatNameCache.get(chatId);
+    const cached = cacheGet(this.chatNameCache, chatId);
     if (cached !== undefined) {
       return cached;
     }
     try {
       const response = await this.client.im.chat.get({ path: { chat_id: chatId } });
-      const name = response.data?.name ?? null;
-      this.chatNameCache.set(chatId, name);
+      const name = response.data?.name?.trim() || null;
+      cacheSet(this.chatNameCache, chatId, name);
       return name;
     } catch {
-      // 权限未批 / 网络抖动：缓存 null 防止每条消息都打一次 API。
-      this.chatNameCache.set(chatId, null);
+      // 权限未批 / 网络抖动：短 TTL 负缓存——既防每条消息都打一次 API，
+      // 又让补批权限后无需重启即自愈。
+      cacheSet(this.chatNameCache, chatId, null);
       return null;
     }
   }
@@ -117,7 +120,7 @@ export class FeishuGateway {
     if (openId === "unknown") {
       return null;
     }
-    const cached = this.userNameCache.get(openId);
+    const cached = cacheGet(this.userNameCache, openId);
     if (cached !== undefined) {
       return cached;
     }
@@ -126,12 +129,34 @@ export class FeishuGateway {
         path: { user_id: openId },
         params: { user_id_type: "open_id" },
       });
-      const name = response.data?.user?.name ?? null;
-      this.userNameCache.set(openId, name);
+      const name = response.data?.user?.name?.trim() || null;
+      cacheSet(this.userNameCache, openId, name);
       return name;
     } catch {
-      this.userNameCache.set(openId, null);
+      // 典型失败：缺 contact:user.base:readonly 权限。短 TTL 负缓存，补权限后自愈。
+      cacheSet(this.userNameCache, openId, null);
       return null;
     }
   }
+}
+
+/** 命中缓存 1 小时（名字会改，别永久钉死）；未命中 5 分钟后重试（权限补批后自愈）。 */
+const NAME_CACHE_HIT_TTL_MS = 60 * 60 * 1000;
+const NAME_CACHE_MISS_TTL_MS = 5 * 60 * 1000;
+
+type NameCacheEntry = { value: string | null; expiresAt: number };
+type NameCache = Map<string, NameCacheEntry>;
+
+function cacheGet(cache: NameCache, key: string): string | null | undefined {
+  const entry = cache.get(key);
+  if (!entry || entry.expiresAt <= Date.now()) {
+    cache.delete(key);
+    return undefined;
+  }
+  return entry.value;
+}
+
+function cacheSet(cache: NameCache, key: string, value: string | null): void {
+  const ttl = value === null ? NAME_CACHE_MISS_TTL_MS : NAME_CACHE_HIT_TTL_MS;
+  cache.set(key, { value, expiresAt: Date.now() + ttl });
 }

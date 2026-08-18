@@ -202,17 +202,20 @@ export class FeishuApp implements App, ForegroundInputSource {
   }
 
   private upsertConversation(event: FeishuMessageEvent): FeishuConversation {
+    // 单聊没有"群名"：feishu 进程已尽力用对方名字兜底；这里对历史/降级事件再兜一层，
+    // 避免会话名回落成 chatId。
+    const fallbackName = event.chatName ?? (event.chatType === "p2p" ? event.senderName : null);
     const existing = this.conversations.get(event.chatId);
     if (existing) {
-      if (event.chatName !== null) {
-        existing.name = event.chatName;
+      if (fallbackName !== null) {
+        existing.name = fallbackName;
       }
       return existing;
     }
     const conversation: FeishuConversation = {
       chatId: event.chatId,
       chatType: event.chatType,
-      name: event.chatName,
+      name: fallbackName,
       unreadCount: 0,
       recent: [],
       lastActiveAt: new Date(event.createdAt),

@@ -107,6 +107,16 @@ describe("FeishuApp", () => {
     expect(reopened.content).toContain("Sparkle: 收到");
   });
 
+  it("p2p 会话名缺失时回落用发送者名字（而非 chatId）", async () => {
+    const { app } = setup();
+    app.handleInboundMessage(
+      event({ chatId: "oc_p2p", chatType: "p2p", chatName: null, senderName: "闻震" }),
+    );
+    const list = await tool(app, "list_conversations").execute({}, {});
+    expect(list.content).toContain("- 闻震（1 条未读）");
+    expect(list.content).not.toContain("- oc_p2p");
+  });
+
   it("open_conversation 不存在的会话给指路错误", async () => {
     const { app } = setup();
     const result = await tool(app, "open_conversation").execute({ chatId: "oc_nope" }, {});
