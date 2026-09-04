@@ -35,7 +35,7 @@ const SwitchArgumentsSchema = z.object({
 });
 
 type SwitchToolContext = ToolContext & {
-  rootAgentSession?: RootAgentSessionController;
+  rootAgentSession?: Pick<RootAgentSessionController, "getCurrentApp" | "hasEnteredApp">;
 };
 
 /**
