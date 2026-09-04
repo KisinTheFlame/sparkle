@@ -41,8 +41,7 @@ export class SummaryTaskAgent
     super({
       model: llmClient,
       taskTools,
-      // 正常情况一轮就该 finalize；留几轮余量给纯文本轮（toolChoice auto 下
-      // 模型可能先自言自语再动手）。
+      // required 要求工具调用，但模型仍可能选错工具或异常返回纯文本；保留重试余量。
       maxRounds: 4,
     });
     this.reminderMessageFactory = reminderMessageFactory;

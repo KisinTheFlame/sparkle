@@ -1,0 +1,6 @@
+<skill_catalog_update>
+{{#each changes}}
+{{#if added}}新增：{{name}} — {{description}}{{/if}}{{#if modified}}修改：{{name}} — {{description}}{{/if}}{{#if removed}}删除：{{name}}{{/if}}{{#if invalid}}无效（不在可用目录中）：{{name}} — {{error}}{{/if}}
+{{/each}}
+这些变化更新了此前的目录信息。需要使用时，通过终端读取对应 SKILL.md；无效或已删除的条目不再可用。
+</skill_catalog_update>

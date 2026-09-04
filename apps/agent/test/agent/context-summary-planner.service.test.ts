@@ -93,7 +93,7 @@ describe("SummaryTaskAgent", () => {
           { role: "user", content: "旧消息-2" },
           { role: "user", content: "<system_reminder>请整理 root 摘要</system_reminder>" },
         ],
-        toolChoice: "auto",
+        toolChoice: "required",
         tools: expect.arrayContaining([expect.objectContaining({ name: INVOKE_TOOL_NAME })]),
       }),
       {

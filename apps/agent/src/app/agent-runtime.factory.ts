@@ -1,3 +1,5 @@
+import { homedir } from "node:os";
+import { join } from "node:path";
 import {
   AppManager,
   AsyncTaskManager,
@@ -61,6 +63,9 @@ import type { FeishuClient } from "../acl/feishu-client.js";
 import { FeishuApp } from "../agent/apps/feishu/feishu.app.js";
 import { PrismaAppStateStore } from "../agent/runtime/app-state/prisma-app-state-store.js";
 import type { NotificationCenter } from "../agent/runtime/root-agent/notification/notification-center.js";
+import { SkillCatalog } from "../agent/capabilities/skills/skill-catalog.js";
+import { SkillCatalogNotificationDraft } from "../agent/capabilities/skills/skill-catalog-notification-draft.js";
+import { SystemPromptSnapshotExtension } from "../agent/runtime/root-agent/extensions/system-prompt-snapshot.extension.js";
 
 type BuildAgentRuntimeInput = {
   config: Config;
@@ -253,19 +258,31 @@ export async function buildAgentRuntime({
   appManager.register(feishuApp);
   await appManager.startupAll(config.server.apps);
 
-  const agentSystemPromptFactory = async () => {
-    return createAgentSystemPrompt({
-      employerName: config.server.employer.name,
-      apps: appManager
-        .getAllApps()
-        .map(app => ({ id: app.id, displayName: app.displayName, description: app.description })),
-    });
-  };
+  const skillsDirectory = join(homedir(), "sparkle", "skills");
+  const skillCatalog = new SkillCatalog({
+    directory: skillsDirectory,
+    onChange: changes => notificationCenter.push(new SkillCatalogNotificationDraft({ changes })),
+    onError: error => logger.errorWithCause("Skill catalog watcher failed", error),
+  });
+  const systemPromptSnapshot = new SystemPromptSnapshotExtension({
+    render: async () => {
+      await skillCatalog.refresh();
+      return createAgentSystemPrompt({
+        employerName: config.server.employer.name,
+        apps: appManager
+          .getAllApps()
+          .map(app => ({ id: app.id, displayName: app.displayName, description: app.description })),
+        skillsDirectory,
+        skills: skillCatalog.getEntries(),
+      });
+    },
+  });
+  await systemPromptSnapshot.rebuild();
   // root agent 每条进上下文的消息追加到 ledger（physical table `ledger`），只写不读，
   // 作为将来记忆系统的原始素材来源。
   const context = new LinearMessageLedgerAgentContext({
     inner: new DefaultAgentContext({
-      systemPromptFactory: agentSystemPromptFactory,
+      systemPromptFactory: () => systemPromptSnapshot.getSystemPrompt(),
     }),
     linearMessageLedgerDao,
     runtimeKey: ROOT_AGENT_RUNTIME_SNAPSHOT_RUNTIME_KEY,
@@ -347,7 +364,10 @@ export async function buildAgentRuntime({
     // 纯文本轮挂起的自唤醒兜底与 wait 工具共用同一个上限，语义一致：Agent 最多
     // 安静这么久就会自己醒来一轮。
     idleWakeMaxWaitMs: config.server.agent.waitToolMaxWaitMs,
-    loopExtensions: [new AppEntryResetExtension({ session: rootAgentSession })],
+    loopExtensions: [
+      new AppEntryResetExtension({ session: rootAgentSession }),
+      systemPromptSnapshot,
+    ],
   });
 
   const restoredSnapshot = await rootAgentRuntimeSnapshotRepository.load(
@@ -370,11 +390,17 @@ export async function buildAgentRuntime({
     intervalMs: config.server.agent.stateSampleIntervalMs,
   });
 
+  await skillCatalog.startWatching();
+
   return {
     rootAgentRuntime,
     mainAgentContextQueryService,
     feishuApp,
     stateSampler,
-    shutdownApps: () => appManager.shutdownAll(),
+    shutdownApps: async () => {
+      await skillCatalog.stop();
+      notificationCenter.clearForSource("skills:catalog");
+      await appManager.shutdownAll();
+    },
   };
 }

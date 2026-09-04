@@ -88,17 +88,17 @@ describe("ReActKernel.runRound — tool effects → toolExecution.effectMessages
 });
 
 /**
- * toolChoice auto 的两条基础契约：
- * 1. kernel 每轮请求发送 toolChoice "auto"（不再强制工具调用）。
- * 2. 零 toolCall 的纯文本轮是合法轮：shouldCommit true、toolExecutions/appendedMessages
- *    为空，text 的取舍由持久化边界决定（root 剥离、task agent 留在本地工作区）。
+ * required 请求与异常响应兜底的两条契约：
+ * 1. kernel 每轮请求发送 toolChoice "required"。
+ * 2. 上游仍返回零 toolCall 时保留响应：shouldCommit true、toolExecutions/appendedMessages
+ *    为空，由 host 持久化 text 并挂起，避免异常响应触发空转。
  */
-describe("ReActKernel.runRound — toolChoice auto 与纯文本轮", () => {
+describe("ReActKernel.runRound — toolChoice required 与零工具响应兜底", () => {
   const noopInterpreter: EffectInterpreter<never> = {
     apply: async () => ({ appendedMessages: [] }),
   };
 
-  it("每轮请求 toolChoice 为 auto", async () => {
+  it("每轮请求 toolChoice 为 required", async () => {
     let seenToolChoice: string | undefined;
     const kernel = new ReActKernel<"agent", Completion>({
       model: {
@@ -118,7 +118,7 @@ describe("ReActKernel.runRound — toolChoice auto 与纯文本轮", () => {
       usage: "agent",
     } as unknown as ReActKernelRunRoundInput<"agent">);
 
-    expect(seenToolChoice).toBe("auto");
+    expect(seenToolChoice).toBe("required");
   });
 
   it("零 toolCall 的纯文本轮：shouldCommit true、无工具执行、无追加消息", async () => {

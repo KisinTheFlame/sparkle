@@ -819,7 +819,7 @@ export class RootLoopAgent extends BaseLoopAgent<
     // until a producer (real event or timer-enqueued wake) resolves them.
     const roundResult = await this.runReactRound();
 
-    // toolChoice auto 下模型可以一个工具都不调（纯文本轮）。此时 text 照常随 assistant 消息
+    // 即使请求 required，上游仍可能异常返回零工具响应。此时 text 照常随 assistant 消息
     // 进上下文（见 toPersistableAssistantMessage / commitRoundResult 门控），但本轮无工具动作、
     // 视为自然结束，挂起到事件队列非空才进下一轮——否则外层 while 会立即用几乎相同的上下文再
     // 起一轮 LLM 调用空转。

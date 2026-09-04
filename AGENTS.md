@@ -44,7 +44,9 @@ Sparkle **不是一个聊天机器人**，而是一个**同事式 Agent（Agent 
 
 对应到运行时，`AgentContext` 只暴露两个会改动 message 列表的操作：`appendMessages`（保留前缀）与 `replaceMessages`（明确破坏并重建前缀）。新功能如果既不是追加也不是压缩，就要警惕。
 
-另外两条与 ReAct 循环相关的既定语义（#268，text 保留语义经后续修订）：主 Agent 每轮 `toolChoice: auto`，assistant 的纯文本输出**保留进上下文**——持久化边界连同 content 一起随消息尾部追加（早期曾剥掉 content 只留 tool_use，现已改为保留，让 Sparkle 后续轮次能回看自己这一轮的思考；control 工具调用仍不留痕，wait 除外）；纯文本轮（零工具调用）同样把 text 写进上下文，代价是上下文更快增长、压缩更频繁。因为纯文本轮会把 assistant 消息留在尾部，`appendWakeReminderIfNeeded` 起轮前若发现尾部是 assistant 就无条件补一条 user 角色 wake-reminder 收尾——assistant 不能作为发给 provider 的最后一条（会被当 assistant prefill 续写，且触发 400、每轮复发），这条不变量避免「纯文本轮 + 空闲自唤醒」把 assistant 留在尾部。模型某轮零工具调用时主循环**挂起等下一个事件**，不会立即再起一轮。thinking 已开启 adaptive（effort 档位由 `config.yaml` 的 `usages.agent.thinking` 配置，现为 `low`；#573）：thinking 块随 assistant 消息进上下文全保留、原样回放——实测 thinking 块参与 prompt cache hash，全量回放是保住缓存连续性的唯一策略，发送侧裁剪会断链；thinking 参数值本身分割缓存 lineage，故镜像主上下文的 fork task agent 走同一个 `usage=agent` 随之一起开启。未开 thinking 的请求（vision、强制 tool_choice 场景）由 provider 渲染层剥除 thinking 块；config 删掉 `thinking` 行即整体关回 disabled（kill-switch，已持久化块由剥离规则兜住）。
+ReAct 调用策略：主 Agent 与镜像摘要 task agent 统一 `toolChoice: required`，每轮要求至少调用一个工具，无事可做时用 `wait` 挂起；`usage=agent` 不启用 thinking。Claude 渲染层会在强制工具调用时关闭 thinking，并剥除历史 thinking 块，不改写已持久化的消息。切换调用策略或 thinking 会改变请求前缀，应集中切换，之后主 Agent 与摘要继续共享一致的请求模式。
+
+assistant 的文本仍随消息尾部追加进上下文（control 工具调用不留痕，wait 除外）。即使 required 请求异常返回零工具响应，也保留 text，并挂起等待下一事件，避免空转。`appendWakeReminderIfNeeded` 起轮前发现尾部是 assistant 时，仍补一条 user 角色 wake-reminder，避免被 provider 当作 assistant prefill；这些兜底不因 required 而删除。
 
 ### 工具组织：InvokeTool 是顶层工具集的稳定壳
 

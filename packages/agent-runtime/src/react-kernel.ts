@@ -32,7 +32,7 @@ export interface ReActModel<
       system?: string;
       messages: LlmMessage[];
       tools: Tool[];
-      toolChoice: "auto";
+      toolChoice: "required";
     },
     options: {
       /** KV 缓存身份（决定 provider/model）。 */
@@ -217,7 +217,7 @@ export class ReActKernel<
           system: request.state.systemPrompt,
           messages: [...request.state.messages],
           tools: request.tools.definitions(),
-          toolChoice: "auto",
+          toolChoice: "required",
         },
         {
           usage: request.usage,

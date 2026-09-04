@@ -115,6 +115,7 @@ apps/agent/src/agent/
 │   ├── context-summary/ 上下文压缩 task agent（唯一允许 replaceMessages 的路径）
 │   ├── resource/       资源工具（read_resource / upload_resource / download_resource，OSS 对象进出上下文）
 │   ├── terminal/       终端能力本体
+│   ├── skills/         文件 Skill 目录扫描/监听；Bash 读写，变更经通知中心追加，见 docs/adr/0002
 │   └── todo/           待办本能力本体（到点提醒经通知中心）
 └── apps/             手机 OS 的 App（Portal 下可 enter 的地点）
     ├── feishu/         飞书 App：会话模型 + 前台实时输入 + 会话级通知（入站经 SSE 订阅者直达）
@@ -159,6 +160,7 @@ Agent 不区分输入来源；所有外部信号都是「工作输入」。手�
 飞书群/私聊 ─→ sparkle-feishu(WS) ─SSE→ FeishuApp.handleInboundMessage ─┬（后台/非当前会话）→ NotificationCenter
 IThome RSS 轮询 ─→ IThome poller ────────────────────────────────────────┴─→ NotificationCenter ─→ notification 事件
 待办到点 / 汇总 ─→ Todo poller  ──┘   （前沿触发 + 节流窗口）        │
+Skill 文件变化 ─→ SkillCatalog ──────────────────────────────────────┘
                                                                     ↓
 前台 App 实时输入 ─→ 敲门 foreground_input 事件（不带内容，drain 时向当前 App 现拉）→ 共享事件队列 ─→ RootAgentRuntime ─→ ReAct 循环
 async_tool_result / wake 等内部事件 ─────────────────────────────────────────────────→ ↑
@@ -185,9 +187,17 @@ LLM 消息列表分三段：
 
 对应到代码：`AgentContext` 只暴露两个消息变更入口：`appendMessages`（保留前缀）与 `replaceMessages`（明确破坏前缀）。
 
+### Skill：普通文件与冻结的目录快照
+
+`~/sparkle/skills/<name>/SKILL.md` 提供 `name + description`，正文与资源由 Sparkle 通过 Terminal/Bash 按需读取、创建和修改。`SkillCatalog` 扫描有效包、监听文件变化并短窗合并，通知经 `NotificationCenter → notification → user message` 追加到尾部；没有新 App 或 Tool。
+
+`SystemPromptSnapshotExtension` 在启动、reset、自动或手动压缩成功后重新扫描目录并渲染完整 system prompt，其他时候只返回冻结字符串。摘要子 Agent 使用压缩前的同一 system prompt；目录变更不改写在飞前缀，不增加 Skill 专用摘要或 reminder。watcher 随 agent 装配启动，在关停链中先于 App 关闭。
+
+文件格式与使用入口见 [docs/skills.md](docs/skills.md)，取舍见 [ADR 0002](docs/adr/0002-file-based-skills-with-scheduled-catalog-rebuild.md)。
+
 ### 工具系统：InvokeTool 顶层壳
 
-LLM API 暴露的顶层 tools 集合是少量结构性 / 能力级元工具（`switch` / `wait` / `invoke` / `help` 等），从启动到关停不变，不随 App / capability 数量增长。具体 App 工具通过 `invoke(name, args)` 间接调用，并通过 `switch(<appId>)` + `help` 在运行时按需披露。App 名单（id + 名称）每轮由主循环渲染进 system prompt，让 Agent 天然知道有哪些 App 可切；靠「App 集合进程内不可变（register 集中在启动期）」这条不变量保证相同入参每轮字节恒定、前缀不漂移，名单只在增删 App 时变、必然伴随重启。
+LLM API 暴露的顶层 tools 集合是少量结构性 / 能力级元工具（`switch` / `wait` / `invoke` / `help` 等），从启动到关停不变，不随 App / capability 数量增长。具体 App 工具通过 `invoke(name, args)` 间接调用，并通过 `switch(<appId>)` + `help` 在运行时按需披露。App 名单（id + 名称 + 功能）与 Skill 目录一起渲染进冻结的 system prompt。App 集合仍然进程内不可变（register 集中在启动期）；Skill 的运行期变化只走尾部通知，直到下一次计划性前缀重建才更新 system prompt。
 
 设计目的：避免新增能力让顶层 tools 列表变化、把 KV 缓存命中率降到零。详见 AGENTS.md「开发原则：KV 缓存命中率优先」。
 
