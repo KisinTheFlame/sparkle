@@ -7,6 +7,7 @@ function createFakeApp(
   hooks: {
     onFocusEffects?: readonly unknown[];
     onBlurEffects?: readonly unknown[];
+    onFocus?: App["onFocus"];
     help?: () => Promise<string>;
   } = {},
 ): App {
@@ -17,7 +18,7 @@ function createFakeApp(
     tools: [],
     canInvoke: () => true,
     help: hooks.help ?? (async () => `you are in ${id}`),
-    onFocus: async () => (hooks.onFocusEffects ?? []) as never,
+    onFocus: hooks.onFocus ?? (async () => (hooks.onFocusEffects ?? []) as never),
     onBlur: async () => (hooks.onBlurEffects ?? []) as never,
   };
 }
@@ -42,6 +43,32 @@ function fakeSession(opts: { currentApp?: string; entered?: Iterable<string> }) 
 }
 
 describe("switch tool", () => {
+  it("从 Portal 进入时首屏与 help 均失败，仍返回切换 effect 和明确告警", async () => {
+    const appManager = new AppManager();
+    appManager.register(
+      createFakeApp("todo", {
+        onFocus: async () => {
+          throw new Error("清单查询失败");
+        },
+        help: async () => {
+          throw new Error("help 加载失败");
+        },
+      }),
+    );
+    const tool = new SwitchTool({ appManager });
+    const result = await tool.execute({ id: "todo" }, {
+      rootAgentSession: fakeSession({}),
+    } as Parameters<typeof tool.execute>[1]);
+
+    expect(result.effects).toEqual([{ type: "switch_app", appId: "todo" }]);
+    expect(JSON.parse(result.content)).toMatchObject({
+      ok: true,
+      fromApp: null,
+      toApp: "todo",
+      warning: { code: "APP_SCREEN_UNAVAILABLE" },
+    });
+  });
+
   it("首进 App A -> App B：onBlur, switch_app, onFocus，再自动追加 app_help", async () => {
     const appManager = new AppManager();
     appManager.register(

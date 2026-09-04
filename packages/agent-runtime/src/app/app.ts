@@ -115,8 +115,8 @@ export interface App<TConfig = void> {
    * 一个 `append_message` Effect，把 App 进入时要展示的"屏幕"内容追加到上下文
    * 尾部。
    *
-   * 由导航工具（SwitchTool）在 switch_app Effect 之后展开调用：先产 switch_app
-   * Effect 切焦点、再调本钩子拿 Effect[] 拼进自己的 effects 列表。
+   * 有内部焦点态的 App 应先同步更新焦点，再加载屏幕；屏幕加载失败不应回滚焦点。
+   * 导航宿主负责处理首屏异常，不能假设钩子抛错意味着 App 的内部焦点没有变化。
    */
   onFocus?(): Promise<readonly Effect[]>;
 

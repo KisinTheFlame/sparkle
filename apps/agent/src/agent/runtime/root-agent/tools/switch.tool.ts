@@ -108,11 +108,19 @@ export class SwitchTool extends ZodToolComponent<typeof SwitchArgumentsSchema> {
     // 3. 目标 App.onFocus()（通常 append_message 把目标"屏幕"追加到尾部）
     const sourceApp = currentApp ? this.appManager.getApp(currentApp) : undefined;
     const onBlurEffects = (await sourceApp?.onBlur?.()) ?? [];
-    const onFocusEffects = (await targetApp.onFocus?.()) ?? [];
+    // 源 App 已失焦，目标首屏加载失败不能再丢掉 switch_app，否则 session 仍指向
+    // 已失焦的源 App。与 help 一样降级首屏，继续进入目标，由其工具重试加载。
+    let onFocusEffects: readonly RootAgentEffect[] = [];
+    let screenError: string | null = null;
+    try {
+      onFocusEffects = ((await targetApp.onFocus?.()) ?? []) as readonly RootAgentEffect[];
+    } catch (error) {
+      screenError = error instanceof Error ? error.message : String(error);
+    }
     const effects: RootAgentEffect[] = [
       ...(onBlurEffects as readonly RootAgentEffect[]),
       { type: "switch_app", appId: targetApp.id },
-      ...(onFocusEffects as readonly RootAgentEffect[]),
+      ...onFocusEffects,
     ];
 
     // 首次进入（本桶上下文）自动把 App 的 help 追加到尾部，省掉 Sparkle 再花一整轮去调 help 工具。
@@ -139,6 +147,15 @@ export class SwitchTool extends ZodToolComponent<typeof SwitchArgumentsSchema> {
         fromApp,
         toApp: targetApp.id,
         message: buildSwitchMessage(fromApp, targetApp.id, helpEmitted),
+        ...(screenError !== null
+          ? {
+              warning: {
+                code: "APP_SCREEN_UNAVAILABLE",
+                message: "已进入目标 App，但首屏加载失败。请调用该 App 的工具重试加载。",
+                details: screenError,
+              },
+            }
+          : {}),
       }),
       effects,
     };
