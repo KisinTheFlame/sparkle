@@ -110,6 +110,11 @@ type PendingToolPersistence = {
   effectMessages: LlmMessage[];
 };
 
+type RoundPersistencePlan = {
+  assistantMessage: AssistantMessage | null;
+  toolPersistences: PendingToolPersistence[];
+};
+
 /** 本 Agent 的各扩展当前不通过 extensionData 透传任何 per-tool 结构化数据。 */
 export type RootAgentToolExecutionData = Record<string, never>;
 
@@ -303,39 +308,10 @@ export class RootAgentHost implements RootAgentExtensionHost {
     result: ReActCommittedRoundResult<RootAgentCompletion, RootAgentToolExecutionData>,
     tools: ToolExecutor,
   ): Promise<void> {
-    const persistentAssistantMessage = toPersistableAssistantMessage(
-      result.assistantMessage,
-      tools,
-    );
-    // 有 text 或有留痕的 tool_use 就持久化。纯文本轮（零工具调用）现在也把 text 写进上下文，
-    // 不再是「上下文零写入」；只有既无 text 又无可留痕 tool_use 的空轮才丢弃（无内容可留）。
-    const assistantToPersist =
-      persistentAssistantMessage.content.trim().length > 0 ||
-      persistentAssistantMessage.toolCalls.length > 0
-        ? persistentAssistantMessage
-        : null;
-    const toolPersistences: PendingToolPersistence[] = result.toolExecutions.map(execution => ({
-      // 不再按 content 是否为空过滤：被持久化的 assistant tool_use 必须有配对的
-      // tool_result（空串也合法），否则上下文不平衡、下一轮 provider 400 且每轮复发。
-      ...(shouldPersistToolResultInContext({
-        toolName: execution.toolCall.name,
-        toolResult: execution.result,
-      })
-        ? {
-            toolResult: {
-              toolCallId: execution.toolCall.id,
-              content: execution.result.content,
-            },
-          }
-        : {}),
-      effectMessages: execution.effectMessages,
-    }));
+    const plan = createRoundPersistencePlan(result, tools);
 
     await this.mutationExecutor.submit(async () => {
-      await this.persistRoundState({
-        assistantMessage: assistantToPersist,
-        toolPersistences,
-      });
+      await this.persistRoundState(plan);
     });
   }
 
@@ -377,10 +353,7 @@ export class RootAgentHost implements RootAgentExtensionHost {
     });
   }
 
-  private async persistRoundState(input: {
-    assistantMessage: AssistantMessage | null;
-    toolPersistences: PendingToolPersistence[];
-  }): Promise<void> {
+  private async persistRoundState(input: RoundPersistencePlan): Promise<void> {
     if (input.assistantMessage) {
       await this.context.appendAssistantTurn(input.assistantMessage);
     }
@@ -915,34 +888,52 @@ function failMissingTools(): never {
 }
 
 /**
- * assistant turn 的持久化形态：text 现在保留进上下文（不再剥离），与 tool_use 一起随消息
- * 尾部追加，让后续轮次能回看 Sparkle 自己这一轮的思考；control 工具调用仍不留痕（wait 除外）。
- * 追加发生在写入时——已写入的历史只追加不改写，不违反 KV 缓存的只追加原则（代价是上下文更快
- * 增长、压缩更频繁，见 issue #268 的语义修订）。
+ * 只计算本轮的留存计划，不修改输入或已有上下文。assistant 原文保留，control 调用
+ * 与结果不留痕（wait 除外）；effect 屏幕独立保留，写入时仍排在对应 tool result 后面。
+ * Host 负责按原有追加入口执行计划，保持消息顺序、ledger 批次与 context 修订号不变。
  */
-function toPersistableAssistantMessage(
-  message: AssistantMessage,
-  tools: ToolExecutor,
-): AssistantMessage {
-  return {
-    ...message,
-    toolCalls: message.toolCalls.filter(
-      toolCall =>
-        tools.getKind(toolCall.name) !== "control" ||
-        shouldPersistControlToolInContext(toolCall.name),
+function createRoundPersistencePlan(
+  result: Pick<
+    ReActCommittedRoundResult<RootAgentCompletion, RootAgentToolExecutionData>,
+    "assistantMessage" | "toolExecutions"
+  >,
+  tools: Pick<ToolExecutor, "getKind">,
+): RoundPersistencePlan {
+  const assistantMessage: AssistantMessage = {
+    ...result.assistantMessage,
+    toolCalls: result.assistantMessage.toolCalls.filter(toolCall =>
+      shouldPersistToolInContext(toolCall.name, tools.getKind(toolCall.name)),
     ),
+  };
+  // 有原文或留痕 tool_use 才保留 assistant；空轮不产生额外写入。
+  const assistantToPersist =
+    assistantMessage.content.trim().length > 0 || assistantMessage.toolCalls.length > 0
+      ? assistantMessage
+      : null;
+  const toolPersistences: PendingToolPersistence[] = result.toolExecutions.map(execution => ({
+    // 空串也是合法结果，必须保留以维持 tool_use/tool_result 配对。
+    ...(shouldPersistToolInContext(execution.toolCall.name, execution.result.kind)
+      ? {
+          toolResult: {
+            toolCallId: execution.toolCall.id,
+            content: execution.result.content,
+          },
+        }
+      : {}),
+    effectMessages: execution.effectMessages,
+  }));
+
+  return {
+    assistantMessage: assistantToPersist,
+    toolPersistences,
   };
 }
 
-function shouldPersistToolResultInContext(input: {
-  toolName: string;
-  toolResult: ToolSetExecutionResult;
-}): boolean {
-  return input.toolResult.kind !== "control" || shouldPersistControlToolInContext(input.toolName);
-}
-
-function shouldPersistControlToolInContext(toolName: string): boolean {
-  return toolName === WAIT_TOOL_NAME;
+function shouldPersistToolInContext(
+  toolName: string,
+  kind: ToolSetExecutionResult["kind"] | null,
+): boolean {
+  return kind !== "control" || toolName === WAIT_TOOL_NAME;
 }
 
 function isSameWakeReminderBucket(previous: Date | null, current: Date): boolean {

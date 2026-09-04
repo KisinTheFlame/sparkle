@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { LlmMessage } from "@sparkle/llm";
+import { InMemoryQueue, NoopEffectInterpreter, type ToolExecutor } from "@sparkle/agent-runtime";
 import { RootAgentHost } from "../../src/agent/runtime/root-agent/root-agent-runtime.js";
+import { DefaultAgentContext } from "../../src/agent/runtime/context/default-agent-context.js";
+import { LinearMessageLedgerAgentContext } from "../../src/agent/runtime/context/linear-message-ledger-agent-context.js";
+import { RootAgentSession } from "../../src/agent/runtime/root-agent/session/root-agent-session.js";
+import type { Event } from "../../src/agent/runtime/event/event.js";
 
 /**
  * 回归测试（针对 ithome 列表这类只走 append_message 的屏"看不到内容"的根因）：
@@ -99,5 +104,89 @@ describe("RootAgentHost.commitRoundResult — append_message effect 持久化", 
 
     expect(appended).toHaveLength(0);
     expect(order).toEqual(["assistant", 'toolResult:{"ok":true,"feed":"top","count":10}']);
+  });
+
+  it("混合工具轮保留 wait、空结果和 control 屏幕，且前缀、账本批次与修订号不变", async () => {
+    const ledgerBatches: LlmMessage[][] = [];
+    const context = new LinearMessageLedgerAgentContext({
+      inner: new DefaultAgentContext({ systemPrompt: "固定前缀" }),
+      linearMessageLedgerDao: {
+        insertMany: async entries => {
+          ledgerBatches.push(entries.map(entry => entry.message));
+          return [];
+        },
+      },
+      runtimeKey: "test",
+    });
+    await context.appendMessages([{ role: "user", content: "已有历史" }]);
+    const before = await context.getSnapshot();
+    const revisionBefore = context.getRevision();
+    ledgerBatches.length = 0;
+    const host = new RootAgentHost({
+      context,
+      eventQueue: new InMemoryQueue<Event>(),
+      session: new RootAgentSession({ context }),
+      interpreter: new NoopEffectInterpreter(),
+    });
+    const tools: ToolExecutor = {
+      definitions: () => [],
+      getKind: name => (name === "invoke" ? "business" : "control"),
+      execute: async () => {
+        throw new Error("提交已执行的回合不应再次执行工具");
+      },
+    };
+    const hiddenCall = { id: "hidden", name: "test_control", arguments: {} };
+    const waitCall = { id: "wait", name: "wait", arguments: {} };
+    const invokeCall = { id: "invoke", name: "invoke", arguments: { tool: "noop" } };
+    const controlScreen: LlmMessage = { role: "user", content: "control 产生的屏幕" };
+    const businessScreen: LlmMessage = { role: "user", content: "业务工具产生的屏幕" };
+    const round = makeRoundResult([]);
+    round.assistantMessage = {
+      role: "assistant",
+      content: "  保留原文空白  ",
+      toolCalls: [hiddenCall, waitCall, invokeCall],
+    };
+    round.completion.message = round.assistantMessage;
+    round.toolExecutions = [
+      {
+        toolCall: hiddenCall,
+        result: { kind: "control", content: "隐藏结果" },
+        appendedMessages: [],
+        effectMessages: [controlScreen],
+      },
+      {
+        toolCall: waitCall,
+        result: { kind: "control", content: "" },
+        appendedMessages: [],
+        effectMessages: [],
+      },
+      {
+        toolCall: invokeCall,
+        result: { kind: "business", content: "" },
+        appendedMessages: [],
+        effectMessages: [businessScreen],
+      },
+    ];
+    const roundBefore = JSON.stringify(round);
+
+    await host.commitRoundResult(round, tools);
+
+    const expected: LlmMessage[] = [
+      {
+        role: "assistant",
+        content: "  保留原文空白  ",
+        toolCalls: [waitCall, invokeCall],
+      },
+      controlScreen,
+      { role: "tool", toolCallId: "wait", content: "" },
+      { role: "tool", toolCallId: "invoke", content: "" },
+      businessScreen,
+    ];
+    const after = await context.getSnapshot();
+    expect(after.systemPrompt).toBe(before.systemPrompt);
+    expect(JSON.stringify(after.messages)).toBe(JSON.stringify([...before.messages, ...expected]));
+    expect(JSON.stringify(ledgerBatches)).toBe(JSON.stringify(expected.map(message => [message])));
+    expect(context.getRevision()).toBe(revisionBefore + 5);
+    expect(JSON.stringify(round)).toBe(roundBefore);
   });
 });
