@@ -31,7 +31,11 @@ const BIND_HOST = "127.0.0.1";
 // 关停时等待在途连接排空的上限，到点强制退出，与 gateway / oss / llm 等进程一致。
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
-const server = createServer(async (req, res) => {
+const server = createServer((req, res) => {
+  void handleRequest(req, res);
+});
+
+async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
   try {
     const requestUrl = new URL(req.url ?? "/", "http://localhost");
 
@@ -51,7 +55,7 @@ const server = createServer(async (req, res) => {
     res.writeHead(500, { "content-type": "application/json; charset=utf-8" });
     res.end(JSON.stringify({ error: message }));
   }
-});
+}
 
 server.listen(config.port, BIND_HOST, () => {
   process.stdout.write(`[sparkle-web] listening on http://${BIND_HOST}:${config.port}\n`);

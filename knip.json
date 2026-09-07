@@ -15,17 +15,11 @@
     "enumMembers": "warn",
     "duplicates": "warn"
   },
-  "ignoreDependencies": ["@prisma/client", "better-sqlite3", "pm2"],
-  "ignore": [
-    "**/prisma/generated/**",
-    "**/prisma/schema.prisma",
-    "apps/web/src/components/ui/**",
-    "**/test/helpers/**",
-    "**/*.test-helper.ts"
-  ],
+  "ignoreDependencies": ["@prisma/client", "pm2"],
+  "ignore": ["apps/web/src/components/ui/**", "**/test/helpers/**"],
   "workspaces": {
     ".": {
-      "entry": ["scripts/*.mjs", "ecosystem.config.cjs"]
+      "entry": ["scripts/*.mjs"]
     },
     "apps/agent": { "entry": ["src/index.ts", "scripts/*.mjs"] },
     "apps/browser": { "entry": ["src/index.ts"] },
@@ -37,7 +31,7 @@
     "apps/oss": { "entry": ["src/index.ts"] },
     "apps/scheduler": { "entry": ["src/index.ts"] },
     "apps/web": {
-      "entry": ["src/main.tsx", "server/index.ts", "src/components/metric/*.{ts,tsx}"]
+      "entry": ["src/components/metric/*.{ts,tsx}"]
     },
     "packages/*": { "entry": ["src/**/*.ts"] }
   }

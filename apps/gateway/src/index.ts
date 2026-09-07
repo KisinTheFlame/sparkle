@@ -40,7 +40,11 @@ const HOP_BY_HOP_HEADERS = new Set([
   "upgrade",
 ]);
 
-const server = createServer(async (req, res) => {
+const server = createServer((req, res) => {
+  void handleRequest(req, res);
+});
+
+async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
   try {
     const requestUrl = new URL(req.url ?? "/", "http://localhost");
 
@@ -77,7 +81,7 @@ const server = createServer(async (req, res) => {
     res.writeHead(500, { "content-type": "application/json; charset=utf-8" });
     res.end(JSON.stringify({ error: message }));
   }
-});
+}
 
 server.listen(port, "0.0.0.0", () => {
   process.stdout.write(`[sparkle-gateway] listening on http://0.0.0.0:${port}\n`);

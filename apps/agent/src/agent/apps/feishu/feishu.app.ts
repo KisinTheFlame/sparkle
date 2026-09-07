@@ -23,7 +23,7 @@ import { ListConversationsTool } from "./tools/list-conversations.tool.js";
 import { OpenConversationTool } from "./tools/open-conversation.tool.js";
 import { SendMessageTool } from "./tools/send-message.tool.js";
 
-export const FEISHU_APP_ID = "feishu";
+const FEISHU_APP_ID = "feishu";
 
 /** exportState 的形状版本；restoreState 不认识的版本安全忽略。 */
 const STATE_VERSION = 1;

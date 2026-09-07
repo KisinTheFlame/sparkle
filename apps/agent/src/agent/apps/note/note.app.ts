@@ -9,7 +9,7 @@ import { ListPagesTool } from "./tools/list-pages.tool.js";
 import { ReadPageTool } from "./tools/read-page.tool.js";
 import { SearchNotesTool } from "./tools/search-notes.tool.js";
 
-export const NOTE_APP_ID = "note";
+const NOTE_APP_ID = "note";
 
 type NoteAppDeps = {
   noteService: NoteService;

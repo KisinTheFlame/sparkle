@@ -5,7 +5,7 @@ import {
   orderSeriesForStack,
   selectVisibleSeries,
   type RenderSeries,
-} from "@/components/metric/MetricChartView";
+} from "@/components/metric/metric-chart-data";
 
 const b0 = "2026-07-07T00:00:00.000Z";
 

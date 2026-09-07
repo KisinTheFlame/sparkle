@@ -19,7 +19,7 @@ export type FeishuConversation = {
 };
 
 /** 每会话保留的最近消息条数（open_conversation 一屏能看的历史）。 */
-export const RECENT_MESSAGE_CAP = 50;
+const RECENT_MESSAGE_CAP = 50;
 
 export function pushRecent(conversation: FeishuConversation, message: FeishuMessage): void {
   conversation.recent.push(message);

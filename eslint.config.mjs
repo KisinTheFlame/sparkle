@@ -18,17 +18,12 @@ export default tseslint.config(
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
-  // 类型感知 linting：仅作用于各包 src（都在各自 tsconfig include 内）。测试 / 配置
+  // 类型感知 linting：覆盖所有包 src 与 web 静态服务器（均在各自 tsconfig include 内）。测试 / 配置
   // 文件不在 program 里，不进此 scope，避免 "file not in project" 报错。
   // 所有需要类型信息的规则配置都必须留在本块（src），不能下放到下面的全局块，
   // 否则会对无类型信息的文件报致命错。
   {
-    files: [
-      "apps/agent/src/**/*.ts",
-      "apps/oss/src/**/*.ts",
-      "apps/web/src/**/*.{ts,tsx}",
-      "packages/*/src/**/*.ts",
-    ],
+    files: ["apps/*/src/**/*.{ts,tsx}", "apps/web/server/**/*.ts", "packages/*/src/**/*.ts"],
     extends: [tseslint.configs.recommendedTypeChecked],
     languageOptions: {
       parserOptions: {

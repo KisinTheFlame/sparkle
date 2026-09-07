@@ -3,7 +3,7 @@ import {
   buildChartRows,
   buildPieData,
   type RenderSeries,
-} from "@/components/metric/MetricChartView";
+} from "@/components/metric/metric-chart-data";
 
 // 图表类型适配器的纯数据变换（#475 P4）：line/bar/stacked 共用「桶 × 序列」矩阵，pie 塌成每序列一值。
 

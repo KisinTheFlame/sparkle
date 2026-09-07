@@ -9,12 +9,12 @@ export type MetricChartAggregator =
   | "p50"
   | "p95"
   | "p99";
-export type MetricChartBucket = "10s" | "1m" | "5m" | "30m" | "1h";
+type MetricChartBucket = "10s" | "1m" | "5m" | "30m" | "1h";
 
-export type MetricTags = Record<string, string>;
+type MetricTags = Record<string, string>;
 
 /** tag 过滤条件（#475 P2）：eq/ne 单值，in 多值。跨 key 取 AND。 */
-export type MetricTagFilter =
+type MetricTagFilter =
   | { op: "eq"; value: string }
   | { op: "ne"; value: string }
   | { op: "in"; value: string[] };
@@ -45,7 +45,7 @@ export type MetricChartSeriesRow = {
 };
 
 // 派生查询（#475 P3）：分子/分母各一份「无分组」聚合规格，共享 range/bucket。
-export type MetricDeriveOp = "ratio" | "diff";
+type MetricDeriveOp = "ratio" | "diff";
 
 export type MetricDeriveOperand = {
   metricName: string;

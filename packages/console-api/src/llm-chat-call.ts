@@ -39,7 +39,7 @@ export const LlmChatCallSummarySchema = z.object({
 
 export type LlmChatCallSummary = z.infer<typeof LlmChatCallSummarySchema>;
 
-export const LlmChatCallItemSchema = LlmChatCallSummarySchema.extend({
+export const LlmChatCallDetailResponseSchema = LlmChatCallSummarySchema.extend({
   requestPayload: JsonRecordSchema,
   responsePayload: JsonRecordSchema.nullable(),
   nativeRequestPayload: JsonRecordSchema.nullable(),
@@ -48,13 +48,11 @@ export const LlmChatCallItemSchema = LlmChatCallSummarySchema.extend({
   nativeError: JsonRecordSchema.nullable(),
 });
 
-export type LlmChatCallItem = z.infer<typeof LlmChatCallItemSchema>;
+export type LlmChatCallItem = z.infer<typeof LlmChatCallDetailResponseSchema>;
 
 export const LlmChatCallListResponseSchema =
   createPaginatedResponseSchema(LlmChatCallSummarySchema);
 
 export type LlmChatCallListResponse = z.infer<typeof LlmChatCallListResponseSchema>;
-
-export const LlmChatCallDetailResponseSchema = LlmChatCallItemSchema;
 
 export type LlmChatCallDetailResponse = z.infer<typeof LlmChatCallDetailResponseSchema>;

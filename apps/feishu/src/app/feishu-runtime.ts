@@ -54,7 +54,7 @@ export async function buildFeishuRuntime(): Promise<FeishuRuntime> {
     ],
   });
 
-  gateway.start();
+  await gateway.start();
 
   // SSE 心跳：给所有在线订阅者发注释帧保活（agent 侧靠它判半开）。unref 不挡进程退出。
   const heartbeatTimer = setInterval(() => {

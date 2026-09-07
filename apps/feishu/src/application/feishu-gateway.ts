@@ -39,8 +39,8 @@ export class FeishuGateway {
     this.broadcaster = broadcaster;
   }
 
-  /** 启动长连接事件订阅（SDK 内部自管重连）。 */
-  public start(): void {
+  /** 等待 SDK 初始化订阅；实际连接与后续重连仍由 SDK 后台管理。 */
+  public async start(): Promise<void> {
     const dispatcher = new EventDispatcher({}).register({
       "im.message.receive_v1": async data => {
         try {
@@ -53,7 +53,7 @@ export class FeishuGateway {
         }
       },
     });
-    this.wsClient.start({ eventDispatcher: dispatcher });
+    await this.wsClient.start({ eventDispatcher: dispatcher });
     logger.info("Feishu WS 长连接事件订阅已启动", { event: "feishu.ws.started" });
   }
 
