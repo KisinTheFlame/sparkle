@@ -1,5 +1,6 @@
+import type { AgentLlmClient } from "../../../runtime/llm-client.js";
 import { BaseTaskAgent, type TaskAgentInvoker, type ToolExecutor } from "@sparkle/agent-runtime";
-import type { LlmClient, LlmMessage } from "@sparkle/llm-client";
+import type { LlmMessage } from "@sparkle/llm-client";
 
 export type SummaryTaskInput = {
   systemPrompt: string;
@@ -34,7 +35,7 @@ export class SummaryTaskAgent
     taskTools,
     reminderMessageFactory,
   }: {
-    llmClient: LlmClient;
+    llmClient: AgentLlmClient;
     taskTools: ToolExecutor;
     reminderMessageFactory: () => Extract<LlmMessage, { role: "user" }>;
   }) {

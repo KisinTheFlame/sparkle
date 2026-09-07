@@ -211,6 +211,16 @@ const ConfigSchema = z.object({
           contextCompactionImageCountThreshold: PositiveIntSchema.default(
             DEFAULT_AGENT_CONTEXT_COMPACTION_IMAGE_COUNT_THRESHOLD,
           ),
+          // usage = KV 缓存身份，只有 agent / vision 两个。fork 型 task agent
+          // （contextSummarizer）复用主 Agent 前缀命中
+          // prompt cache，直接用 usage=agent 走同一份配置，不单独配置。调用归因走 scene
+          // 字段（见 @sparkle/kernel/contracts/llm 与 issue #555）。
+          usages: z
+            .object({
+              agent: LlmUsageConfigSchema,
+              vision: LlmUsageConfigSchema,
+            })
+            .strict(),
           llmRetryBackoffMs: PositiveIntSchema.default(DEFAULT_AGENT_LLM_RETRY_BACKOFF_MS),
           waitToolMaxWaitMs: PositiveIntSchema.default(DEFAULT_AGENT_WAIT_TOOL_MAX_WAIT_MS),
           stateSampleIntervalMs: PositiveIntSchema.default(DEFAULT_AGENT_STATE_SAMPLE_INTERVAL_MS),
@@ -247,6 +257,7 @@ const ConfigSchema = z.object({
           }
         })
         .transform(value => ({
+          usages: value.usages,
           contextCompactionTotalTokenThreshold: value.contextCompactionTotalTokenThreshold,
           contextCompactionImageCountThreshold: value.contextCompactionImageCountThreshold,
           llmRetryBackoffMs: value.llmRetryBackoffMs,
@@ -344,16 +355,8 @@ const ConfigSchema = z.object({
             keepAliveReplayIntervalMinutes: DEFAULT_CLAUDE_CODE_KEEP_ALIVE_REPLAY_INTERVAL_MINUTES,
           }),
       }),
-      // usage = KV 缓存身份，只有 agent / vision 两个。fork 型 task agent
-      // （contextSummarizer）复用主 Agent 前缀命中
-      // prompt cache，直接用 usage=agent 走同一份配置，不单独配置。调用归因走 scene
-      // 字段（见 @sparkle/kernel/contracts/llm 与 issue #555）。
-      usages: z
-        .object({
-          agent: LlmUsageConfigSchema,
-          vision: LlmUsageConfigSchema,
-        })
-        .strict(),
+      // 拒绝旧路径，避免 secret 覆盖仍写在旧位置却被静默忽略。
+      usages: z.never({ message: "请将 server.llm.usages 移到 server.agent.usages" }).optional(),
     }),
     employer: z.object({
       name: NonEmptyStringSchema,
@@ -397,9 +400,11 @@ type RawConfig = z.infer<typeof ConfigSchema>;
 type RawServerLlm = RawConfig["server"]["llm"];
 
 export type Config = Omit<RawConfig, "server"> & {
-  server: Omit<RawConfig["server"], "llm"> & {
-    llm: Omit<RawServerLlm, "usages" | "codexAuth" | "claudeCodeAuth"> & {
+  server: Omit<RawConfig["server"], "llm" | "agent"> & {
+    agent: Omit<RawConfig["server"]["agent"], "usages"> & {
       usages: Record<LlmUsageId, LlmUsageConfig>;
+    };
+    llm: Omit<RawServerLlm, "usages" | "codexAuth" | "claudeCodeAuth"> & {
       // publicBaseUrl 在 loader 里派生填充，对外恒为 string。
       codexAuth: Omit<RawServerLlm["codexAuth"], "publicBaseUrl"> & { publicBaseUrl: string };
       claudeCodeAuth: Omit<RawServerLlm["claudeCodeAuth"], "publicBaseUrl"> & {
@@ -473,9 +478,12 @@ export async function loadStaticConfig(options: LoadStaticConfigOptions = {}): P
     server: {
       ...data.server,
       databaseUrl: resolveSqliteFileUrl(configDir, data.server.databaseUrl),
+      agent: {
+        ...data.server.agent,
+        usages: normalizeLlmUsages(data.server.agent),
+      },
       llm: {
         ...data.server.llm,
-        usages: normalizeLlmUsages(data.server.llm),
         codexAuth: {
           ...data.server.llm.codexAuth,
           publicBaseUrl: data.server.llm.codexAuth.publicBaseUrl ?? defaultPublicBaseUrl,
@@ -511,7 +519,9 @@ function resolveSqliteFileUrl(baseDir: string, value: string): string {
   return `file:${resolveAbsolutePath(baseDir, value)}`;
 }
 
-function normalizeLlmUsages(input: RawConfig["server"]["llm"]): Record<LlmUsageId, LlmUsageConfig> {
+function normalizeLlmUsages(
+  input: RawConfig["server"]["agent"],
+): Record<LlmUsageId, LlmUsageConfig> {
   return {
     agent: normalizeUsageConfig(input.usages.agent),
     vision: normalizeUsageConfig(input.usages.vision),
@@ -519,7 +529,7 @@ function normalizeLlmUsages(input: RawConfig["server"]["llm"]): Record<LlmUsageI
 }
 
 function normalizeUsageConfig(
-  value: RawConfig["server"]["llm"]["usages"]["agent"],
+  value: RawConfig["server"]["agent"]["usages"]["agent"],
 ): LlmUsageConfig {
   return {
     attempts: value.attempts.map(attempt => normalizeUsageAttempt(attempt)),
@@ -528,7 +538,7 @@ function normalizeUsageConfig(
 }
 
 function normalizeUsageAttempt(
-  value: RawConfig["server"]["llm"]["usages"]["agent"]["attempts"][number],
+  value: RawConfig["server"]["agent"]["usages"]["agent"]["attempts"][number],
 ): LlmUsageAttemptConfig {
   return {
     provider: value.provider,

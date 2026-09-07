@@ -9,6 +9,6 @@
 // - `vision`：图片理解，独立的小 prompt，可独立选模型。当前无调用方，预留给
 //   将来需要「图片转文字描述」的能力（接入新消息渠道时的图片理解等）。
 //
-// 调用「归因」（哪个业务场景发起的）不再由 usage 承担，改由 `LlmClient.chat` 的 `scene`
+// 调用「归因」（哪个业务场景发起的）不再由 usage 承担，改由 agent 侧 `AgentLlmClient.chat` 的 `scene`
 // 自由字段承接（metric 标签 + llm_chat_call 落库），见 issue #555。
 export type LlmUsageId = "agent" | "vision";

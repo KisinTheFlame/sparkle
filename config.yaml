@@ -40,6 +40,22 @@ server:
   agent:
     contextCompactionTotalTokenThreshold: 600000
     contextCompactionImageCountThreshold: 550 # 上下文图片总数超过该值也触发摘要压缩（图片按张吃上下文，与 token 阈值并列的第二触发条件）
+    # 只配 agent / vision 两个 KV 缓存身份（vision 当前无调用方，预留给将来的图片理解能力）。
+    # fork 型 task agent（contextSummarizer）
+    # 在调用点直接用 usage=agent，复用主 Agent 前缀命中 prompt cache，故不在此
+    # 单独配置；调用归因走 scene 字段（见 issue #555）。
+    usages:
+      agent:
+        attempts:
+          - provider: claude-code
+            model: claude-opus-4-6
+            times: 3
+        # 主 Agent 与镜像摘要统一 required，关闭 thinking，保持同一缓存 lineage。
+      vision:
+        attempts:
+          - provider: claude-code
+            model: claude-sonnet-5
+            times: 2
     llmRetryBackoffMs: 30000
     waitToolMaxWaitMs: 600000
     stateSampleIntervalMs: 2000 # 状态心跳采样间隔：每这么久采一次「Sparkle 此刻处于哪个 App / wait / portal」，打 agent.state.sample metric
@@ -120,22 +136,6 @@ server:
         fileCacheGcEnabled: true # kill-switch；false 则不注册 GC task（急停用）
         fileCacheGcMaxIdleDays: 3 # 连续多少天未被使用即回收
         fileCacheGcMaxDeletionsPerRun: 2000 # 单轮删除上限，超出的次日续删
-    # 只配 agent / vision 两个 KV 缓存身份（vision 当前无调用方，预留给将来的图片理解能力）。
-    # fork 型 task agent（contextSummarizer）
-    # 在调用点直接用 usage=agent，复用主 Agent 前缀命中 prompt cache，故不在此
-    # 单独配置；调用归因走 scene 字段（见 issue #555）。
-    usages:
-      agent:
-        attempts:
-          - provider: claude-code
-            model: claude-opus-4-6
-            times: 3
-        # 主 Agent 与镜像摘要统一 required，关闭 thinking，保持同一缓存 lineage。
-      vision:
-        attempts:
-          - provider: claude-code
-            model: claude-sonnet-5
-            times: 2
   # employer.name（雇主名字）是 PII，放 config.secret.yaml
   # feishu.appId / appSecret（飞书自建应用凭据）是密钥，放 config.secret.yaml
   # 自建对象存储（@sparkle/oss）启用开关。地址不在这里——统一来自顶层 services.oss。

@@ -11,7 +11,7 @@ export type LlmServiceConfig = {
 };
 
 /**
- * sparkle-llm 进程配置。端口取 `services.llm.port`；LLM provider / usages / embedding 与
+ * sparkle-llm 进程配置。端口取 `services.llm.port`；LLM provider / embedding 与
  * OAuth 配置直接复用 `server.llm` —— 这些原本就是 LLM/凭据的配置，只是消费方从 agent
  * 进程变成本服务进程。
  */

@@ -12,6 +12,7 @@ import { MainAgentContextHandler } from "../ops/http/main-agent-context.handler.
 import { OpsQueryHandler } from "../ops/http/ops-query.handler.js";
 import { PrismaTodoItemDao } from "@sparkle/persistence/dao/impl/todo-item.impl.dao";
 import { HealthHandler } from "@sparkle/kernel/http/health.handler";
+import { createAgentLlmClient } from "../agent/runtime/llm-client.js";
 import { HttpLlmClient } from "../acl/http-llm-client.js";
 import { HttpImageClient } from "../acl/image-client.js";
 import { HttpFeishuClient } from "../acl/feishu-client.js";
@@ -95,11 +96,14 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
   const todoDao = new PrismaTodoDao({ database });
 
   // LLM provider + OAuth 凭据中心已外移到独立 sparkle-llm 进程（issue：多 Agent 共享网关）。
-  // agent 经 HttpLlmClient 直连它（地址从顶层 services.llm 派生），实现现有 LlmClient
-  // 接口——下游 root-agent 等零改动。llm_chat_call 落库、auth callback/刷新全在
+  // agent/runtime 的 client 持有 usage 策略，经 HttpLlmClient 执行单次请求（services.llm 寻址）。
+  // 主 Agent 与摘要共用这一个 client；llm_chat_call 落库、auth callback/刷新全在
   // 服务侧，agent 不再碰。embedding 能力也在服务侧（将来记忆系统接线时按需在 agent 侧新建 client）。
   const llmServiceBaseUrl = `http://${config.services.llm.host}:${config.services.llm.port}`;
-  const llmClient = new HttpLlmClient({ baseUrl: llmServiceBaseUrl });
+  const llmClient = createAgentLlmClient({
+    gateway: new HttpLlmClient({ baseUrl: llmServiceBaseUrl }),
+    usages: config.server.agent.usages,
+  });
   // 生图走同一个 sparkle-llm 进程的 /internal/generate-image（issue #508）。专用薄 client，不塞进
   // chat 语义的 LlmClient。给 atelier App 用。
   const imageClient = new HttpImageClient({ baseUrl: llmServiceBaseUrl });

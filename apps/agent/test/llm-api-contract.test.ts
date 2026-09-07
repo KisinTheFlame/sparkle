@@ -13,44 +13,41 @@ describe("llm-api 契约：编译期类型强制", () => {
   it("createClient 派生的 listProviders 返回类型 == 契约 output（LlmProviderOption[]）", () => {
     const api = createClient(llmApiContract, { baseUrl: "http://llm" });
     // 门面 == 契约：返回类型必须精确赋给 Promise<LlmProviderOption[]>，否则编译失败。
-    const assertReturnType = (): Promise<LlmProviderOption[]> =>
-      api.listProviders({ usage: "agent" });
+    const assertReturnType = (): Promise<LlmProviderOption[]> => api.listProviders({});
     void assertReturnType;
     expect(typeof api.listProviders).toBe("function");
   });
 
-  it("传错 input / 读不存在的 output 字段 → 编译期报错", () => {
+  it("读不存在的 output 字段 → 编译期报错", () => {
     const api = createClient(llmApiContract, { baseUrl: "http://llm" });
     void (async (): Promise<void> => {
-      // @ts-expect-error usage 是必填 string，缺失必须报错
-      await api.listProviders({});
-      // @ts-expect-error 契约 input 无 wrongField
-      await api.listProviders({ usage: "agent", wrongField: 1 });
-      const providers = await api.listProviders({ usage: "agent" });
+      const providers = await api.listProviders({});
       // @ts-expect-error output 元素是 { id, models }，无 nonExistent 字段
       void providers[0]?.nonExistent;
     });
     expect(typeof api.listProviders).toBe("function");
   });
 
-  it("chat/chatDirect/embed 是信封级：request/output 是 unknown，但信封字段仍编译期强制", () => {
+  it("chatDirect/embed 保持信封级，模型选择必填，归因可选且结构明确", () => {
     const api = createClient(llmApiContract, { baseUrl: "http://llm" });
     void (async (): Promise<void> => {
-      // request 是 unknown：任意结构放行（信封级刻意不逐字段校验）
-      await api.chat({ request: { whatever: true }, usage: "agent", scene: "agent" });
-      // @ts-expect-error 信封字段 usage 必填，缺失必须报错
-      await api.chat({ request: {}, scene: "agent" });
-      // @ts-expect-error 信封字段 scene 必填，缺失必须报错
-      await api.chat({ request: {}, usage: "agent" });
-      // @ts-expect-error chatDirect 信封要求 providerId/model，缺失必须报错（chatDirect 无 scene）
-      await api.chatDirect({ request: {}, usage: "agent" });
-      await api.chatDirect({ request: {}, providerId: "openai", model: "gpt" });
-      // output 是 unknown：不暴露具体字段类型（信封级，门面按接口断言）
-      const res: unknown = await api.chat({ request: {}, usage: "agent", scene: "agent" });
+      await api.chatDirect({ request: { whatever: true }, providerId: "openai", model: "gpt" });
+      // @ts-expect-error 单次执行必须由调用方指定 model
+      await api.chatDirect({ request: {}, providerId: "openai" });
+      // @ts-expect-error 单次执行必须由调用方指定 providerId
+      await api.chatDirect({ request: {}, model: "gpt" });
+      // @ts-expect-error 旧 usage 选模型入口已移除
+      await api.chat({ request: {}, usage: "agent", scene: "agent" });
+      const res: unknown = await api.chatDirect({
+        request: {},
+        providerId: "openai",
+        model: "gpt",
+        trace: { requestId: "request-1", seq: 2, usage: "caller", scene: "work" },
+      });
       void res;
       await api.embed({ request: { content: "hi" } });
     });
-    expect(typeof api.chat).toBe("function");
+    expect(typeof api.chatDirect).toBe("function");
     expect(typeof api.embed).toBe("function");
   });
 });

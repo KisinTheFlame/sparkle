@@ -1,3 +1,4 @@
+import type { AgentLlmClient } from "../llm-client.js";
 import {
   BaseLoopAgent,
   type EffectInterpreter,
@@ -26,7 +27,7 @@ import {
   createContextCompactionSlice,
 } from "../context/context-compaction.js";
 import type { AgentEventQueue } from "../event/event.queue.js";
-import { isRetryableLlmFailure, type LlmClient } from "@sparkle/llm-client";
+import { isRetryableLlmFailure } from "@sparkle/llm-client";
 import type { LlmMessage } from "@sparkle/llm-client";
 import { AppLogger } from "@sparkle/kernel/logger/logger";
 import { NOOP_METRIC_CLIENT, type MetricClient } from "@sparkle/metric-client/client";
@@ -68,7 +69,7 @@ type RootLoopExtension = LoopAgentExtension<
 >;
 
 type RootAgentRuntimeDeps = {
-  llmClient: LlmClient;
+  llmClient: AgentLlmClient;
   context: AgentContext;
   eventQueue: AgentEventQueue;
   session: RootAgentSessionController;
@@ -131,7 +132,7 @@ export type ContextCompactionReport = ContextCompactionOutcome & {
   compactedAt: Date;
 };
 
-export type RootAgentCompletion = Awaited<ReturnType<LlmClient["chat"]>>;
+export type RootAgentCompletion = Awaited<ReturnType<AgentLlmClient["chat"]>>;
 
 export type RootLoopExtensionContext = {
   host: Pick<

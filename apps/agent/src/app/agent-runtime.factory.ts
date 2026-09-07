@@ -1,3 +1,4 @@
+import type { AgentLlmClient } from "../agent/runtime/llm-client.js";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import {
@@ -15,7 +16,6 @@ import {
 import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type { Config } from "@sparkle/kernel/config/config.loader";
 import type { Database } from "@sparkle/persistence/db/client";
-import type { LlmClient } from "@sparkle/llm-client";
 import type { MetricClient } from "@sparkle/metric-client/client";
 import type { IthomeService } from "../agent/capabilities/ithome/application/ithome.service.js";
 import type { MainAgentContextQueryService } from "../ops/application/main-agent-context-query.service.js";
@@ -70,7 +70,7 @@ import { SystemPromptSnapshotExtension } from "../agent/runtime/root-agent/exten
 type BuildAgentRuntimeInput = {
   config: Config;
   database: Database;
-  llmClient: LlmClient;
+  llmClient: AgentLlmClient;
   metricService: MetricClient;
   /** 飞书出站门面：打到独立的 sparkle-feishu 进程。入站由 server-runtime 的 SSE 订阅者注入。 */
   feishuClient: FeishuClient;

@@ -27,33 +27,35 @@ describe("HttpLlmClient", () => {
     );
     const client = new HttpLlmClient({ baseUrl: "http://127.0.0.1:20009/", fetch: fetchMock });
 
-    const result = await client.chat(sampleRequest, {
-      usage: "agent",
-      scene: "agent",
+    const result = await client.chatDirect(sampleRequest, {
+      providerId: "openai",
+      model: "gpt-4o-mini",
+      trace: { requestId: "request-1", seq: 2, usage: "agent", scene: "contextSummarizer" },
       recordCall: false,
     });
 
     expect(result).toMatchObject({ provider: "openai", model: "gpt-4o-mini" });
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("http://127.0.0.1:20009/internal/chat");
+    expect(url).toBe("http://127.0.0.1:20009/internal/chat-direct");
     expect(init.method).toBe("POST");
     expect(JSON.parse(String(init.body))).toEqual({
       request: sampleRequest,
-      usage: "agent",
-      scene: "agent",
+      providerId: "openai",
+      model: "gpt-4o-mini",
+      trace: { requestId: "request-1", seq: 2, usage: "agent", scene: "contextSummarizer" },
       recordCall: false,
     });
   });
 
-  it("passes usage as query for listAvailableProviders", async () => {
+  it("lists gateway providers without usage policy", async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse([{ id: "openai", models: ["m"] }]));
     const client = new HttpLlmClient({ baseUrl: "http://127.0.0.1:20009", fetch: fetchMock });
 
-    const result = await client.listAvailableProviders({ usage: "vision" });
+    const result = await client.listAvailableProviders();
 
     expect(result).toEqual([{ id: "openai", models: ["m"] }]);
     expect((fetchMock.mock.calls[0] as [string])[0]).toBe(
-      "http://127.0.0.1:20009/internal/providers?usage=vision",
+      "http://127.0.0.1:20009/internal/providers",
     );
   });
 
@@ -74,7 +76,7 @@ describe("HttpLlmClient", () => {
     const client = new HttpLlmClient({ baseUrl: "http://127.0.0.1:20009", fetch: fetchMock });
 
     const error = await client
-      .chat(sampleRequest, { usage: "agent", scene: "agent" })
+      .chatDirect(sampleRequest, { providerId: "openai", model: "gpt-4o-mini" })
       .catch((e: unknown) => e);
     expect(error).toMatchObject({
       name: "BizError",
@@ -91,7 +93,7 @@ describe("HttpLlmClient", () => {
     const client = new HttpLlmClient({ baseUrl: "http://127.0.0.1:20009", fetch: fetchMock });
 
     const error = await client
-      .chat(sampleRequest, { usage: "agent", scene: "agent" })
+      .chatDirect(sampleRequest, { providerId: "openai", model: "gpt-4o-mini" })
       .catch((e: unknown) => e);
     expect(error).toMatchObject({
       name: "BizError",
@@ -106,7 +108,7 @@ describe("HttpLlmClient", () => {
     const client = new HttpLlmClient({ baseUrl: "http://127.0.0.1:20009", fetch: fetchMock });
 
     const error = await client
-      .chat(sampleRequest, { usage: "agent", scene: "agent" })
+      .chatDirect(sampleRequest, { providerId: "openai", model: "gpt-4o-mini" })
       .catch((e: unknown) => e);
     expect(error).toMatchObject({
       name: "BizError",
@@ -125,7 +127,7 @@ describe("HttpLlmClient", () => {
     const client = new HttpLlmClient({ baseUrl: "http://127.0.0.1:20009", fetch: fetchMock });
 
     const error = await client
-      .chat(sampleRequest, { usage: "agent", scene: "agent" })
+      .chatDirect(sampleRequest, { providerId: "openai", model: "gpt-4o-mini" })
       .catch((e: unknown) => e);
     expect(error).toMatchObject({
       name: "BizError",

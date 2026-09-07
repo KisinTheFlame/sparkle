@@ -8,10 +8,8 @@ import {
 } from "./query.js";
 import { z } from "zod";
 
-// chat / chat-direct 的客户端超时是「服务真挂/半开」的兜底，不是每次 chat 的时限：服务端每个
-// provider attempt 有自己的 timeout、可能多 attempt 串行，总耗时可达 attempts × timeoutMs。给一个
-// 远高于任何现实多-attempt 总时长的上限（10 分钟），确保服务端 provider 超时永远先触发、回出规整
-// BizError，避免 client 先 abort 却让服务端 in-flight 上游请求继续跑（重复调用 + 成本放大）。
+// chat-direct 的 10 分钟客户端超时用于连接异常兜底；网关每次只执行一个 provider 调用，
+// 默认 5 分钟的 provider 超时先返回规整错误，避免调用方先超时重试而上游仍在执行。
 const CHAT_TIMEOUT_MS = 600_000;
 const QUERY_TIMEOUT_MS = 30_000;
 const EMBED_TIMEOUT_MS = 60_000;
@@ -19,10 +17,10 @@ const EMBED_TIMEOUT_MS = 60_000;
 const GENERATE_IMAGE_TIMEOUT_MS = 300_000;
 
 /**
- * chat / chat-direct / embed 的 `request` 是复杂 union（LlmMessage / Tool / EmbeddingRequest），刻意
+ * chat-direct / embed 的 `request` 是复杂 union（LlmMessage / Tool / EmbeddingRequest），刻意
  * 用 `z.unknown()` 只校验信封外壳、不逐字段 zod —— 这是既有设计（见 internal-llm.handler 注释），非
  * 技术债。output 同理留 `z.unknown()`：**信封级**，服务端返回结构不进 Zod，消费端门面按类型断言。
- * 这三条路由的价值是统一 HTTP 管线 + 错误通道 + 超时，而非给复杂 union 加编译期字段校验（那属
+ * 这些路由的价值是统一 HTTP 管线 + 错误通道 + 超时，而非给复杂 union 加编译期字段校验（那属
  * listProviders 这类真 JSON schema 的路由）。
  */
 const EnvelopeRequest = z.unknown();
@@ -32,29 +30,16 @@ const EnvelopeRequest = z.unknown();
  * 都从这里派生类型 —— 改 output，两端一起编译报错（issue #230）。
  *
  * - `listProviders`：真 JSON schema，output 全类型化，是编译期强制的样板。
- * - `chat` / `chatDirect` / `embed`：信封级（output `z.unknown()`），复杂 union 不逐字段校验，见上。
+ * - `chatDirect` / `embed`：信封级（output `z.unknown()`），复杂 union 不逐字段校验，见上。
  */
 export const llmApiContract = {
   listProviders: defineJsonRoute({
     method: "GET",
     path: "/internal/providers",
-    input: z.object({ usage: z.string().min(1) }),
+    input: z.object({}),
     output: z.array(LlmProviderOptionSchema),
     // providers 是轻查询：服务真挂/半开的兜底超时，非每次调用时限。
     timeoutMs: QUERY_TIMEOUT_MS,
-  }),
-  chat: defineJsonRoute({
-    method: "POST",
-    path: "/internal/chat",
-    input: z.object({
-      request: EnvelopeRequest,
-      usage: z.string().min(1),
-      // 调用归因（自由 string），与 usage 并列进 chat；服务侧透传给 LlmClient.chat.scene。
-      scene: z.string().min(1),
-      recordCall: z.boolean().optional(),
-    }),
-    output: z.unknown(),
-    timeoutMs: CHAT_TIMEOUT_MS,
   }),
   chatDirect: defineJsonRoute({
     method: "POST",
@@ -64,6 +49,15 @@ export const llmApiContract = {
       providerId: z.string().min(1),
       model: z.string().min(1),
       recordCall: z.boolean().optional(),
+      // 归因由调用方携带，网关不按 usage/scene 选择配置。
+      trace: z
+        .object({
+          requestId: z.string().min(1),
+          seq: z.number().int().positive(),
+          usage: z.string().trim().min(1),
+          scene: z.string().trim().min(1),
+        })
+        .optional(),
     }),
     output: z.unknown(),
     timeoutMs: CHAT_TIMEOUT_MS,

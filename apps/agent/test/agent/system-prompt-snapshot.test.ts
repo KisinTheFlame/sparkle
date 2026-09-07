@@ -55,7 +55,7 @@ describe("Skill 目录的稳定前缀与计划性重建", () => {
       eventQueue: new InMemoryQueue<Event>(),
       session: new RootAgentSession({ context }),
       tools: new ToolCatalog([]).pick([]),
-      llmClient: { chat, chatDirect: vi.fn(), listAvailableProviders: vi.fn() },
+      llmClient: { chat, listAvailableProviders: vi.fn() },
       contextSummarizer: { invoke },
       contextCompactionTotalTokenThreshold: 1,
       loopExtensions: [snapshot],

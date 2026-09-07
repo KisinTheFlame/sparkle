@@ -7,6 +7,9 @@ import type { EmbeddingClient } from "@sparkle/llm-client/embedding";
 import type { ImageClient } from "@sparkle/llm-client/image";
 import { createLlmServiceApp } from "../src/app/llm-service-runtime.js";
 import { InternalLlmHandler } from "../src/http/internal-llm.handler.js";
+import { initLoggerRuntime } from "@sparkle/kernel/logger/runtime";
+
+initLoggerRuntime({ sinks: [{ write: () => {} }] });
 
 function buildApp(overrides?: {
   llmClient?: Partial<LlmClient>;
@@ -14,7 +17,6 @@ function buildApp(overrides?: {
   imageClient?: Partial<ImageClient>;
 }): FastifyInstance {
   const llmClient = {
-    chat: vi.fn(),
     chatDirect: vi.fn(),
     listAvailableProviders: vi.fn(),
     ...overrides?.llmClient,
@@ -41,44 +43,72 @@ afterEach(async () => {
 });
 
 describe("InternalLlmHandler", () => {
-  it("routes /internal/chat to LlmClient.chat and returns the payload", async () => {
-    const chat = vi
+  it("rejects incomplete trace envelopes before execution and exposes no usage-routing endpoint", async () => {
+    const chatDirect = vi.fn();
+    app = buildApp({ llmClient: { chatDirect } });
+    const malformed = await app.inject({
+      method: "POST",
+      url: "/internal/chat-direct",
+      payload: {
+        request: {},
+        providerId: "openai",
+        model: "m",
+        trace: { requestId: "call-1", seq: 0 },
+      },
+    });
+    expect(malformed.statusCode).toBe(400);
+    expect(chatDirect).not.toHaveBeenCalled();
+    const retired = await app.inject({
+      method: "POST",
+      url: "/internal/chat",
+      payload: { request: {}, usage: "agent", scene: "agent" },
+    });
+    expect(retired.statusCode).toBe(404);
+  });
+
+  it("routes /internal/chat-direct to LlmClient.chatDirect and returns the payload", async () => {
+    const chatDirect = vi
       .fn()
       .mockResolvedValue({ provider: "openai", model: "m", message: { role: "assistant" } });
-    app = buildApp({ llmClient: { chat } });
+    app = buildApp({ llmClient: { chatDirect } });
 
     const response = await app.inject({
       method: "POST",
-      url: "/internal/chat",
+      url: "/internal/chat-direct",
       payload: {
         request: { messages: [{ role: "user", content: "ping" }], tools: [], toolChoice: "none" },
-        usage: "agent",
-        scene: "agent",
+        providerId: "openai",
+        model: "m",
+        trace: { requestId: "request-1", seq: 2, usage: "custom-caller", scene: "work" },
       },
     });
 
     expect(response.statusCode).toBe(200);
     expect(response.json()).toMatchObject({ provider: "openai", model: "m" });
-    expect(chat).toHaveBeenCalledWith(
+    expect(chatDirect).toHaveBeenCalledWith(
       { messages: [{ role: "user", content: "ping" }], tools: [], toolChoice: "none" },
-      { usage: "agent", scene: "agent" },
+      {
+        providerId: "openai",
+        model: "m",
+        trace: { requestId: "request-1", seq: 2, usage: "custom-caller", scene: "work" },
+      },
     );
   });
 
   it("serializes a thrown BizError into the rich error envelope", async () => {
-    const chat = vi.fn().mockRejectedValue(
+    const chatDirect = vi.fn().mockRejectedValue(
       new BizError({
         message: "所选 LLM provider 当前不可用",
         meta: { provider: "openai" },
         statusCode: 503,
       }),
     );
-    app = buildApp({ llmClient: { chat } });
+    app = buildApp({ llmClient: { chatDirect } });
 
     const response = await app.inject({
       method: "POST",
-      url: "/internal/chat",
-      payload: { request: {}, usage: "agent", scene: "agent" },
+      url: "/internal/chat-direct",
+      payload: { request: {}, providerId: "openai", model: "m" },
     });
 
     expect(response.statusCode).toBe(503);

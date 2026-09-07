@@ -5,7 +5,6 @@ import {
   type LlmProviderOption,
   type LlmRequestUserContentPart,
 } from "@sparkle/llm-api/llm-chat";
-import type { LlmUsageId } from "@sparkle/kernel/contracts/llm";
 import { AppLogger } from "@sparkle/kernel/logger/logger";
 import type { Config } from "@sparkle/kernel/config/config.loader";
 import { BizError } from "@sparkle/kernel/errors/biz-error";
@@ -36,61 +35,51 @@ type OpenAiCodexConfig = Config["server"]["llm"]["providers"]["openaiCodex"] & {
   timeoutMs: Config["server"]["llm"]["timeoutMs"];
 };
 
-type LlmUsageAttemptConfig = Config["server"]["llm"]["usages"]["agent"]["attempts"][number];
-type LlmUsageConfig = Config["server"]["llm"]["usages"]["agent"];
 type ProviderConfigs = Record<LlmProviderId, LlmProviderConfig | OpenAiCodexConfig>;
 
 export interface LlmClient {
-  chat(request: LlmChatRequest, options: LlmChatOptions): Promise<LlmChatResponsePayload>;
-  chatDirect(request: LlmChatRequest, options: LlmChatDirectOptions): Promise<LlmChatDirectResult>;
-  listAvailableProviders(options: LlmListAvailableProvidersOptions): Promise<LlmProviderOption[]>;
+  chatDirect(
+    request: LlmChatRequest,
+    options: LlmChatDirectOptions,
+  ): Promise<LlmChatResponsePayload>;
+  listAvailableProviders(): Promise<LlmProviderOption[]>;
 }
 
 type CreateLlmClientOptions = {
   providers: Partial<Record<LlmProviderId, LlmProvider>>;
   providerConfigs: ProviderConfigs;
-  usages: Record<LlmUsageId, LlmUsageConfig>;
   /**
    * 每次 attempt 结束（成功/失败）产出的可落库观测事件。llm-client 只产出事实，
-   * 由上层（agent 装配层）决定是否写入 DB / metric —— 从而使本包对 `@sparkle/persistence`
+   * 由上层（LLM 网关装配层）决定是否写入 DB / metric —— 从而使本包对 `@sparkle/persistence`
    * 零依赖。调用方式为 fire-and-forget，client 内部 catch，绝不影响 LLM 调用结果。
    */
   recordObservation?: (observation: LlmChatCallObservation) => void | Promise<void>;
-};
-
-export type LlmChatOptions = {
-  /** KV 缓存身份：决定走哪份 usages 配置（provider/model/attempts）。 */
-  usage: LlmUsageId;
-  /**
-   * 调用归因（自由 string）：进 metric 标签与 llm_chat_call.scene 列，只做「哪个业务
-   * 场景发起的」归因，不参与选模型、不影响缓存。fork 型 task agent 用 usage=agent 但
-   * 各带自己的 scene（contextSummarizer）。
-   */
-  scene: string;
-  recordCall?: boolean;
 };
 
 export type LlmChatDirectOptions = {
   providerId: LlmProviderId;
   model: string;
   recordCall?: boolean;
-};
-
-export type LlmListAvailableProvidersOptions = {
-  usage: LlmUsageId;
+  /** 调用方提供的观测信息；只透传到日志/metric，不参与选模型或改变请求前缀。 */
+  trace?: {
+    requestId: string;
+    seq: number;
+    usage: string;
+    scene: string;
+  };
 };
 
 /**
  * 单次 attempt 的可落库观测事件。字段与 `LlmChatCallDao.recordSuccess/recordError`
  * 的入参一一对应，携带足以完整重放落库的信息（`seq` / native payload / native error /
- * configured + actual model 经 extension）。落库映射由 agent 侧订阅者完成。
+ * configured + actual model 经 extension）。落库映射由 LLM 网关订阅者完成。
  */
 export type LlmChatCallSuccessObservation = {
   status: "success";
   provider: LlmProviderId;
   model: string;
-  /** KV 缓存身份（agent / vision）；chatDirect 无身份时为 null。 */
-  usage: LlmUsageId | null;
+  /** 调用方的缓存身份标签；网关不解读，无标签时为 null。 */
+  usage: string | null;
   /** 调用归因（自由 string）；chatDirect 无归因时为 null。 */
   scene: string | null;
   extension: Record<string, unknown>;
@@ -107,8 +96,8 @@ export type LlmChatCallErrorObservation = {
   status: "failed";
   provider: LlmProviderId;
   model: string;
-  /** KV 缓存身份（agent / vision）；chatDirect 无身份时为 null。 */
-  usage: LlmUsageId | null;
+  /** 调用方的缓存身份标签；网关不解读，无标签时为 null。 */
+  usage: string | null;
   /** 调用归因（自由 string）；chatDirect 无归因时为 null。 */
   scene: string | null;
   extension: Record<string, unknown> | null;
@@ -125,68 +114,15 @@ export type LlmChatCallErrorObservation = {
 
 export type LlmChatCallObservation = LlmChatCallSuccessObservation | LlmChatCallErrorObservation;
 
-export type LlmChatDirectResult = {
-  response: LlmChatResponsePayload;
-  nativeRequestPayload: Record<string, unknown> | null;
-  nativeResponsePayload: Record<string, unknown> | null;
-};
-
 export function createLlmClient(options: CreateLlmClientOptions): LlmClient {
   return {
-    async listAvailableProviders(
-      listOptions: LlmListAvailableProvidersOptions,
-    ): Promise<LlmProviderOption[]> {
-      const usage = requireUsage(listOptions?.usage);
-      return await listAvailableProviders(
-        options.providers,
-        options.providerConfigs,
-        requireUsageConfig(options.usages, usage),
-      );
-    },
-    async chat(
-      request: LlmChatRequest,
-      chatOptions: LlmChatOptions,
-    ): Promise<LlmChatResponsePayload> {
-      const usage = requireUsage(chatOptions?.usage);
-      const scene = requireScene(chatOptions?.scene);
-      const requestId = randomUUID();
-      const recordCall = chatOptions?.recordCall ?? true;
-      const usageConfig = requireUsageConfig(options.usages, usage);
-      // thinking 是 usage 级配置（KV 缓存身份的一部分），在这里注入请求；调用方不直接传。
-      const requestForUsage: LlmChatRequest = usageConfig.thinking
-        ? { ...request, thinking: usageConfig.thinking }
-        : request;
-
-      let lastError: unknown;
-      let seq = 0;
-      for (const attempt of usageConfig.attempts) {
-        for (let currentTry = 0; currentTry < attempt.times; currentTry += 1) {
-          try {
-            const result = await executeChatAttempt({
-              providers: options.providers,
-              providerConfigs: options.providerConfigs,
-              request: requestForUsage,
-              attempt,
-              usage,
-              scene,
-              requestId,
-              seq: (seq += 1),
-              recordCall,
-              recordObservation: options.recordObservation,
-            });
-            return result.response;
-          } catch (error) {
-            lastError = error;
-          }
-        }
-      }
-
-      throw lastError;
+    async listAvailableProviders(): Promise<LlmProviderOption[]> {
+      return await listAvailableProviders(options.providers, options.providerConfigs);
     },
     async chatDirect(
       request: LlmChatRequest,
       chatOptions: LlmChatDirectOptions,
-    ): Promise<LlmChatDirectResult> {
+    ): Promise<LlmChatResponsePayload> {
       const providerId = requireProviderId(chatOptions?.providerId);
       const model = requireModel(chatOptions?.model);
 
@@ -197,12 +133,11 @@ export function createLlmClient(options: CreateLlmClientOptions): LlmClient {
         attempt: {
           provider: providerId,
           model,
-          times: 1,
         },
-        usage: null,
-        scene: null,
-        requestId: randomUUID(),
-        seq: 1,
+        usage: chatOptions.trace?.usage ?? null,
+        scene: chatOptions.trace?.scene ?? null,
+        requestId: chatOptions.trace?.requestId ?? randomUUID(),
+        seq: chatOptions.trace?.seq ?? 1,
         recordCall: chatOptions?.recordCall ?? true,
         recordObservation: options.recordObservation,
       });
@@ -225,14 +160,14 @@ async function executeChatAttempt({
   providers: Partial<Record<LlmProviderId, LlmProvider>>;
   providerConfigs: ProviderConfigs;
   request: LlmChatRequest;
-  attempt: LlmUsageAttemptConfig;
-  usage: LlmUsageId | null;
+  attempt: { provider: LlmProviderId; model: string };
+  usage: string | null;
   scene: string | null;
   requestId: string;
   seq: number;
   recordCall: boolean;
   recordObservation?: (observation: LlmChatCallObservation) => void | Promise<void>;
-}): Promise<LlmChatDirectResult> {
+}): Promise<LlmChatResponsePayload> {
   requireConfiguredModel(providerConfigs, attempt.provider, attempt.model);
   const provider = providers[attempt.provider];
   const requestWithModel = {
@@ -273,11 +208,8 @@ async function executeChatAttempt({
       });
     }
 
-    return {
-      response,
-      nativeRequestPayload: providerResult.nativeRequestPayload ?? null,
-      nativeResponsePayload: providerResult.nativeResponsePayload ?? null,
-    };
+    // 原始请求/响应只交给 observation；不要把整段历史经 HTTP 再回传给 agent。
+    return response;
   } catch (error) {
     const latencyMs = Date.now() - startedAt;
     const failureContext = getLlmProviderFailureContext(error);
@@ -379,9 +311,7 @@ function getActualModelFromPayload(
 async function listAvailableProviders(
   providers: Partial<Record<LlmProviderId, LlmProvider>>,
   providerConfigs: ProviderConfigs,
-  usageConfig: LlmUsageConfig,
 ): Promise<LlmProviderOption[]> {
-  const preferredProvider = usageConfig.attempts[0]?.provider;
   const availability = await Promise.all(
     LLM_PROVIDER_IDS.map(async providerId => {
       const provider = providers[providerId];
@@ -402,41 +332,12 @@ async function listAvailableProviders(
     .filter(
       (providerId): providerId is (typeof availability)[number] & string => providerId !== null,
     )
-    .sort((left, right) => {
-      if (preferredProvider && left === preferredProvider) {
-        return -1;
-      }
-
-      if (preferredProvider && right === preferredProvider) {
-        return 1;
-      }
-
-      return left.localeCompare(right);
-    });
+    .sort((left, right) => left.localeCompare(right));
 
   return orderedIds.map(providerId => ({
     id: providerId,
     models: providerConfigs[providerId].models,
   }));
-}
-
-function requireUsage(usage: LlmUsageId | undefined): LlmUsageId {
-  if (!usage) {
-    throw new Error("LlmClient.chat and listAvailableProviders require an explicit usage");
-  }
-
-  return usage;
-}
-
-function requireScene(scene: string | undefined): string {
-  const trimmed = scene?.trim() ?? "";
-  if (trimmed.length === 0) {
-    throw new Error("LlmClient.chat requires an explicit non-empty scene");
-  }
-
-  // 归一化返回 trim 后的值：scene 是 metric tag + DB 索引维度，" agent " 与 "agent"
-  // 必须折叠成同一归因，避免尾随空白制造重复基数。
-  return trimmed;
 }
 
 function toRecordableChatRequest(request: LlmChatRequest): Record<string, unknown> {
@@ -501,18 +402,6 @@ function toRecordableChatResponse(response: LlmChatResponsePayload): Record<stri
     message: response.message,
     ...(response.usage ? { usage: response.usage } : {}),
   };
-}
-
-function requireUsageConfig(
-  usages: Record<LlmUsageId, LlmUsageConfig>,
-  usage: LlmUsageId,
-): LlmUsageConfig {
-  const usageConfig = usages[usage];
-  if (!usageConfig) {
-    throw new Error(`LlmClient usage is not configured: ${usage}`);
-  }
-
-  return usageConfig;
 }
 
 function requireProviderId(providerId: LlmProviderId | undefined): LlmProviderId {

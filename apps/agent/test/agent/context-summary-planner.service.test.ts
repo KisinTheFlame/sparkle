@@ -1,5 +1,6 @@
+import type { AgentLlmClient } from "../../src/agent/runtime/llm-client.js";
 import { describe, expect, it, vi } from "vitest";
-import type { LlmClient, LlmChatResponsePayload } from "@sparkle/llm-client";
+import type { LlmChatResponsePayload } from "@sparkle/llm-client";
 import {
   createUnguardedSubtoolOwner,
   TaskAgentMaxRoundsExceededError,
@@ -20,9 +21,8 @@ import {
  * finalize_summary），聚焦 invoke 调度 + 终止判定语义。
  */
 function createSummaryTaskAgent(chat: ReturnType<typeof vi.fn>) {
-  const llmClient: LlmClient = {
+  const llmClient: AgentLlmClient = {
     chat,
-    chatDirect: vi.fn(),
     listAvailableProviders: vi.fn().mockResolvedValue([]),
   };
   const invokeTool = new InvokeTool({

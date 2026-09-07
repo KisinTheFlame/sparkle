@@ -6,8 +6,7 @@ import type { LlmClient } from "@sparkle/llm-client";
 
 /**
  * 管理台「LLM 调用历史」按 provider 过滤用的 provider 列举路由（console-facing，经 gateway
- * `/llm/providers` 前缀直连 sparkle-llm，取代原 agent 中转）。以 agent 视角固定列举——与历史记录
- * 的调用来源一致。契约 output 是 `{ providers }`，而 listAvailableProviders 回的是数组，故显式包壳。
+ * `/llm/providers` 前缀直连 sparkle-llm，取代原 agent 中转）。只列举网关可用 provider，不参与调用方的偏好排序。契约 output 是 `{ providers }`，而 listAvailableProviders 回的是数组，故显式包壳。
  */
 export class LlmProvidersViewHandler {
   private readonly llmClient: LlmClient;
@@ -21,7 +20,7 @@ export class LlmProvidersViewHandler {
       app,
       llmProvidersViewContract.listProviders,
       async (): Promise<LlmProviderListResponse> => {
-        return { providers: await this.llmClient.listAvailableProviders({ usage: "agent" }) };
+        return { providers: await this.llmClient.listAvailableProviders() };
       },
     );
   }
