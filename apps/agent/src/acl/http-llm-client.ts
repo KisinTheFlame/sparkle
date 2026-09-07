@@ -42,13 +42,16 @@ export class HttpLlmClient implements LlmClient {
     request: LlmChatRequest,
     options: LlmChatDirectOptions,
   ): Promise<LlmChatResponsePayload> {
-    return (await this.api.chatDirect({
-      request,
-      providerId: options.providerId,
-      model: options.model,
-      ...(options.trace === undefined ? {} : { trace: options.trace }),
-      ...(options.recordCall === undefined ? {} : { recordCall: options.recordCall }),
-    })) as LlmChatResponsePayload;
+    return (await this.api.chatDirect(
+      {
+        request,
+        providerId: options.providerId,
+        model: options.model,
+        ...(options.trace === undefined ? {} : { trace: options.trace }),
+        ...(options.recordCall === undefined ? {} : { recordCall: options.recordCall }),
+      },
+      { signal: options.signal },
+    )) as LlmChatResponsePayload;
   }
 
   public async listAvailableProviders(): Promise<LlmProviderOption[]> {

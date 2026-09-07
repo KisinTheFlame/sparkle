@@ -58,7 +58,10 @@ import { WakeReminderExtension } from "./extensions/wake-reminder.extension.js";
  * "给 system + 前缀消息、回摘要字符串"这一契约，不 import 具体 capability 实现。
  */
 type ContextSummarizerLike = {
-  invoke(input: { systemPrompt: string; messages: LlmMessage[] }): Promise<string>;
+  invoke(
+    input: { systemPrompt: string; messages: LlmMessage[] },
+    options?: { signal?: AbortSignal },
+  ): Promise<string>;
 };
 
 type RootLoopExtension = LoopAgentExtension<
@@ -85,7 +88,7 @@ type RootAgentRuntimeDeps = {
   /** 纯文本轮挂起的自唤醒上限；与 wait 工具的 maxWaitMs 同源（waitToolMaxWaitMs）。 */
   idleWakeMaxWaitMs?: number;
   now?: () => Date;
-  sleep?: (ms: number) => Promise<void>;
+  sleep?: (ms: number, signal?: AbortSignal) => Promise<void>;
 };
 
 const DEFAULT_IDLE_WAKE_MAX_WAIT_MS = 600_000;
@@ -135,6 +138,7 @@ export type ContextCompactionReport = ContextCompactionOutcome & {
 export type RootAgentCompletion = Awaited<ReturnType<AgentLlmClient["chat"]>>;
 
 export type RootLoopExtensionContext = {
+  signal?: AbortSignal;
   host: Pick<
     RootAgentExtensionHost,
     | "appendWakeReminderIfNeeded"
@@ -158,7 +162,7 @@ export class RootAgentHost implements RootAgentExtensionHost {
   private readonly llmRetryBackoffMs: number;
   private readonly metricService: MetricClient;
   private readonly now: () => Date;
-  private readonly sleep: (ms: number) => Promise<void>;
+  private readonly sleep: (ms: number, signal?: AbortSignal) => Promise<void>;
   private lastWakeReminderAt: Date | null = null;
   private initialized = false;
   /**
@@ -372,7 +376,10 @@ export class RootAgentHost implements RootAgentExtensionHost {
     }
   }
 
-  public async compactContextIfNeeded(totalTokens: number | null | undefined): Promise<boolean> {
+  public async compactContextIfNeeded(
+    totalTokens: number | null | undefined,
+    signal?: AbortSignal,
+  ): Promise<boolean> {
     const summarizer = this.contextSummarizer;
     if (!summarizer) {
       return false;
@@ -402,6 +409,7 @@ export class RootAgentHost implements RootAgentExtensionHost {
     }
 
     while (true) {
+      signal?.throwIfAborted();
       const snapshot = await this.context.getSnapshot();
       const compactionPlan = createContextCompactionPlan({
         messages: snapshot.messages,
@@ -413,10 +421,14 @@ export class RootAgentHost implements RootAgentExtensionHost {
         return false;
       }
 
-      const attempt = await this.attemptSummarize(summarizer, {
-        systemPrompt: snapshot.systemPrompt,
-        messages: compactionPlan.messagesToSummarize,
-      });
+      const attempt = await this.attemptSummarize(
+        summarizer,
+        {
+          systemPrompt: snapshot.systemPrompt,
+          messages: compactionPlan.messagesToSummarize,
+        },
+        signal,
+      );
       if (attempt.retry) {
         continue;
       }
@@ -430,6 +442,7 @@ export class RootAgentHost implements RootAgentExtensionHost {
       // 阶段 5：compact 通过 Effect 模型收口，不再直接改 context。attemptSummarize
       // 把 task agent 的摘要拼成 replace_leading_messages Effect，host 只把它交给
       // Interpreter。Interpreter 是 Agent 状态变更的唯一入口。
+      signal?.throwIfAborted();
       await this.interpreter.apply(attempt.effects);
       return true;
     }
@@ -441,13 +454,17 @@ export class RootAgentHost implements RootAgentExtensionHost {
    * 走 Effect 模型的 replace_leading_messages，共用 createContextCompactionSlice 的切法，
    * 是 KV 缓存允许被破坏的"计划性重建"路径之一。
    */
-  public async compactContextByRatio(compressRatio: number): Promise<ContextCompactionOutcome> {
+  public async compactContextByRatio(
+    compressRatio: number,
+    signal?: AbortSignal,
+  ): Promise<ContextCompactionOutcome> {
     const summarizer = this.contextSummarizer;
     if (!summarizer) {
       return await this.createUncompactedOutcome();
     }
 
     while (true) {
+      signal?.throwIfAborted();
       const snapshot = await this.context.getSnapshot();
       const compactionPlan = createContextCompactionSlice({
         messages: snapshot.messages,
@@ -457,10 +474,14 @@ export class RootAgentHost implements RootAgentExtensionHost {
         return { compacted: false, summarizedCount: 0, keptCount: snapshot.messages.length };
       }
 
-      const attempt = await this.attemptSummarize(summarizer, {
-        systemPrompt: snapshot.systemPrompt,
-        messages: compactionPlan.messagesToSummarize,
-      });
+      const attempt = await this.attemptSummarize(
+        summarizer,
+        {
+          systemPrompt: snapshot.systemPrompt,
+          messages: compactionPlan.messagesToSummarize,
+        },
+        signal,
+      );
       if (attempt.retry) {
         continue;
       }
@@ -468,6 +489,7 @@ export class RootAgentHost implements RootAgentExtensionHost {
         return { compacted: false, summarizedCount: 0, keptCount: snapshot.messages.length };
       }
 
+      signal?.throwIfAborted();
       await this.interpreter.apply(attempt.effects);
       // 手动压缩成功 = 上下文已重建，阈值压缩的冷却没有存在意义了。
       this.summaryCooldownUntilMs = null;
@@ -491,12 +513,18 @@ export class RootAgentHost implements RootAgentExtensionHost {
       systemPrompt: string;
       messages: LlmMessage[];
     },
+    signal?: AbortSignal,
   ): Promise<{ retry: true } | { retry: false; effects: readonly ReplaceLeadingMessagesEffect[] }> {
     try {
-      const summary = await summarizer.invoke({
-        systemPrompt: input.systemPrompt,
-        messages: input.messages,
-      });
+      signal?.throwIfAborted();
+      const summary = await summarizer.invoke(
+        {
+          systemPrompt: input.systemPrompt,
+          messages: input.messages,
+        },
+        signal ? { signal } : undefined,
+      );
+      signal?.throwIfAborted();
       return {
         retry: false,
         effects: [
@@ -509,6 +537,7 @@ export class RootAgentHost implements RootAgentExtensionHost {
         ],
       };
     } catch (error) {
+      signal?.throwIfAborted();
       if (error instanceof TaskAgentMaxRoundsExceededError) {
         // 跑满轮数仍未 finalize：本次不压缩（阈值仍超会在下一轮再触发），不重试。
         logger.warn("Context summary exceeded max rounds; skipping this compaction", {
@@ -528,7 +557,8 @@ export class RootAgentHost implements RootAgentExtensionHost {
         errorName: error instanceof Error ? error.name : "Error",
         errorMessage: error instanceof Error ? error.message : String(error),
       });
-      await this.sleep(this.llmRetryBackoffMs);
+      await this.sleep(this.llmRetryBackoffMs, signal);
+      signal?.throwIfAborted();
       return { retry: true };
     }
   }
@@ -682,6 +712,12 @@ export class RootLoopAgent extends BaseLoopAgent<
     this.idleWakeMaxWaitMs = idleWakeMaxWaitMs ?? DEFAULT_IDLE_WAKE_MAX_WAIT_MS;
   }
 
+  public override async stop(): Promise<void> {
+    await super.stop();
+    await this.awaitPendingMutations();
+    await this.host.persistSnapshotIfChanged({ throwOnError: true });
+  }
+
   public async run(): Promise<void> {
     await this.start();
   }
@@ -697,6 +733,7 @@ export class RootLoopAgent extends BaseLoopAgent<
   }
 
   public async resetContext(): Promise<{ resetAt: Date }> {
+    this.stopSignal.throwIfAborted();
     if (this.pendingResetPromise) {
       return await this.pendingResetPromise;
     }
@@ -706,6 +743,7 @@ export class RootLoopAgent extends BaseLoopAgent<
       // the wait tool, it unblocks and the loop iteration can finish.
       this.eventQueue.enqueue({ type: "wake" });
       await this.waitForActiveRunOnce();
+      this.stopSignal.throwIfAborted();
 
       const result = await this.host.resetContext();
       await this.notifyAfterReset();
@@ -732,6 +770,7 @@ export class RootLoopAgent extends BaseLoopAgent<
    * appliedCompressRatio，让调用方知道实际按哪一档执行。
    */
   public async compactContextByRatio(compressRatio: number): Promise<ContextCompactionReport> {
+    this.stopSignal.throwIfAborted();
     if (this.pendingCompactionPromise) {
       return await this.pendingCompactionPromise;
     }
@@ -739,8 +778,9 @@ export class RootLoopAgent extends BaseLoopAgent<
     const compactionPromise = (async () => {
       this.eventQueue.enqueue({ type: "wake" });
       await this.waitForActiveRunOnce();
+      this.stopSignal.throwIfAborted();
 
-      const outcome = await this.host.compactContextByRatio(compressRatio);
+      const outcome = await this.host.compactContextByRatio(compressRatio, this.stopSignal);
       if (outcome.compacted) {
         await this.notifyContextCompacted();
       }
@@ -769,6 +809,7 @@ export class RootLoopAgent extends BaseLoopAgent<
   protected override createLoopExtensionContext(): RootLoopExtensionContext {
     return {
       host: this.host,
+      signal: this.stopSignal,
       notifyContextCompacted: () => this.notifyContextCompacted(),
     };
   }
@@ -781,6 +822,7 @@ export class RootLoopAgent extends BaseLoopAgent<
 
   protected override async runOnce(): Promise<void> {
     await this.awaitPendingMutations();
+    this.stopSignal.throwIfAborted();
 
     // Step 1: drain any events in the queue into the context. This is the
     // moment where wake events get silently consumed (session routes them
@@ -880,8 +922,21 @@ export class RootLoopAgent extends BaseLoopAgent<
   }
 }
 
-async function createSleep(ms: number): Promise<void> {
-  await new Promise(resolve => setTimeout(resolve, ms));
+async function createSleep(ms: number, signal?: AbortSignal): Promise<void> {
+  signal?.throwIfAborted();
+  await new Promise<void>((resolve, reject) => {
+    const onAbort = (): void => {
+      clearTimeout(timer);
+      // 保留 AbortSignal.reason 的身份，外层据此区分正常停止与业务崩溃。
+      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+      reject(signal?.reason);
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
 }
 
 function failMissingTools(): never {

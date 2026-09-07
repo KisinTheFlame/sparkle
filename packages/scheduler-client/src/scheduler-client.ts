@@ -68,6 +68,8 @@ export class SchedulerClient {
   private readonly generation = Date.now();
   private started = false;
   private running = false;
+  private stopped = false;
+  private readonly pendingRuns = new Set<Promise<void>>();
   private controller: AbortController | null = null;
   /**
    * 未 ack 的 run 上报缓冲（#493 P2）：内存 at-least-once，无磁盘 outbox。按 runId 去重合并——同一
@@ -122,7 +124,7 @@ export class SchedulerClient {
 
   /** 启动后台注册 + 订阅循环（不阻塞）。 */
   public start(): void {
-    if (this.started) {
+    if (this.started || this.stopped) {
       return;
     }
     this.started = true;
@@ -130,13 +132,17 @@ export class SchedulerClient {
     void this.loop();
   }
 
-  public stop(): void {
+  public async stop(): Promise<void> {
+    this.stopped = true;
     this.running = false;
     this.controller?.abort();
     // 中断在跑的 handler（如 data-retention 大表分块删到一半），让它按 signal.aborted 收尾。
     for (const entry of this.registry.values()) {
+      entry.queuedTick = null;
       entry.abortController?.abort();
     }
+    await Promise.allSettled([...this.pendingRuns]);
+    await this.settleReports();
   }
 
   /**
@@ -150,6 +156,7 @@ export class SchedulerClient {
    * 读写可能抛）。
    */
   public triggerNowDetached(name: string): TriggerNowResult {
+    if (this.stopped) throw new Error("Scheduler client is stopping");
     const entry = this.registry.get(name);
     if (!entry) {
       return { ok: false, reason: "unknown_task" };
@@ -227,6 +234,7 @@ export class SchedulerClient {
       callbackBaseUrl: this.callbackBaseUrl,
       tasks: manifests,
     });
+    if (this.stopped) return;
     if (!registered.accepted) {
       // 有更新化身抢先注册（generation 更大）：单 agent 下不该发生。**不订阅** SSE，否则旧化身会
       // 与新化身同时收 tick 重复执行；退出本次连接，交给 loop 退避重试。
@@ -244,6 +252,7 @@ export class SchedulerClient {
     // 重连成功（SSE 即将订阅）：把断连期间攒下的未 ack 上报冲一次。
     await this.flushUnackedReports();
 
+    if (this.stopped) return;
     const controller = new AbortController();
     this.controller = controller;
 
@@ -337,6 +346,7 @@ export class SchedulerClient {
 
   /** 收到一个 tick（SSE 或 triggerNowDetached 合成）：经本地 mutex/queue 守卫后去重并跑 handler。 */
   public async onTick(tick: SchedulerTick): Promise<void> {
+    if (this.stopped) return;
     const entry = this.registry.get(tick.taskName);
     if (!entry) {
       logger.warn("scheduler tick for unknown task, ignored", {
@@ -367,12 +377,22 @@ export class SchedulerClient {
    * 已持有 running 锁后的处理：去重（manual 绕过）→ 跑 handler → 成功才推进去重游标 → 排空 queue
    * （overlap=queue 才有）。占锁在调用方（onTick / triggerNowDetached）同步完成，这里全程独占，无并发。
    */
-  private async runClaimed(entry: RegistryEntry, tick: SchedulerTick): Promise<void> {
+  private runClaimed(entry: RegistryEntry, tick: SchedulerTick): Promise<void> {
+    const running = this.runClaimedUntilStopped(entry, tick);
+    this.pendingRuns.add(running);
+    const cleanup = (): void => {
+      this.pendingRuns.delete(running);
+    };
+    void running.then(cleanup, cleanup);
+    return running;
+  }
+
+  private async runClaimedUntilStopped(entry: RegistryEntry, tick: SchedulerTick): Promise<void> {
     let current: SchedulerTick | null = tick;
-    while (current !== null) {
+    while (current !== null && !this.stopped) {
       const next = current;
       current = null;
-      if (!(await this.isDuplicate(entry, next))) {
+      if (!(await this.isDuplicate(entry, next)) && !this.stopped) {
         const succeeded = await this.runHandler(entry, next);
         // handler 成功后才落"已处理到此 scheduledAt"：失败**不**推进游标，留给重连补发重试
         // （at-least-once）。补偿型 dedupe 任务（如 todo:daily-digest）宁可极罕见重推一次，也不能因

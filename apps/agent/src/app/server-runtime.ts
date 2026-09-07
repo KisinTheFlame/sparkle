@@ -58,6 +58,8 @@ type AppRouteHandler = {
 export type ServerRuntime = {
   app: FastifyInstance;
   database: Database;
+  /** 禁止新输入并等待在途工作，必须先于 App 存档完成。 */
+  stopInputs: () => Promise<void>;
   /** 反序关停所有 App。 */
   shutdownApps: () => Promise<void>;
   schedulerClient: SchedulerClient;
@@ -231,11 +233,18 @@ export async function buildServerRuntime(): Promise<ServerRuntime> {
   return {
     app,
     database,
-    // 关停：先停入站订阅（不再有新事件进来），再反序关停各 App。
-    shutdownApps: async () => {
-      feishuEventSubscriber.stop();
-      await agentRuntime.shutdownApps();
+    stopInputs: async () => {
+      const results = await Promise.allSettled([
+        feishuEventSubscriber.stop(),
+        agentRuntime.stopInputs(),
+      ]);
+      const errors: unknown[] = [];
+      for (const result of results) {
+        if (result.status === "rejected") errors.push(result.reason);
+      }
+      if (errors.length > 0) throw new AggregateError(errors, "Failed to stop agent inputs");
     },
+    shutdownApps: agentRuntime.shutdownApps,
     schedulerClient,
     rootAgentRuntime: agentRuntime.rootAgentRuntime,
     metricService,

@@ -197,3 +197,30 @@ describe("AsyncTaskManager", () => {
     expect(manager.inFlightCount()).toBe(0);
   });
 });
+
+it("stop 等待已经报超时的底层任务，不允许再提交", async () => {
+  vi.useFakeTimers();
+  let finish!: (result: string) => void;
+  const onComplete = vi.fn();
+  const manager = new AsyncTaskManager({ maxTaskDurationMs: 10, onComplete });
+  manager.submit({
+    toolName: "write",
+    run: () =>
+      new Promise(resolve => {
+        finish = resolve;
+      }),
+  });
+  await vi.advanceTimersByTimeAsync(10);
+  expect(manager.inFlightCount()).toBe(0);
+  let stopped = false;
+  const stopping = manager.stop().then(() => {
+    stopped = true;
+  });
+  await Promise.resolve();
+  expect(stopped).toBe(false);
+  expect(() => manager.submit({ toolName: "write", run: async () => "x" })).toThrow("stopping");
+  finish("written");
+  await stopping;
+  expect(onComplete).toHaveBeenCalledTimes(1);
+  expect(vi.getTimerCount()).toBe(0);
+});

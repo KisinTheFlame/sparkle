@@ -96,6 +96,8 @@ export type AgentRuntimeBundle = {
    * 服务关停时 stop()。见 index.ts / server-shutdown.ts。
    */
   stateSampler: StateSampler;
+  /** 禁止新输入并等待在途工作，必须先于 App 存档完成。 */
+  stopInputs: () => Promise<void>;
   /** 反序关停所有 App 的 onShutdown。由服务关停链调用。 */
   shutdownApps: () => Promise<void>;
 };
@@ -397,9 +399,16 @@ export async function buildAgentRuntime({
     mainAgentContextQueryService,
     feishuApp,
     stateSampler,
+    stopInputs: async () => {
+      notificationCenter.stop();
+      const results = await Promise.allSettled([skillCatalog.stop(), asyncTaskManager.stop()]);
+      const errors: unknown[] = [];
+      for (const result of results) {
+        if (result.status === "rejected") errors.push(result.reason);
+      }
+      if (errors.length > 0) throw new AggregateError(errors, "Failed to stop agent inputs");
+    },
     shutdownApps: async () => {
-      await skillCatalog.stop();
-      notificationCenter.clearForSource("skills:catalog");
       await appManager.shutdownAll();
     },
   };

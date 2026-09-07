@@ -1300,3 +1300,30 @@ describe("createClaudeCodeProvider · 图片 File API", () => {
     vi.unstubAllGlobals();
   });
 });
+
+it("调用取消会中断 provider 的请求，并保留取消原因", async () => {
+  const controller = new AbortController();
+  let signal!: AbortSignal;
+  const fetchMock = vi.fn(async (_url, init) => {
+    signal = init.signal;
+    return await new Promise<Response>((_resolve, reject) => {
+      signal.addEventListener("abort", () => reject(signal.reason), { once: true });
+    });
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  const provider = createClaudeCodeProvider({
+    config: createProviderConfig({ keepAliveReplayIntervalMinutes: 0 }),
+    authStore: createAuthStore(),
+  });
+  const pending = provider.chat(
+    { model: "m", messages: [{ role: "user", content: "ping" }], tools: [], toolChoice: "none" },
+    { signal: controller.signal },
+  );
+  const settled = pending.catch(error => error);
+  await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+  controller.abort();
+  expect(await settled).toBe(controller.signal.reason);
+  expect(signal.aborted).toBe(true);
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  await provider.close?.();
+});

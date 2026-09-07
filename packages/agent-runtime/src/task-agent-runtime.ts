@@ -153,7 +153,8 @@ export abstract class BaseTaskAgent<
    * `buildResult` 的入参。跑满 maxRounds 仍无 terminate 则抛
    * `TaskAgentMaxRoundsExceededError`。
    */
-  public async invoke(input: TInput): Promise<TOutput> {
+  public async invoke(input: TInput, options?: { signal?: AbortSignal }): Promise<TOutput> {
+    options?.signal?.throwIfAborted();
     const invocation = await this.createInvocation(input);
     const messages = [...invocation.messages];
 
@@ -167,11 +168,13 @@ export abstract class BaseTaskAgent<
         toolContext: invocation.toolContext,
         usage: invocation.usage,
         scene: invocation.scene,
+        ...(options?.signal ? { signal: options.signal } : {}),
       });
       if (roundResult.shouldCommit) {
         messages.push(roundResult.assistantMessage, ...roundResult.appendedMessages);
       }
 
+      options?.signal?.throwIfAborted();
       if (roundResult.control?.kind === "stop") {
         return await this.buildResult({
           input,

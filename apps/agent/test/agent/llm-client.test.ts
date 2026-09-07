@@ -1347,3 +1347,29 @@ describe("AgentLlmClient usage policy", () => {
     );
   });
 });
+
+it("调用期间取消不进入下一次 attempt，并保留取消原因", async () => {
+  const controller = new AbortController();
+  const chatDirect = vi.fn(async (_request, options) => {
+    expect(options.signal).toBe(controller.signal);
+    controller.abort();
+    throw new Error("transport closed");
+  });
+  const client = createAgentLlmClient({
+    gateway: { chatDirect, listAvailableProviders: async () => [] },
+    usages: createUsageConfig({
+      agent: { attempts: [{ provider: "openai", model: "m", times: 3 }] },
+    }),
+  });
+  await expect(
+    client.chat(
+      { messages: [], tools: [], toolChoice: "required" },
+      {
+        usage: "agent",
+        scene: "agent",
+        signal: controller.signal,
+      },
+    ),
+  ).rejects.toBe(controller.signal.reason);
+  expect(chatDirect).toHaveBeenCalledTimes(1);
+});

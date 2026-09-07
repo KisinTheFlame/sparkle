@@ -22,7 +22,7 @@ type ErrorWithLlmProviderFailureContext = Error & {
 export interface LlmProvider {
   id: LlmProviderId;
   isAvailable?(): Promise<boolean>;
-  chat(request: LlmChatRequest): Promise<LlmProviderChatResult>;
+  chat(request: LlmChatRequest, options?: { signal?: AbortSignal }): Promise<LlmProviderChatResult>;
   close?(): void | Promise<void>;
 }
 

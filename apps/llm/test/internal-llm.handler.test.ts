@@ -88,6 +88,7 @@ describe("InternalLlmHandler", () => {
     expect(chatDirect).toHaveBeenCalledWith(
       { messages: [{ role: "user", content: "ping" }], tools: [], toolChoice: "none" },
       {
+        signal: expect.any(AbortSignal),
         providerId: "openai",
         model: "m",
         trace: { requestId: "request-1", seq: 2, usage: "custom-caller", scene: "work" },
@@ -165,4 +166,29 @@ describe("InternalLlmHandler", () => {
     });
     expect(generate).toHaveBeenCalledWith({ prompt: "a red circle" });
   });
+});
+
+it("HTTP 调用方断开时取消网关正在执行的模型请求", async () => {
+  let upstreamSignal!: AbortSignal;
+  const chatDirect = vi.fn((_request, options) => {
+    upstreamSignal = options.signal;
+    return new Promise<never>((_resolve, reject) => {
+      upstreamSignal.addEventListener("abort", () => reject(upstreamSignal.reason), { once: true });
+    });
+  });
+  app = buildApp({ llmClient: { chatDirect } });
+  const address = await app.listen({ host: "127.0.0.1", port: 0 });
+  const controller = new AbortController();
+  const pending = fetch(`${address}/internal/chat-direct`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ request: {}, providerId: "openai", model: "m" }),
+    signal: controller.signal,
+  }).catch(error => error);
+  await vi.waitFor(() => expect(chatDirect).toHaveBeenCalledTimes(1));
+  expect(upstreamSignal.aborted).toBe(false);
+  controller.abort();
+  await pending;
+  await vi.waitFor(() => expect(upstreamSignal.aborted).toBe(true));
+  expect(chatDirect).toHaveBeenCalledTimes(1);
 });

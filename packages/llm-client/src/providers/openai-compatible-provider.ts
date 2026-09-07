@@ -43,7 +43,8 @@ export function createOpenAiCompatibleProvider({
 
   return {
     id,
-    async chat(request: LlmChatRequest) {
+    async chat(request: LlmChatRequest, options) {
+      options?.signal?.throwIfAborted();
       const model = requireRequestModel(request, displayLabel);
       const payload = toOpenAiChatRequest({ model, request });
       let completion: ChatCompletion | null = null;
@@ -51,8 +52,10 @@ export function createOpenAiCompatibleProvider({
       try {
         completion = await client.chat.completions.create(payload, {
           timeout: timeoutMs,
+          signal: options?.signal,
         });
       } catch (error) {
+        options?.signal?.throwIfAborted();
         throw attachLlmProviderFailureContext(
           llmUpstreamCallFailedError({ meta: { provider: id }, cause: error }),
           {

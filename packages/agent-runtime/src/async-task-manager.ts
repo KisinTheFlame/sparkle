@@ -70,6 +70,8 @@ export class AsyncTaskManager {
   private readonly maxTaskDurationMs: number;
   private readonly generateId: () => string;
   private readonly inFlight = new Set<string>();
+  private readonly pendingRuns = new Set<Promise<void>>();
+  private stopped = false;
   // 每进程随机前缀 + 进程内自增序号：短（远小于 36 字符 UUID，少占她上下文），又能跨进程/重启
   // 区分——避免旧会话残留的 <async_task_submitted> 占位符与新任务序号视觉重号（异步任务纯内存、
   // 不跨重启恢复，活任务本就不会碰撞，这里进一步消掉重启后残留占位的歧义）。
@@ -85,6 +87,7 @@ export class AsyncTaskManager {
   public submit(input: { toolName: string; run: () => Promise<AsyncTaskRunResult> }): {
     taskId: string;
   } {
+    if (this.stopped) throw new Error("Async task manager is stopping");
     const taskId = this.generateId();
     this.inFlight.add(taskId);
 
@@ -108,7 +111,7 @@ export class AsyncTaskManager {
 
     // 不 await：后台跑。晚到的 settle（含超时后才 reject）由 settled 守卫吞掉，
     // reject 在此 catch 内被捕获，不会冒泡成 unhandled rejection。
-    void (async () => {
+    const running = (async () => {
       try {
         const result = await input.run();
         clearTimeout(timer);
@@ -131,7 +134,15 @@ export class AsyncTaskManager {
       }
     })();
 
+    this.pendingRuns.add(running);
+    void running.then(() => this.pendingRuns.delete(running));
     return { taskId };
+  }
+
+  /** 即使任务已经超时报结果，也等底层副作用真正结束，之后才允许调用方关闭资源。 */
+  public async stop(): Promise<void> {
+    this.stopped = true;
+    await Promise.all([...this.pendingRuns]);
   }
 
   public inFlightCount(): number {

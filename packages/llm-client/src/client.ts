@@ -57,6 +57,7 @@ type CreateLlmClientOptions = {
 };
 
 export type LlmChatDirectOptions = {
+  signal?: AbortSignal;
   providerId: LlmProviderId;
   model: string;
   recordCall?: boolean;
@@ -127,6 +128,7 @@ export function createLlmClient(options: CreateLlmClientOptions): LlmClient {
       const model = requireModel(chatOptions?.model);
 
       return await executeChatAttempt({
+        signal: chatOptions.signal,
         providers: options.providers,
         providerConfigs: options.providerConfigs,
         request,
@@ -146,6 +148,7 @@ export function createLlmClient(options: CreateLlmClientOptions): LlmClient {
 }
 
 async function executeChatAttempt({
+  signal,
   providers,
   providerConfigs,
   request,
@@ -157,6 +160,7 @@ async function executeChatAttempt({
   recordCall,
   recordObservation,
 }: {
+  signal?: AbortSignal;
   providers: Partial<Record<LlmProviderId, LlmProvider>>;
   providerConfigs: ProviderConfigs;
   request: LlmChatRequest;
@@ -183,7 +187,11 @@ async function executeChatAttempt({
       throw llmProviderUnavailableError({ meta: { provider: attempt.provider } });
     }
 
-    providerResult = await provider.chat(requestWithModel);
+    signal?.throwIfAborted();
+    providerResult = await (signal
+      ? provider.chat(requestWithModel, { signal })
+      : provider.chat(requestWithModel));
+    signal?.throwIfAborted();
     response = providerResult.response;
     validateToolCalls(requestWithModel, response);
     const latencyMs = Date.now() - startedAt;

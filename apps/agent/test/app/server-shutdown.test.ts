@@ -76,9 +76,9 @@ describe("shutdownServerResources", () => {
 
     expect(order).toEqual([
       "app.close",
-      "shutdownApps",
       "schedulerClient.stop",
       "rootAgentRuntime.stop",
+      "shutdownApps",
       "closeLoggerRuntime",
       "closeDb",
       "exit(0)",
@@ -250,4 +250,55 @@ describe("shutdownServerResources", () => {
     expect(closeDatabase).toHaveBeenCalledTimes(1);
     expect(exit).toHaveBeenCalledWith(0);
   });
+});
+
+it("HTTP 有未完成的压缩请求时立即通知 root 停止，App 存档等待所有在途工作", async () => {
+  const order: string[] = [];
+  let finishInput!: () => void;
+  let finishRoot!: () => void;
+  let finishHttp!: () => void;
+  const inputs = new Promise<void>(resolve => {
+    finishInput = resolve;
+  });
+  const root = new Promise<void>(resolve => {
+    finishRoot = resolve;
+  });
+  const http = new Promise<void>(resolve => {
+    finishHttp = resolve;
+  });
+  const shutdownApps = vi.fn(async () => {
+    order.push("saveApps");
+  });
+  const stopping = shutdownServerResources({
+    signal: "SIGTERM",
+    timeoutMs: 10_000,
+    isServerStarted: true,
+    app: { close: () => http } as unknown as FastifyInstance,
+    database: {} as never,
+    schedulerClient: null,
+    stopInputs: () => inputs,
+    rootAgentRuntime: {
+      stop: async () => {
+        order.push("stopRoot");
+        await root;
+        order.push("rootDone");
+      },
+    },
+    shutdownApps,
+    logger: createLoggerStub(),
+    closeLoggerRuntime: async () => {},
+    closeDatabase: async () => {
+      order.push("closeDb");
+    },
+    exit: vi.fn(),
+  });
+  await vi.waitFor(() => expect(order).toContain("stopRoot"));
+  expect(shutdownApps).not.toHaveBeenCalled();
+  finishRoot();
+  finishHttp();
+  await Promise.resolve();
+  expect(shutdownApps).not.toHaveBeenCalled();
+  finishInput();
+  await stopping;
+  expect(order).toEqual(["stopRoot", "rootDone", "saveApps", "closeDb"]);
 });

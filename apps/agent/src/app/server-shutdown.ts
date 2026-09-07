@@ -22,6 +22,7 @@ type ShutdownServerResourcesOptions = {
   database: Database | null;
   /** 反序关停所有 App。 */
   shutdownApps: (() => Promise<void>) | null;
+  stopInputs?: (() => Promise<void>) | null;
   schedulerClient: SchedulerClient | null;
   rootAgentRuntime: AgentRuntimeController | null;
   /** 状态心跳采样器：关停时停掉定时器，stop 后不再打点。同步、幂等。缺省/ null 视为无采样器。 */
@@ -43,6 +44,7 @@ export async function shutdownServerResources({
   app,
   database,
   shutdownApps,
+  stopInputs,
   schedulerClient,
   rootAgentRuntime,
   stateSampler,
@@ -96,22 +98,27 @@ export async function shutdownServerResources({
       stateSampler.stop(),
     );
   }
-  if (isServerStarted && app) {
-    await step("HTTP server closed", "server.shutdown.http_closed", () => app.close());
-  }
+  // close 先停止接收 HTTP，但不能先 await：在途手动压缩可能正等 LLM，必须同时发出 stop。
+  const closingHttp =
+    isServerStarted && app
+      ? step("HTTP server closed", "server.shutdown.http_closed", () => app.close())
+      : Promise.resolve();
+  const stoppingInputs = stopInputs
+    ? step("Inputs stopped", "server.shutdown.inputs_stopped", stopInputs)
+    : Promise.resolve();
+  const stoppingScheduler = schedulerClient
+    ? step("Scheduler client closed", "server.shutdown.scheduler_client_closed", () =>
+        schedulerClient.stop(),
+      )
+    : Promise.resolve();
+  const stoppingRoot = rootAgentRuntime
+    ? step("Root agent runtime closed", "server.shutdown.root_agent_runtime_closed", () =>
+        rootAgentRuntime.stop(),
+      )
+    : Promise.resolve();
+  await Promise.all([closingHttp, stoppingInputs, stoppingScheduler, stoppingRoot]);
   if (shutdownApps) {
     await step("Apps shut down", "server.shutdown.apps_closed", shutdownApps);
-  }
-  if (schedulerClient) {
-    // 拆分后调度器在独立进程；本地只停 SDK 的订阅循环 + 中断在跑的 handler（同步，无需 await）。
-    await step("Scheduler client closed", "server.shutdown.scheduler_client_closed", () =>
-      schedulerClient.stop(),
-    );
-  }
-  if (rootAgentRuntime) {
-    await step("Root agent runtime closed", "server.shutdown.root_agent_runtime_closed", () =>
-      rootAgentRuntime.stop(),
-    );
   }
   // logger runtime 与 DB 放最后关：前面各步都可能还要写日志。DB 关闭无条件执行（在 errors 里也照关）。
   await step("Logger runtime closed", "server.shutdown.logger_closed", closeLoggerRuntime);

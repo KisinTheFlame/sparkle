@@ -135,3 +135,20 @@ describe("SummaryTaskAgent", () => {
     expect(chat).toHaveBeenCalledTimes(4);
   });
 });
+
+it("摘要子 Agent 在取消后不进入下一轮，信号只走执行选项", async () => {
+  const controller = new AbortController();
+  const chat = vi.fn(async (_request, options) => {
+    expect(options.signal).toBe(controller.signal);
+    controller.abort();
+    return makeTextOnlyRound("还没整理好");
+  });
+  const agent = createSummaryTaskAgent(chat);
+  const pending = agent.invoke(
+    { systemPrompt: "sys", messages: [{ role: "user", content: "task" }] },
+    { signal: controller.signal },
+  );
+  expect(await pending.catch(error => error)).toBe(controller.signal.reason);
+  expect(chat).toHaveBeenCalledTimes(1);
+  expect(chat.mock.calls[0][0]).not.toHaveProperty("signal");
+});

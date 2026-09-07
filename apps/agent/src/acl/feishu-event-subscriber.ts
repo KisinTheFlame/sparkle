@@ -37,6 +37,8 @@ export class FeishuEventSubscriber {
   private readonly cursorStore: FeishuCursorStore;
   private readonly fetchImpl: typeof fetch;
   private running = false;
+  private activeConnection: Promise<void> | null = null;
+  private cancelBackoff: (() => void) | null = null;
   private controller: AbortController | null = null;
 
   public constructor({
@@ -60,7 +62,8 @@ export class FeishuEventSubscriber {
     let backoffMs = INITIAL_BACKOFF_MS;
     while (this.running) {
       try {
-        await this.connectOnce();
+        this.activeConnection = this.connectOnce();
+        await this.activeConnection;
         backoffMs = INITIAL_BACKOFF_MS;
       } catch (error) {
         if (this.running) {
@@ -74,18 +77,28 @@ export class FeishuEventSubscriber {
       if (!this.running) {
         break;
       }
-      await sleep(backoffMs);
+      await new Promise<void>(resolve => {
+        const timer = setTimeout(resolve, backoffMs);
+        this.cancelBackoff = () => {
+          clearTimeout(timer);
+          resolve();
+        };
+      });
+      this.cancelBackoff = null;
       backoffMs = Math.min(backoffMs * 2, MAX_BACKOFF_MS);
     }
   }
 
-  public stop(): void {
+  public async stop(): Promise<void> {
     this.running = false;
     this.controller?.abort();
+    this.cancelBackoff?.();
+    await this.activeConnection?.catch(() => undefined);
   }
 
   private async connectOnce(): Promise<void> {
     const cursor = await this.cursorStore.load();
+    if (!this.running) return;
     const controller = new AbortController();
     this.controller = controller;
 
@@ -121,6 +134,7 @@ export class FeishuEventSubscriber {
         buffer += decoder.decode(value, { stream: true });
         // SSE 帧以空行分隔；剩余半帧留在 buffer 等下一个 chunk。
         for (;;) {
+          if (!this.running) return;
           const boundary = buffer.indexOf("\n\n");
           if (boundary === -1) {
             break;
@@ -161,8 +175,4 @@ export class FeishuEventSubscriber {
     await this.onEvent(event);
     await this.cursorStore.save(event.seq);
   }
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }

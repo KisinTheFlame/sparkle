@@ -11,7 +11,10 @@ import type { LlmMessage } from "@sparkle/llm-client";
  */
 export interface RootAgentExtensionHost {
   appendWakeReminderIfNeeded(): Promise<void>;
-  compactContextIfNeeded(totalTokens: number | null | undefined): Promise<boolean>;
+  compactContextIfNeeded(
+    totalTokens: number | null | undefined,
+    signal?: AbortSignal,
+  ): Promise<boolean>;
   persistSnapshotIfChanged(input?: { throwOnError?: boolean }): Promise<void>;
   appendMessages(messages: LlmMessage[]): Promise<void>;
   recordToolCall(input: { toolName: string; argumentsValue: Record<string, unknown> }): void;

@@ -53,11 +53,17 @@ export type CreateClientOptions = {
  * —— 两个通道在类型上就分开，路径参数永远不会漏进 query。
  */
 type JsonCall<C extends JsonRouteContract> = C["params"] extends z.ZodTypeAny
-  ? (args: {
-      params: z.infer<C["params"]>;
-      input: z.infer<C["input"]>;
-    }) => Promise<z.infer<C["output"]>>
-  : (input: z.infer<C["input"]>) => Promise<z.infer<C["output"]>>;
+  ? (
+      args: {
+        params: z.infer<C["params"]>;
+        input: z.infer<C["input"]>;
+      },
+      options?: { signal?: AbortSignal },
+    ) => Promise<z.infer<C["output"]>>
+  : (
+      input: z.infer<C["input"]>,
+      options?: { signal?: AbortSignal },
+    ) => Promise<z.infer<C["output"]>>;
 
 export type JsonClient<TContracts extends JsonContractMap> = {
   [K in keyof TContracts]: JsonCall<TContracts[K]>;
@@ -85,13 +91,14 @@ export function createClient<TContracts extends JsonContractMap>(
   const client = {} as JsonClient<TContracts>;
   for (const key of Object.keys(contracts) as (keyof TContracts)[]) {
     const contract = contracts[key];
-    const call = (arg: unknown): Promise<unknown> => {
+    const call = (arg: unknown, callOptions?: { signal?: AbortSignal }): Promise<unknown> => {
       // 有 params 的路由，调用形状是 { params, input }；否则整个实参就是 input。
       const { params, input } = contract.params
         ? (arg as { params: Record<string, unknown>; input: unknown })
         : { params: undefined, input: arg };
       return callJsonRoute(contract, params, input, {
         baseUrl,
+        signal: callOptions?.signal,
         fetchImpl,
         timeoutMs: contract.timeoutMs ?? defaultTimeoutMs,
         decodeError,
@@ -104,6 +111,7 @@ export function createClient<TContracts extends JsonContractMap>(
 }
 
 type CallContext = {
+  signal?: AbortSignal;
   baseUrl: string;
   fetchImpl: FetchLike;
   timeoutMs: number;
@@ -117,6 +125,7 @@ async function callJsonRoute(
   input: unknown,
   ctx: CallContext,
 ): Promise<unknown> {
+  ctx.signal?.throwIfAborted();
   let path = contract.path;
   if (contract.params) {
     // 客户端先按 schema 校验路径参数（挡掉错值），再 String() 化插进路径段。
@@ -130,7 +139,10 @@ async function callJsonRoute(
   let url = `${ctx.baseUrl}${path}`;
   const init: RequestInit = {
     method: contract.method,
-    signal: AbortSignal.timeout(ctx.timeoutMs),
+    signal: AbortSignal.any([
+      AbortSignal.timeout(ctx.timeoutMs),
+      ...(ctx.signal ? [ctx.signal] : []),
+    ]),
   };
 
   if (contract.method === "POST") {
@@ -147,11 +159,13 @@ async function callJsonRoute(
   try {
     response = await ctx.fetchImpl(url, init);
   } catch (cause) {
+    ctx.signal?.throwIfAborted();
     throw ctx.mapFallbackError({ reason: "unreachable", cause });
   }
 
   if (!response.ok) {
     const body: unknown = await response.json().catch(() => null);
+    ctx.signal?.throwIfAborted();
     const decoded = ctx.decodeError(response.status, body);
     if (decoded) {
       throw decoded;
@@ -163,9 +177,11 @@ async function callJsonRoute(
   try {
     payload = (await response.json()) as unknown;
   } catch (cause) {
+    ctx.signal?.throwIfAborted();
     throw ctx.mapFallbackError({ reason: "invalid_response_body", cause });
   }
 
+  ctx.signal?.throwIfAborted();
   return contract.output.parse(payload);
 }
 

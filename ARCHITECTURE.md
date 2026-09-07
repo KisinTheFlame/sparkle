@@ -229,6 +229,12 @@ LLM API 暴露的顶层 tools 集合是少量结构性 / 能力级元工具（`s
 
 > `apps/oss` 另起独立 HTTP 服务（`POST /objects` 上传、`GET` / `HEAD` / `DELETE /objects/:key`，另有 `GET /health`），仅 localhost 监听，Fastify + `@sparkle/oss-api` 契约（putObject 信封路由 / 其余 raw 路由，上行字节流透传不缓冲）。
 
+### Agent 关停
+
+`RootLoopAgent.stop()` 向主循环、自动/手动摘要、重试等待和模型调用传播 `AbortSignal`。取消只走执行选项，不进入请求正文、工具定义或历史消息；正常取消不走崩溃重试。HTTP 调用断开时，LLM 网关取消该请求的 provider 调用，独立 LLM 服务仍继续运行。共享鉴权刷新、图片单飞上传等服务级工作仍按自身生命周期收尾，取消后的调用不会再发起模型生成。
+
+服务关停先停止接收 HTTP、飞书订阅、通知与 Skill watcher、调度任务和异步任务，再并行等待主循环及已开始的工作收尾，最后关停并存档 App、关闭日志与数据库。HTTP close 不先行阻塞等待，避免在途手动压缩挡住 stop 信号。已开始的工具不强行取消；结果与副作用提交后，同轮未开始的工具以跳过结果补齐调用配对，停止后不再开始新轮次。主循环退出（含在途初始化与手动上下文变更）后补一次严格快照持久化。原有 10 秒强退兜底保留：超时不宣称已安全收尾。
+
 ## 部署
 
 - PM2（`ecosystem.config.cjs`）托管以下进程：`sparkle-agent`（Fastify，Agent 运行时 + 活内存接口，默认 20003）、`sparkle-console`（管理台后端，前端只读查询聚合，#539 起零 DB 依赖，默认 20006）、`sparkle-gateway`（`apps/gateway`，纯反代：按前缀把 `/api/*` 分流到 console/agent、`/auth/*` 到 llm、`/metric/query` 到 metric，其余转 `sparkle-web`，默认 20004）、`sparkle-web`（`apps/web`，管理台前端独立进程，自持静态托管，默认 20016，仅 localhost；#578 起从 gateway 拆出，前端产物不再于构建期装配进网关，两者生命周期独立——`app:deploy web` 不动网关、`app:deploy gateway` 不动前端）、`sparkle-oss`（对象存储，默认 20005，仅 localhost）、`sparkle-browser`（`apps/browser`，持有 CloakBrowser，默认 20007，仅 localhost；`cwd` 固定仓库根，agent 重启不杀浏览器，`app:deploy agent` 不触及它，见 #173；#539 删 `browser_credential` 废表后零持久化、不开任何 SQLite）、`sparkle-llm`（`apps/llm`，LLM + OAuth 凭据网关，默认 20009，仅 localhost；持有 provider + callback server + 刷新 timer + 经 `SchedulerClient` 跑 Claude Files 缓存每日 GC（`claude_file_cache` 按 `last_used_at` idle 回收远端文件 + 本地行，#433），`app:deploy agent` 不触及它；#539 起独占 `data/llm/llm.db`（自带 retention 清理），不碰主库；llm 库迁移由 deploy.sh 单停 sparkle-llm 执行）、`sparkle-metric`（`apps/metric`，metric 摄取 + metric 图表查询，默认 20010，仅 localhost；agent fire-and-forget HTTP 上报；#475 P1 起独占 `data/metric/metric.duckdb`，不开共享 SQLite，主库迁移不需停它）、`sparkle-scheduler`（`apps/scheduler`，通用定时调度薄时钟，默认 20014，仅 localhost；调度状态纯内存派生态、执行历史独占 `data/scheduler/scheduler.db`（#493），agent 与 sparkle-llm 经 `SchedulerClient` 注册 + SSE 收 tick，`app:deploy agent` 不触及它，agent 重启不打断计时节奏，见 #428）。agent 库 `data/agent/agent.db` 自 #539 起由 **sparkle-agent 独占**（console 零 DB、经各服务查询路由聚合；`apps/scheduler` / `apps/metric` / `apps/browser` / `apps/llm` 不入共享库，scheduler 独占 `data/scheduler/scheduler.db`、metric 独占 DuckDB、browser 零持久化 #539、llm 独占 llm.db #539）。

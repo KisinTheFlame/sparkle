@@ -343,3 +343,25 @@ describe("SchedulerClient run reporting", () => {
     expect(statuses).toContain("success");
   });
 });
+
+it("stop 等待不支持取消的在途 handler 收尾，丢弃排队 tick 并拒绝新工作", async () => {
+  const client = makeClient();
+  const gate = deferred();
+  const handler = vi.fn(async () => gate.promise);
+  client.register(reg({ handler, overlap: "queue" }));
+  const running = client.onTick(tick("2026-07-05T00:00:00.000Z"));
+  await vi.waitFor(() => expect(handler).toHaveBeenCalledTimes(1));
+  await client.onTick(tick("2026-07-05T00:00:01.000Z"));
+  let stopped = false;
+  const stopping = client.stop().then(() => {
+    stopped = true;
+  });
+  await Promise.resolve();
+  expect(stopped).toBe(false);
+  await client.onTick(tick("2026-07-05T00:00:02.000Z"));
+  expect(() => client.triggerNowDetached("t")).toThrow("stopping");
+  gate.resolve();
+  await Promise.all([running, stopping]);
+  expect(stopped).toBe(true);
+  expect(handler).toHaveBeenCalledTimes(1);
+});

@@ -17,6 +17,7 @@ const logger = new AppLogger({ source: "bootstrap" });
 
 let app: FastifyInstance | null = null;
 let database: Database | null = null;
+let stopInputs: (() => Promise<void>) | null = null;
 let shutdownApps: (() => Promise<void>) | null = null;
 let schedulerClient: SchedulerClient | null = null;
 let rootAgentRuntime: AgentRuntimeController | null = null;
@@ -43,6 +44,8 @@ async function startAgentLoop(runtime: {
     await fatalExit("agent.loop.init_failed", "Agent runtime initialization failed", error);
     return;
   }
+
+  if (isShuttingDown) return;
 
   // 主循环即将活跃：此刻起状态心跳采样才有意义（避免采到「服务起了但 loop 未活」的虚假
   // portal 样本）。采样器 fire-and-forget，start 不抛。
@@ -72,6 +75,7 @@ async function fatalExit(event: string, message: string, error: unknown): Promis
     app,
     database,
     shutdownApps,
+    stopInputs,
     schedulerClient,
     rootAgentRuntime,
     stateSampler,
@@ -98,6 +102,7 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
     app,
     database,
     shutdownApps,
+    stopInputs,
     schedulerClient,
     rootAgentRuntime,
     stateSampler,
@@ -118,6 +123,7 @@ try {
   app = runtime.app;
   database = runtime.database;
   shutdownApps = runtime.shutdownApps;
+  stopInputs = runtime.stopInputs;
   schedulerClient = runtime.schedulerClient;
   rootAgentRuntime = runtime.rootAgentRuntime;
   stateSampler = runtime.stateSampler;

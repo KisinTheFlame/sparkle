@@ -10,6 +10,7 @@ type AgentLlmChatOptions = {
   /** 仅用于调用归因，不影响模型或请求前缀。 */
   scene: string;
   recordCall?: boolean;
+  signal?: AbortSignal;
 };
 
 export interface AgentLlmClient {
@@ -46,14 +47,19 @@ export function createAgentLlmClient({
       let seq = 0;
       for (const attempt of usageConfig.attempts) {
         for (let currentTry = 0; currentTry < attempt.times; currentTry += 1) {
+          options.signal?.throwIfAborted();
           try {
-            return await gateway.chatDirect(requestForUsage, {
+            const response = await gateway.chatDirect(requestForUsage, {
               providerId: attempt.provider,
               model: attempt.model,
+              ...(options.signal ? { signal: options.signal } : {}),
               ...(options.recordCall === undefined ? {} : { recordCall: options.recordCall }),
               trace: { requestId, seq: ++seq, usage: options.usage, scene },
             });
+            options.signal?.throwIfAborted();
+            return response;
           } catch (error) {
+            options.signal?.throwIfAborted();
             lastError = error;
           }
         }

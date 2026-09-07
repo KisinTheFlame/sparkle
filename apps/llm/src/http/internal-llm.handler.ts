@@ -31,13 +31,29 @@ export class InternalLlmHandler {
   }
 
   public register(app: FastifyInstance): void {
-    registerJsonRoute(app, llmApiContract.chatDirect, async ({ input }) => {
-      return await this.llmClient.chatDirect(input.request as LlmChatRequest, {
-        providerId: input.providerId as LlmProviderId,
-        model: input.model,
-        ...(input.trace === undefined ? {} : { trace: input.trace }),
-        ...(input.recordCall === undefined ? {} : { recordCall: input.recordCall }),
-      });
+    registerJsonRoute(app, llmApiContract.chatDirect, async ({ input, request, reply }) => {
+      const controller = new AbortController();
+      const abort = (): void => {
+        controller.abort();
+      };
+      const onClose = (): void => {
+        if (!reply.raw.writableEnded) abort();
+      };
+      request.raw.on("aborted", abort);
+      reply.raw.on("close", onClose);
+      if (request.raw.aborted || reply.raw.destroyed) abort();
+      try {
+        return await this.llmClient.chatDirect(input.request as LlmChatRequest, {
+          signal: controller.signal,
+          providerId: input.providerId as LlmProviderId,
+          model: input.model,
+          ...(input.trace === undefined ? {} : { trace: input.trace }),
+          ...(input.recordCall === undefined ? {} : { recordCall: input.recordCall }),
+        });
+      } finally {
+        request.raw.off("aborted", abort);
+        reply.raw.off("close", onClose);
+      }
     });
 
     // providers 路由是编译期强制样板：input/output 由 llmApiContract.listProviders 反推，与 agent 侧

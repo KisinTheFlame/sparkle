@@ -120,11 +120,13 @@ export function createClaudeCodeProvider(input: {
     isAvailable: async () => {
       return await input.authStore.hasCredentials();
     },
-    async chat(request: LlmChatRequest): Promise<LlmProviderChatResult> {
+    async chat(request: LlmChatRequest, options): Promise<LlmProviderChatResult> {
       try {
+        options?.signal?.throwIfAborted();
         // wire 保险丝（#556）：超限图片先确定性降采样，绝不把 >8000px 的 400 毒图发出去。
         // 必须在 File API 预解析之前——file_id 以变换后字节的 sha256 为准。
         request = await clampRequestImages(request);
+        options?.signal?.throwIfAborted();
         // File API 预解析：图片先换 file_id，请求体不再随 base64 膨胀撞 ~32MB 上限。
         // 关闭 / 无缓存 DAO 时 imageFileIds 为 undefined → builder 全走 base64（旧行为）。
         const imageFileIds =
@@ -142,13 +144,16 @@ export function createClaudeCodeProvider(input: {
         const result = await sendClaudeCodeRequest({
           config: input.config,
           authStore: input.authStore,
+          signal: options?.signal,
           requestBody,
         });
+        options?.signal?.throwIfAborted();
         lastSuccessfulRequestBody = structuredClone(requestBody);
         lastSuccessfulRequestVersion += 1;
         scheduleReplay(lastSuccessfulRequestVersion);
         return result;
       } catch (error) {
+        options?.signal?.throwIfAborted();
         if (error instanceof BizError) {
           throw error;
         }
@@ -171,11 +176,14 @@ export function createClaudeCodeProvider(input: {
 async function sendClaudeCodeRequest(params: {
   config: LlmProviderConfig;
   authStore: ClaudeCodeAuthProvider;
+  signal?: AbortSignal;
   requestBody: ClaudeMessageRequestBody;
 }): Promise<LlmProviderChatResult> {
+  params.signal?.throwIfAborted();
   const initialAuth = await params.authStore.getAuth();
   const initialResponse = await fetchClaudeCodeResponse({
     config: params.config,
+    signal: params.signal,
     auth: initialAuth,
     requestBody: params.requestBody,
   });
@@ -203,6 +211,7 @@ async function sendClaudeCodeRequest(params: {
 
 async function fetchClaudeCodeResponse(params: {
   config: LlmProviderConfig;
+  signal?: AbortSignal;
   auth: Awaited<ReturnType<ClaudeCodeAuthProvider["getAuth"]>>;
   requestBody: ClaudeMessageRequestBody;
 }): Promise<{
@@ -214,6 +223,7 @@ async function fetchClaudeCodeResponse(params: {
   let response: Response;
 
   try {
+    params.signal?.throwIfAborted();
     response = await fetch(`${baseUrl}/v1/messages?beta=true`, {
       method: "POST",
       headers: {
@@ -236,7 +246,10 @@ async function fetchClaudeCodeResponse(params: {
         Connection: "keep-alive",
       },
       body: JSON.stringify(params.requestBody),
-      signal: AbortSignal.timeout(params.config.timeoutMs),
+      signal: AbortSignal.any([
+        AbortSignal.timeout(params.config.timeoutMs),
+        ...(params.signal ? [params.signal] : []),
+      ]),
     });
   } catch (error) {
     throw attachLlmProviderFailureContext(

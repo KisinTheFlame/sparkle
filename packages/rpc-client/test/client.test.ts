@@ -223,3 +223,33 @@ describe("createClient — params 通道", () => {
     expect(mustNotCompile).toHaveLength(4);
   });
 });
+
+it("取消会中断响应体读取并保留原始原因，不映射成可重试的传输错误", async () => {
+  const controller = new AbortController();
+  const reason = new Error("stop");
+  const mapFallbackError = vi.fn(() => new Error("mapped"));
+  let signal!: AbortSignal;
+  const fetchImpl = vi.fn(async (_url, init) => {
+    signal = init.signal;
+    return {
+      ok: true,
+      json: () =>
+        new Promise((_resolve, reject) => {
+          signal.addEventListener("abort", () => reject(signal.reason), { once: true });
+        }),
+    } as Response;
+  });
+  const client = createClient(contracts, {
+    baseUrl: "http://svc",
+    fetch: fetchImpl,
+    mapFallbackError,
+  });
+  const pending = client.createThing({ label: "x" }, { signal: controller.signal });
+  const rejected = expect(pending).rejects.toBe(reason);
+  await vi.waitFor(() => expect(fetchImpl).toHaveBeenCalledTimes(1));
+  controller.abort(reason);
+  await rejected;
+  expect(signal.aborted).toBe(true);
+  expect(mapFallbackError).not.toHaveBeenCalled();
+  expect(fetchImpl.mock.calls[0][1].body).toBe(JSON.stringify({ label: "x" }));
+});

@@ -48,7 +48,13 @@ export abstract class BaseLoopAgent<
   private startPromise: Promise<void> | null = null;
   private activeRunOncePromise: Promise<void> | null = null;
   private initialized = false;
+  private initializingPromise: Promise<void> | null = null;
   protected stopRequested = false;
+  private stopController = new AbortController();
+
+  protected get stopSignal(): AbortSignal {
+    return this.stopController.signal;
+  }
 
   protected constructor({
     kernel,
@@ -67,6 +73,7 @@ export abstract class BaseLoopAgent<
     }
 
     this.stopRequested = false;
+    if (this.stopController.signal.aborted) this.stopController = new AbortController();
     const loopPromise = this.runLoop();
     this.startPromise = loopPromise;
 
@@ -81,8 +88,10 @@ export abstract class BaseLoopAgent<
 
   public async stop(): Promise<void> {
     this.stopRequested = true;
+    this.stopController.abort();
     // Wake the loop if it's blocking inside a tool that awaits an event queue.
     this.onStopRequested();
+    await this.initializingPromise?.catch(() => undefined);
     const startPromise = this.startPromise;
     if (!startPromise) {
       return;
@@ -125,6 +134,7 @@ export abstract class BaseLoopAgent<
    * meaning the round was skipped).
    */
   protected async runReactRound(): Promise<ReActRoundResult<TCompletion, TExtensionData> | null> {
+    this.stopSignal.throwIfAborted();
     const context = this.createLoopExtensionContext();
     for (const extension of this.extensions) {
       await extension.onBeforeRound?.(context);
@@ -160,7 +170,7 @@ export abstract class BaseLoopAgent<
   protected async executeRound(
     input: ReActKernelRunRoundInput<TUsage>,
   ): Promise<ReActRoundResult<TCompletion, TExtensionData>> {
-    return await this.kernel.runRound(input);
+    return await this.kernel.runRound({ ...input, signal: this.stopSignal });
   }
 
   protected async onUnhandledError(error: unknown): Promise<void> {
@@ -176,6 +186,17 @@ export abstract class BaseLoopAgent<
   }
 
   protected async ensureInitialized(): Promise<void> {
+    if (this.initializingPromise) return await this.initializingPromise;
+    const initializing = this.initializeOnce();
+    this.initializingPromise = initializing;
+    try {
+      await initializing;
+    } finally {
+      if (this.initializingPromise === initializing) this.initializingPromise = null;
+    }
+  }
+
+  private async initializeOnce(): Promise<void> {
     await this.initializeHostIfNeeded();
     if (this.initialized) {
       return;
@@ -219,6 +240,7 @@ export abstract class BaseLoopAgent<
         }
       }
     } catch (error) {
+      if (this.stopSignal.aborted && error === this.stopSignal.reason) return;
       // 错误处理器自身也可能抛错。绝不静默丢掉这些"次生错误"——收集起来，
       // 原错仍作为主因，最终一并抛出，避免"处理器坏了"这种严重情况无声消失。
       const handlerErrors: unknown[] = [];

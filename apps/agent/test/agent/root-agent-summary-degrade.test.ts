@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { llmUpstreamCallFailedError } from "@sparkle/llm-client";
 import { TaskAgentMaxRoundsExceededError } from "@sparkle/agent-runtime";
 import { RootAgentHost } from "../../src/agent/runtime/root-agent/root-agent-runtime.js";
 import { initTestLoggerRuntime } from "../helpers/logger.js";
@@ -171,4 +172,42 @@ describe("RootAgentHost — 摘要超轮降级", () => {
     });
     expect(invoke).toHaveBeenCalledTimes(2);
   });
+});
+
+it("摘要退避期间取消：立即退出，不重试、不提交摘要", async () => {
+  vi.useFakeTimers();
+  const controller = new AbortController();
+  const apply = vi.fn(async () => ({ appendedMessages: [] }));
+  const invoke = vi.fn().mockRejectedValue(llmUpstreamCallFailedError({}));
+  const host = new RootAgentHost({
+    context: {
+      getSnapshot: async () => ({
+        systemPrompt: "sys",
+        messages: [{ role: "user", content: "m" }],
+      }),
+    },
+    eventQueue: {},
+    session: {},
+    interpreter: { apply },
+    contextSummarizer: { invoke },
+  } as unknown as ConstructorParameters<typeof RootAgentHost>[0]);
+  try {
+    const pending = host.compactContextByRatio(100, controller.signal);
+    const settled = pending.then(
+      () => "completed",
+      error => error,
+    );
+    await vi.advanceTimersByTimeAsync(0);
+    controller.abort();
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(invoke).toHaveBeenCalledTimes(1);
+    expect(await Promise.race([settled, Promise.resolve("pending")])).toBe(
+      controller.signal.reason,
+    );
+    expect(apply).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
+  } finally {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  }
 });

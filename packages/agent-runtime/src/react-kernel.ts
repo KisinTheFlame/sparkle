@@ -39,6 +39,7 @@ export interface ReActModel<
       usage: TUsage;
       /** 调用归因（自由 string，只进 metric / 落库，不影响缓存与选模型）。 */
       scene: string;
+      signal?: AbortSignal;
     },
   ): Promise<TCompletion>;
 }
@@ -56,6 +57,7 @@ export type ReActKernelRunRoundInput<TUsage extends string> = {
   usage: TUsage;
   /** 调用归因（自由 string，只进 metric / 落库）。 */
   scene: string;
+  signal?: AbortSignal;
 };
 
 export type ReActToolExecution<TExtensionData = unknown> = {
@@ -206,10 +208,12 @@ export class ReActKernel<
   public async runRound(
     request: ReActKernelRunRoundInput<TUsage>,
   ): Promise<ReActRoundResult<TCompletion, TExtensionData, TControl>> {
+    request.signal?.throwIfAborted();
     for (const extension of this.extensions) {
       await extension.onBeforeModel?.(request);
     }
 
+    request.signal?.throwIfAborted();
     let completion: TCompletion;
     try {
       completion = await this.model.chat(
@@ -222,9 +226,11 @@ export class ReActKernel<
         {
           usage: request.usage,
           scene: request.scene,
+          ...(request.signal ? { signal: request.signal } : {}),
         },
       );
     } catch (error) {
+      request.signal?.throwIfAborted();
       for (const extension of this.extensions) {
         const decision = await extension.onModelError?.({
           request,
@@ -244,6 +250,7 @@ export class ReActKernel<
       throw error;
     }
 
+    request.signal?.throwIfAborted();
     for (const extension of this.extensions) {
       await extension.onAfterModel?.({
         request,
@@ -259,18 +266,28 @@ export class ReActKernel<
     let capturedControl: TControl | undefined;
 
     for (const toolCall of assistantMessage.toolCalls) {
-      if (capturedControl !== undefined) {
+      if (capturedControl === undefined && !request.signal?.aborted) {
+        for (const extension of this.extensions) {
+          await extension.onBeforeToolExecution?.({ request, completion, toolCall });
+        }
+      }
+      if (capturedControl !== undefined || request.signal?.aborted) {
+        const content = request.signal?.aborted
+          ? "<skipped>Tool execution skipped because the agent is stopping.</skipped>"
+          : SKIPPED_TOOL_RESULT_CONTENT;
         // 已有 control 信号——跳过剩余 tool 执行，给它们造 synthetic tool_result
         // 维护 ReAct 协议（每个 tool_call 必有对应 tool_result）。
         const skippedResult: ToolSetExecutionResult = {
-          content: SKIPPED_TOOL_RESULT_CONTENT,
-          kind: "control",
+          content,
+          kind: request.signal?.aborted
+            ? (request.tools.getKind(toolCall.name) ?? "business")
+            : "control",
         };
         const skippedToolMessages: Array<Extract<LlmMessage, { role: "tool" }>> = [
           {
             role: "tool",
             toolCallId: toolCall.id,
-            content: SKIPPED_TOOL_RESULT_CONTENT,
+            content,
           },
         ];
         appendedMessages.push(...skippedToolMessages);
@@ -281,14 +298,6 @@ export class ReActKernel<
           effectMessages: [],
         });
         continue;
-      }
-
-      for (const extension of this.extensions) {
-        await extension.onBeforeToolExecution?.({
-          request,
-          completion,
-          toolCall,
-        });
       }
 
       let result: ToolSetExecutionResult;

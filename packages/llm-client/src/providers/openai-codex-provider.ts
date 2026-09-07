@@ -62,14 +62,17 @@ export function createOpenAiCodexProvider(input: {
     isAvailable: async () => {
       return await input.authStore.hasCredentials();
     },
-    async chat(request: LlmChatRequest): Promise<LlmProviderChatResult> {
+    async chat(request: LlmChatRequest, options): Promise<LlmProviderChatResult> {
       try {
+        options?.signal?.throwIfAborted();
         return await sendCodexRequest({
           config: input.config,
           authStore: input.authStore,
+          signal: options?.signal,
           request,
         });
       } catch (error) {
+        options?.signal?.throwIfAborted();
         if (error instanceof BizError) {
           throw error;
         }
@@ -88,14 +91,17 @@ export function createOpenAiCodexProvider(input: {
 async function sendCodexRequest(params: {
   config: OpenAiCodexConfig;
   authStore: OpenAiCodexAuthProvider;
+  signal?: AbortSignal;
   request: LlmChatRequest;
 }): Promise<LlmProviderChatResult> {
+  params.signal?.throwIfAborted();
   const initialAuth = await params.authStore.getAuth();
   const requestBody = toCodexRequestBody(params.request, {
     accountId: initialAuth.accountId,
   });
   const initialResponse = await fetchCodexResponse({
     config: params.config,
+    signal: params.signal,
     auth: initialAuth,
     requestBody,
   });
@@ -107,9 +113,11 @@ async function sendCodexRequest(params: {
     });
   }
 
+  params.signal?.throwIfAborted();
   const refreshedAuth = await params.authStore.getAuth({ forceRefresh: true });
   const retriedResponse = await fetchCodexResponse({
     config: params.config,
+    signal: params.signal,
     auth: refreshedAuth,
     requestBody,
   });
@@ -137,6 +145,7 @@ async function sendCodexRequest(params: {
 
 async function fetchCodexResponse(params: {
   config: OpenAiCodexConfig;
+  signal?: AbortSignal;
   auth: Awaited<ReturnType<OpenAiCodexAuthProvider["getAuth"]>>;
   requestBody: Record<string, unknown>;
 }): Promise<{
@@ -146,6 +155,7 @@ async function fetchCodexResponse(params: {
 }> {
   let response: Response;
   try {
+    params.signal?.throwIfAborted();
     response = await fetch(params.config.baseUrl, {
       method: "POST",
       headers: {
@@ -156,7 +166,10 @@ async function fetchCodexResponse(params: {
         "User-Agent": "Sparkle/1.0",
       },
       body: JSON.stringify(params.requestBody),
-      signal: AbortSignal.timeout(params.config.timeoutMs),
+      signal: AbortSignal.any([
+        AbortSignal.timeout(params.config.timeoutMs),
+        ...(params.signal ? [params.signal] : []),
+      ]),
     });
   } catch (error) {
     throw attachLlmProviderFailureContext(

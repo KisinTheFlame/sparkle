@@ -54,7 +54,10 @@ export class NotificationCenter {
     this.scheduler = scheduler ?? new RealNotificationScheduler();
   }
 
+  private stopped = false;
+
   public push(draft: NotificationDraft): void {
+    if (this.stopped) return;
     const prev = this.pending.get(draft.sourceId);
     // this = 最新、prev = 历史：见 NotificationDraft 折叠约定。
     this.pending.set(draft.sourceId, prev ? draft.merge(prev) : draft);
@@ -72,6 +75,7 @@ export class NotificationCenter {
 
   /** 关停时停掉进行中的窗口。 */
   public stop(): void {
+    this.stopped = true;
     this.cancelWindow?.();
     this.cancelWindow = null;
   }
