@@ -28,11 +28,13 @@ export class ReadBashOutputTool extends ZodToolComponent<typeof ReadBashOutputAr
       },
       offset: {
         type: "number",
-        description: "起始字节偏移量，默认 0。越界时返回空内容且 eof=true。",
+        description:
+          "起始字节偏移量，默认 0；落在 UTF-8 字符内部时回退到该字符起点。续读请使用返回的 next_offset。越界时返回空内容且 eof=true。",
       },
       size: {
         type: "number",
-        description: "本次读取的最大字节数；默认和上限均由服务端配置决定。",
+        description:
+          "本次读取的字节预算；默认和上限均由服务端配置决定。末尾对齐完整 UTF-8 字符；若预算不足一个字符，仍返回该完整字符，最多超出 3 字节。",
       },
     },
     required: ["output_id"],

@@ -3,6 +3,7 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { mkdir, stat } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
+import { StringDecoder } from "node:string_decoder";
 import { AppLogger } from "@sparkle/kernel/logger/logger";
 import { truncateWithEllipsis } from "@sparkle/kernel/utils/text";
 import { TERMINAL_ERROR, type TerminalErrorCode } from "../domain/errors.js";
@@ -260,16 +261,24 @@ export class TerminalService {
     );
 
     const buffer = Buffer.from(full, "utf8");
-    const slice = buffer.slice(clampedOffset, clampedOffset + clampedSize);
-    const content = sanitizeUtf8Buffer(slice);
-    const nextOffset = clampedOffset + clampedSize;
+    const offset = utf8BoundaryBefore(buffer, clampedOffset);
+    let nextOffset = utf8BoundaryBefore(buffer, offset + clampedSize);
+    // 页大小连一个字符都容不下时，至少读完一个字符，防止 nextOffset 不前进。
+    // UTF-8 单字符最多 4 字节，因此最多超出预算 3 字节。
+    if (nextOffset === offset && clampedSize > 0) {
+      nextOffset = offset + 1;
+      while (nextOffset < buffer.length && isUtf8Continuation(buffer[nextOffset])) {
+        nextOffset++;
+      }
+    }
+    const content = sanitizeUtf8Buffer(buffer.subarray(offset, nextOffset));
 
     return {
       ok: true,
       outputId: record.outputId,
       stream: input.stream,
-      offset: clampedOffset,
-      size: clampedSize,
+      offset,
+      size: nextOffset - offset,
       totalBytes,
       content,
       nextOffset,
@@ -363,16 +372,12 @@ export class TerminalService {
       };
 
       const buildCapturedOutput = (durationMs: number) => {
-        const stdoutFull = Buffer.concat(stdoutChunks).toString("utf8");
-        const stderrFull = Buffer.concat(stderrChunks).toString("utf8");
+        const stdoutFull = decodeCapturedOutput(stdoutChunks, stdoutCapReached || timedOut);
+        const stderrFull = decodeCapturedOutput(stderrChunks, stderrCapReached || timedOut);
         const sanitizedStdout = sanitizeUtf8String(stdoutFull);
         const sanitizedStderr = sanitizeUtf8String(stderrFull);
-        const stdoutPreview = sanitizeUtf8Buffer(
-          Buffer.from(sanitizedStdout, "utf8").subarray(0, this.config.previewBytes),
-        );
-        const stderrPreview = sanitizeUtf8Buffer(
-          Buffer.from(sanitizedStderr, "utf8").subarray(0, this.config.previewBytes),
-        );
+        const stdoutPreview = utf8Preview(sanitizedStdout, this.config.previewBytes);
+        const stderrPreview = utf8Preview(sanitizedStderr, this.config.previewBytes);
         const stdoutTruncated =
           stdoutCapReached || Buffer.byteLength(sanitizedStdout, "utf8") > this.config.previewBytes;
         const stderrTruncated =
@@ -670,12 +675,12 @@ function killSpawnedProcessGroup(child: ChildProcess, signal: NodeJS.Signals): v
 }
 
 /**
- * Buffer.from("...", "utf8") 本身就会对非法字节做 replacement，但为了显式保证 JSON 可序列化，
+ * Buffer.toString("utf8") 本身就会对非法字节做 replacement，但为了显式保证 JSON 可序列化，
  * 再把 lone surrogate 也替换掉。
  *
  * 刻意**不复用** kernel 的 `stripLoneSurrogates`：那条正典是「丢弃」半个字符（面向要进 Agent
  * 上下文的外部文本），而终端输出是给人看的原始字节流，这里要的是「替换成 U+FFFD」——保留坏
- * 字节的位置与可见性，让人看得出哪里乱码。语义不同故各留一份；截断则统一走正典。
+ * 字节的位置与可见性，让人看得出哪里乱码。终端的字节分页另行对齐 UTF-8 边界。
  */
 function sanitizeUtf8String(s: string): string {
   return s.replace(
@@ -686,6 +691,31 @@ function sanitizeUtf8String(s: string): string {
 
 function sanitizeUtf8Buffer(buf: Buffer): string {
   return sanitizeUtf8String(buf.toString("utf8"));
+}
+
+function decodeCapturedOutput(chunks: Buffer[], truncated: boolean): string {
+  const buffer = Buffer.concat(chunks);
+  // 只在采集被上限/超时截停时丢弃末尾未完成的字符；原始非法字节仍显示为 U+FFFD。
+  // 先合并再解码，避免把正常跨 data chunk 的字符误判为残缺字符。
+  return truncated ? new StringDecoder("utf8").write(buffer) : buffer.toString("utf8");
+}
+
+function isUtf8Continuation(byte: number): boolean {
+  return (byte & 0xc0) === 0x80;
+}
+
+/** 仅用于由字符串编码得到的合法 UTF-8 buffer。 */
+function utf8BoundaryBefore(buffer: Buffer, offset: number): number {
+  let boundary = Math.min(offset, buffer.length);
+  while (boundary > 0 && boundary < buffer.length && isUtf8Continuation(buffer[boundary])) {
+    boundary--;
+  }
+  return boundary;
+}
+
+function utf8Preview(text: string, maxBytes: number): string {
+  const buffer = Buffer.from(text, "utf8");
+  return sanitizeUtf8Buffer(buffer.subarray(0, utf8BoundaryBefore(buffer, maxBytes)));
 }
 
 function generateOutputId(): string {
